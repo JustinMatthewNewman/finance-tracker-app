@@ -31,6 +31,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useFeatures } from "@/hooks/useFeatures";
 import type { FeatureName } from "@/lib/features";
 import { loginWithGoogle, logout } from "@/lib/auth";
+import { isPopupDismissal } from "@/lib/authErrors";
 import { GlobalSearch } from "@/components/Search/GlobalSearch";
 import { usePerformanceMode } from "@/context/PerformanceModeContext";
 
@@ -384,9 +385,26 @@ export default function AppNavbar() {
   const { performanceMode } = usePerformanceMode();
   const { features, loading: featuresLoading } = useFeatures();
 
+  const [loginError, setLoginError] = useState<string | null>(null);
+
   const handleLogin = async () => {
-    await loginWithGoogle();
-    router.push("/household");
+    setLoginError(null);
+    try {
+      await loginWithGoogle();
+      router.push("/household");
+    } catch (err) {
+      // Routing into the app on a failed sync is what made this bug invisible:
+      // the person lands on a working-looking page with no records behind it.
+      // Stay put and say what happened instead.
+      if (err instanceof Error && err.name === "UserSyncError") {
+        setLoginError(err.message);
+      } else if (isPopupDismissal(err)) {
+        // Closing the popup is a choice, not a fault — nothing to report.
+      } else {
+        setLoginError("Could not sign in. Please try again.");
+      }
+      console.error("[auth] sign-in failed:", err);
+    }
   };
 
   const handleAction = async (key: string) => {
@@ -560,6 +578,28 @@ export default function AppNavbar() {
           </>
         )}
       </div>
+
+      {/* Sign-in failure. Rendered inside the header so it appears wherever
+          the sign-in button is, and is dismissible because it reports a
+          transient backend fault the person may want to retry past. */}
+      {loginError && (
+        <div
+          role="alert"
+          className="border-t border-danger/30 bg-danger/10 px-4 py-2 text-sm text-danger sm:px-6 lg:px-8"
+        >
+          <span className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+            <span>{loginError}</span>
+            <button
+              type="button"
+              onClick={() => setLoginError(null)}
+              aria-label="Dismiss"
+              className="shrink-0 rounded px-2 py-0.5 hover:bg-danger/10"
+            >
+              ✕
+            </button>
+          </span>
+        </div>
+      )}
 
       {/* Mobile Nav — row 2's content collapses in here since it's hidden
           on mobile, plus the utility controls that would otherwise have no

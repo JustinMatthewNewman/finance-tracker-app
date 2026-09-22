@@ -168,6 +168,27 @@ function deleteTransaction(dcOrVarsOrOptions, varsOrOptions, options) {
 }
 exports.deleteTransaction = deleteTransaction;
 
+function upsertPlaidItem(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('UpsertPlaidItem', inputVars, inputOpts);
+}
+exports.upsertPlaidItem = upsertPlaidItem;
+
+function upsertBankAccount(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('UpsertBankAccount', inputVars, inputOpts);
+}
+exports.upsertBankAccount = upsertBankAccount;
+
+function syncPlaidTransaction(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('SyncPlaidTransaction', inputVars, inputOpts);
+}
+exports.syncPlaidTransaction = syncPlaidTransaction;
+
 function listUsers(dcOrOptions, options) {
   const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
   dcInstance.useGen(true);

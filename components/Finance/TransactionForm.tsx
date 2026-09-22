@@ -44,6 +44,7 @@ export function TransactionForm({
   const { categories } = useCategories();
 
   const [direction, setDirection] = useState<Direction>(existing?.direction ?? "EXPENSE");
+  const [source, setSource] = useState<"MANUAL" | "FORECAST">(existing?.source === "FORECAST" ? "FORECAST" : "MANUAL");
   const [amount, setAmount] = useState(existing ? minorToInput(existing.amountMinor, currency) : "");
   const [occurredOn, setOccurredOn] = useState(existing?.occurredOn ?? toDateString(new Date()));
   const [categoryName, setCategoryName] = useState(existing?.category?.name ?? "");
@@ -66,6 +67,7 @@ export function TransactionForm({
     setLastFormKey(formKey);
     if (isOpen) {
       setDirection(existing?.direction ?? "EXPENSE");
+      setSource(existing?.source === "FORECAST" ? "FORECAST" : "MANUAL");
       setAmount(existing ? minorToInput(existing.amountMinor, currency) : "");
       setOccurredOn(existing?.occurredOn ?? toDateString(new Date()));
       setCategoryName(existing?.category?.name ?? "");
@@ -107,6 +109,8 @@ export function TransactionForm({
         description: description.trim() || null,
         method: method.trim() || null,
         recurrence: recurrence || null,
+        source,
+        status: source === "FORECAST" ? "FORECASTED" : "POSTED",
       });
       onClose();
     } catch (err) {
@@ -140,19 +144,35 @@ export function TransactionForm({
               </div>
             )}
 
-            <ToggleButtonGroup
-              selectionMode="single"
-              disallowEmptySelection
-              selectedKeys={[direction]}
-              onSelectionChange={(keys) => {
-                const next = Array.from(keys)[0];
-                if (next === "INCOME" || next === "EXPENSE") setDirection(next);
-              }}
-              aria-label="Direction"
-            >
-              <ToggleButton id="EXPENSE">Money out</ToggleButton>
-              <ToggleButton id="INCOME">Money in</ToggleButton>
-            </ToggleButtonGroup>
+            <div className="flex flex-wrap gap-2">
+              <ToggleButtonGroup
+                selectionMode="single"
+                disallowEmptySelection
+                selectedKeys={[direction]}
+                onSelectionChange={(keys) => {
+                  const next = Array.from(keys)[0];
+                  if (next === "INCOME" || next === "EXPENSE") setDirection(next);
+                }}
+                aria-label="Direction"
+              >
+                <ToggleButton id="EXPENSE">Money out</ToggleButton>
+                <ToggleButton id="INCOME">Money in</ToggleButton>
+              </ToggleButtonGroup>
+
+              <ToggleButtonGroup
+                selectionMode="single"
+                disallowEmptySelection
+                selectedKeys={[source]}
+                onSelectionChange={(keys) => {
+                  const next = Array.from(keys)[0];
+                  if (next === "MANUAL" || next === "FORECAST") setSource(next);
+                }}
+                aria-label="Transaction Type"
+              >
+                <ToggleButton id="MANUAL">Actual</ToggleButton>
+                <ToggleButton id="FORECAST">Scheduled / Forecast</ToggleButton>
+              </ToggleButtonGroup>
+            </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>

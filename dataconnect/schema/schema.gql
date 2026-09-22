@@ -218,6 +218,7 @@ type Transaction @table {
   user: User!
   familyMember: FamilyMember!
   category: Category
+  bankAccount: BankAccount
 
   # MONEY IS AN INTEGER. Amounts are minor units of the household's currency
   # (cents for USD), never a float and never a GraphQL Float. Binary floating
@@ -252,7 +253,63 @@ type Transaction @table {
   # There is no recurrence engine yet; this records intent so one can be added
   # without a migration.
   recurrence: String
+
+  # --- Plaid Integration Fields ---
+  # Plaid's unique transaction_id; @unique prevents duplicate rows on sync
+  plaidTransactionId: String @unique
+  # Reference to pending transaction ID if this posted row replaced one
+  plaidPendingTransactionId: String
+  isPending: Boolean @default(expr: "false")
+  # Raw Plaid primary category e.g. "FOOD_AND_DRINK"
+  plaidCategory: String
+
+  # --- Transaction Source & Forecasting Fields ---
+  # "PLAID", "MANUAL", "FORECAST"
+  source: String! @default(value: "MANUAL")
+  # "POSTED", "PENDING", "FORECASTED", "MATCHED"
+  status: String! @default(value: "POSTED")
+  # Optional link connecting a forecasted item to its actual fulfilled transaction
+  matchedTransactionId: UUID
+
   createdAt: Timestamp!
+}
+
+# A connected financial institution connection created via Plaid Link.
+type PlaidItem @table {
+  id: UUID! @default(expr: "uuidV4()")
+  user: User!
+  # Plaid's unique item_id (e.g. "item_abc123")
+  plaidItemId: String! @unique
+  # Encrypted access token used server-side to call Plaid APIs
+  accessTokenEncrypted: String!
+  institutionId: String
+  institutionName: String!
+  # Cursor returned by Plaid's /transactions/sync for incremental syncs
+  syncCursor: String
+  # Connection status: "ACTIVE", "ERROR", "REQUIRES_REAUTH"
+  status: String! @default(value: "ACTIVE")
+  lastSyncedAt: Timestamp
+  createdAt: Timestamp! @default(expr: "request.time")
+}
+
+# A specific bank/credit account under a PlaidItem.
+type BankAccount @table {
+  id: UUID! @default(expr: "uuidV4()")
+  user: User!
+  plaidItem: PlaidItem!
+  familyMember: FamilyMember # Optional assignment to household member
+  # Plaid's account_id (e.g. "acc_xyz789")
+  plaidAccountId: String! @unique
+  name: String! # e.g. "Total Checking"
+  officialName: String # e.g. "CHASE TOTAL CHECKING"
+  mask: String # Last 4 digits e.g. "1234"
+  type: String! # "depository", "credit", "loan", "investment"
+  subtype: String # "checking", "savings", "credit card"
+  currentBalanceMinor: Int
+  availableBalanceMinor: Int
+  isoCurrencyCode: String @default(value: "USD")
+  isMuted: Boolean @default(expr: "false") # Option to ignore sync for this account
+  createdAt: Timestamp! @default(expr: "request.time")
 }
 
 # A named color scheme (e.g. "Ocean", "Forest") a user can pick in Settings.

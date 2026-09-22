@@ -52,6 +52,9 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*UpdateTransaction*](#updatetransaction)
   - [*UpdateTransactionClearCategory*](#updatetransactionclearcategory)
   - [*DeleteTransaction*](#deletetransaction)
+  - [*UpsertPlaidItem*](#upsertplaiditem)
+  - [*UpsertBankAccount*](#upsertbankaccount)
+  - [*SyncPlaidTransaction*](#syncplaidtransaction)
 
 # TanStack Query Firebase & TanStack React Query
 This SDK provides [React](https://react.dev/) hooks generated specific to your application, for the operations found in the connector `finance`. These hooks are generated using [TanStack Query Firebase](https://react-query-firebase.invertase.dev/) by our partners at Invertase, a library built on top of [TanStack React Query v5](https://tanstack.com/query/v5/docs/framework/react/overview).
@@ -800,6 +803,9 @@ export interface ListTransactionsByFamilyMemberData {
     merchant?: string | null;
     method?: string | null;
     recurrence?: string | null;
+    source: string;
+    status: string;
+    matchedTransactionId?: UUIDString | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -905,6 +911,9 @@ export interface ListMyTransactionsData {
     merchant?: string | null;
     method?: string | null;
     recurrence?: string | null;
+    source: string;
+    status: string;
+    matchedTransactionId?: UUIDString | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -1017,6 +1026,9 @@ export interface ListMyTransactionsByDateRangeData {
     merchant?: string | null;
     method?: string | null;
     recurrence?: string | null;
+    source: string;
+    status: string;
+    matchedTransactionId?: UUIDString | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -1122,6 +1134,9 @@ export interface GetTransactionData {
     merchant?: string | null;
     method?: string | null;
     recurrence?: string | null;
+    source: string;
+    status: string;
+    matchedTransactionId?: UUIDString | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -1245,6 +1260,7 @@ To execute the Mutation, call `UseMutationResult.mutate()`. This function execut
 To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `CreateUserFromGoogle` Mutation is of type `CreateUserFromGoogleData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 ```javascript
 export interface CreateUserFromGoogleData {
+  userType_upsert: UserType_Key;
   user_insert: User_Key;
 }
 ```
@@ -1309,6 +1325,7 @@ export default function CreateUserFromGoogleComponent() {
 
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
+    console.log(mutation.data.userType_upsert);
     console.log(mutation.data.user_insert);
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
@@ -3064,6 +3081,9 @@ export interface CreateTransactionVariables {
   method?: string | null;
   recurrence?: string | null;
   categoryName?: string | null;
+  source?: string | null;
+  status?: string | null;
+  matchedTransactionId?: UUIDString | null;
 }
 ```
 ### Return Type
@@ -3124,10 +3144,13 @@ export default function CreateTransactionComponent() {
     method: ..., // optional
     recurrence: ..., // optional
     categoryName: ..., // optional
+    source: ..., // optional
+    status: ..., // optional
+    matchedTransactionId: ..., // optional
   };
   mutation.mutate(createTransactionVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ userId: ..., familyMemberId: ..., amountMinor: ..., direction: ..., occurredOn: ..., createdAt: ..., description: ..., merchant: ..., method: ..., recurrence: ..., categoryName: ..., });
+  mutation.mutate({ userId: ..., familyMemberId: ..., amountMinor: ..., direction: ..., occurredOn: ..., createdAt: ..., description: ..., merchant: ..., method: ..., recurrence: ..., categoryName: ..., source: ..., status: ..., matchedTransactionId: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -3176,6 +3199,9 @@ export interface UpdateTransactionVariables {
   method?: string | null;
   recurrence?: string | null;
   categoryName?: string | null;
+  source?: string | null;
+  status?: string | null;
+  matchedTransactionId?: UUIDString | null;
 }
 ```
 ### Return Type
@@ -3234,10 +3260,13 @@ export default function UpdateTransactionComponent() {
     method: ..., // optional
     recurrence: ..., // optional
     categoryName: ..., // optional
+    source: ..., // optional
+    status: ..., // optional
+    matchedTransactionId: ..., // optional
   };
   mutation.mutate(updateTransactionVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ transactionId: ..., amountMinor: ..., direction: ..., occurredOn: ..., description: ..., merchant: ..., method: ..., recurrence: ..., categoryName: ..., });
+  mutation.mutate({ transactionId: ..., amountMinor: ..., direction: ..., occurredOn: ..., description: ..., merchant: ..., method: ..., recurrence: ..., categoryName: ..., source: ..., status: ..., matchedTransactionId: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -3285,6 +3314,9 @@ export interface UpdateTransactionClearCategoryVariables {
   merchant?: string | null;
   method?: string | null;
   recurrence?: string | null;
+  source?: string | null;
+  status?: string | null;
+  matchedTransactionId?: UUIDString | null;
 }
 ```
 ### Return Type
@@ -3342,10 +3374,13 @@ export default function UpdateTransactionClearCategoryComponent() {
     merchant: ..., // optional
     method: ..., // optional
     recurrence: ..., // optional
+    source: ..., // optional
+    status: ..., // optional
+    matchedTransactionId: ..., // optional
   };
   mutation.mutate(updateTransactionClearCategoryVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ transactionId: ..., amountMinor: ..., direction: ..., occurredOn: ..., description: ..., merchant: ..., method: ..., recurrence: ..., });
+  mutation.mutate({ transactionId: ..., amountMinor: ..., direction: ..., occurredOn: ..., description: ..., merchant: ..., method: ..., recurrence: ..., source: ..., status: ..., matchedTransactionId: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -3459,6 +3494,356 @@ export default function DeleteTransactionComponent() {
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
     console.log(mutation.data.transaction_delete);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## UpsertPlaidItem
+You can execute the `UpsertPlaidItem` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useUpsertPlaidItem(options?: useDataConnectMutationOptions<UpsertPlaidItemData, FirebaseError, UpsertPlaidItemVariables>): UseDataConnectMutationResult<UpsertPlaidItemData, UpsertPlaidItemVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useUpsertPlaidItem(dc: DataConnect, options?: useDataConnectMutationOptions<UpsertPlaidItemData, FirebaseError, UpsertPlaidItemVariables>): UseDataConnectMutationResult<UpsertPlaidItemData, UpsertPlaidItemVariables>;
+```
+
+### Variables
+The `UpsertPlaidItem` Mutation requires an argument of type `UpsertPlaidItemVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface UpsertPlaidItemVariables {
+  id: UUIDString;
+  userId: UUIDString;
+  plaidItemId: string;
+  accessTokenEncrypted: string;
+  institutionId?: string | null;
+  institutionName: string;
+  syncCursor?: string | null;
+  status?: string | null;
+}
+```
+### Return Type
+Recall that calling the `UpsertPlaidItem` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `UpsertPlaidItem` Mutation is of type `UpsertPlaidItemData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface UpsertPlaidItemData {
+  plaidItem_upsert: PlaidItem_Key;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `UpsertPlaidItem`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, UpsertPlaidItemVariables } from '@financeconnect/generated';
+import { useUpsertPlaidItem } from '@financeconnect/generated/react'
+
+export default function UpsertPlaidItemComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useUpsertPlaidItem();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useUpsertPlaidItem(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpsertPlaidItem(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpsertPlaidItem(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useUpsertPlaidItem` Mutation requires an argument of type `UpsertPlaidItemVariables`:
+  const upsertPlaidItemVars: UpsertPlaidItemVariables = {
+    id: ..., 
+    userId: ..., 
+    plaidItemId: ..., 
+    accessTokenEncrypted: ..., 
+    institutionId: ..., // optional
+    institutionName: ..., 
+    syncCursor: ..., // optional
+    status: ..., // optional
+  };
+  mutation.mutate(upsertPlaidItemVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ id: ..., userId: ..., plaidItemId: ..., accessTokenEncrypted: ..., institutionId: ..., institutionName: ..., syncCursor: ..., status: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(upsertPlaidItemVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.plaidItem_upsert);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## UpsertBankAccount
+You can execute the `UpsertBankAccount` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useUpsertBankAccount(options?: useDataConnectMutationOptions<UpsertBankAccountData, FirebaseError, UpsertBankAccountVariables>): UseDataConnectMutationResult<UpsertBankAccountData, UpsertBankAccountVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useUpsertBankAccount(dc: DataConnect, options?: useDataConnectMutationOptions<UpsertBankAccountData, FirebaseError, UpsertBankAccountVariables>): UseDataConnectMutationResult<UpsertBankAccountData, UpsertBankAccountVariables>;
+```
+
+### Variables
+The `UpsertBankAccount` Mutation requires an argument of type `UpsertBankAccountVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface UpsertBankAccountVariables {
+  id: UUIDString;
+  userId: UUIDString;
+  plaidItemId: UUIDString;
+  plaidAccountId: string;
+  name: string;
+  officialName?: string | null;
+  mask?: string | null;
+  type: string;
+  subtype?: string | null;
+  currentBalanceMinor?: number | null;
+  availableBalanceMinor?: number | null;
+  isoCurrencyCode?: string | null;
+  familyMemberId?: UUIDString | null;
+}
+```
+### Return Type
+Recall that calling the `UpsertBankAccount` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `UpsertBankAccount` Mutation is of type `UpsertBankAccountData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface UpsertBankAccountData {
+  bankAccount_upsert: BankAccount_Key;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `UpsertBankAccount`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, UpsertBankAccountVariables } from '@financeconnect/generated';
+import { useUpsertBankAccount } from '@financeconnect/generated/react'
+
+export default function UpsertBankAccountComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useUpsertBankAccount();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useUpsertBankAccount(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpsertBankAccount(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpsertBankAccount(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useUpsertBankAccount` Mutation requires an argument of type `UpsertBankAccountVariables`:
+  const upsertBankAccountVars: UpsertBankAccountVariables = {
+    id: ..., 
+    userId: ..., 
+    plaidItemId: ..., 
+    plaidAccountId: ..., 
+    name: ..., 
+    officialName: ..., // optional
+    mask: ..., // optional
+    type: ..., 
+    subtype: ..., // optional
+    currentBalanceMinor: ..., // optional
+    availableBalanceMinor: ..., // optional
+    isoCurrencyCode: ..., // optional
+    familyMemberId: ..., // optional
+  };
+  mutation.mutate(upsertBankAccountVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ id: ..., userId: ..., plaidItemId: ..., plaidAccountId: ..., name: ..., officialName: ..., mask: ..., type: ..., subtype: ..., currentBalanceMinor: ..., availableBalanceMinor: ..., isoCurrencyCode: ..., familyMemberId: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(upsertBankAccountVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.bankAccount_upsert);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## SyncPlaidTransaction
+You can execute the `SyncPlaidTransaction` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useSyncPlaidTransaction(options?: useDataConnectMutationOptions<SyncPlaidTransactionData, FirebaseError, SyncPlaidTransactionVariables>): UseDataConnectMutationResult<SyncPlaidTransactionData, SyncPlaidTransactionVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useSyncPlaidTransaction(dc: DataConnect, options?: useDataConnectMutationOptions<SyncPlaidTransactionData, FirebaseError, SyncPlaidTransactionVariables>): UseDataConnectMutationResult<SyncPlaidTransactionData, SyncPlaidTransactionVariables>;
+```
+
+### Variables
+The `SyncPlaidTransaction` Mutation requires an argument of type `SyncPlaidTransactionVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface SyncPlaidTransactionVariables {
+  transactionId: UUIDString;
+  userId: UUIDString;
+  familyMemberId: UUIDString;
+  bankAccountId?: UUIDString | null;
+  plaidTransactionId: string;
+  amountMinor: number;
+  direction: string;
+  occurredOn: DateString;
+  createdAt: TimestampString;
+  description?: string | null;
+  merchant?: string | null;
+  method?: string | null;
+  categoryName?: string | null;
+  plaidCategory?: string | null;
+  isPending?: boolean | null;
+  plaidPendingTransactionId?: string | null;
+}
+```
+### Return Type
+Recall that calling the `SyncPlaidTransaction` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `SyncPlaidTransaction` Mutation is of type `SyncPlaidTransactionData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface SyncPlaidTransactionData {
+  transaction_upsert: Transaction_Key;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `SyncPlaidTransaction`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, SyncPlaidTransactionVariables } from '@financeconnect/generated';
+import { useSyncPlaidTransaction } from '@financeconnect/generated/react'
+
+export default function SyncPlaidTransactionComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useSyncPlaidTransaction();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useSyncPlaidTransaction(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useSyncPlaidTransaction(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useSyncPlaidTransaction(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useSyncPlaidTransaction` Mutation requires an argument of type `SyncPlaidTransactionVariables`:
+  const syncPlaidTransactionVars: SyncPlaidTransactionVariables = {
+    transactionId: ..., 
+    userId: ..., 
+    familyMemberId: ..., 
+    bankAccountId: ..., // optional
+    plaidTransactionId: ..., 
+    amountMinor: ..., 
+    direction: ..., 
+    occurredOn: ..., 
+    createdAt: ..., 
+    description: ..., // optional
+    merchant: ..., // optional
+    method: ..., // optional
+    categoryName: ..., // optional
+    plaidCategory: ..., // optional
+    isPending: ..., // optional
+    plaidPendingTransactionId: ..., // optional
+  };
+  mutation.mutate(syncPlaidTransactionVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ transactionId: ..., userId: ..., familyMemberId: ..., bankAccountId: ..., plaidTransactionId: ..., amountMinor: ..., direction: ..., occurredOn: ..., createdAt: ..., description: ..., merchant: ..., method: ..., categoryName: ..., plaidCategory: ..., isPending: ..., plaidPendingTransactionId: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(syncPlaidTransactionVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.transaction_upsert);
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }

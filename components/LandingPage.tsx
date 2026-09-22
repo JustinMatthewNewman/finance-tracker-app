@@ -5,6 +5,7 @@ import { Button } from "@heroui/react";
 import { LogoGithub } from "@gravity-ui/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { loginWithGoogle } from "@/lib/auth";
+import { isPopupDismissal } from "@/lib/authErrors";
 import { useRouter } from "next/navigation";
 import MoneyGraphParticles from "@/components/MoneyGraphParticles";
 
@@ -59,6 +60,7 @@ export default function LandingPage() {
     const { user, loading } = useAuth();
     const router = useRouter();
     const [isWarping, setIsWarping] = useState(false);
+    const [loginError, setLoginError] = useState<string | null>(null);
 
     const handlePrimaryCTA = async () => {
         setIsWarping(true);
@@ -67,8 +69,22 @@ export default function LandingPage() {
             router.push("/household");
             return;
         }
-        await loginWithGoogle();
-        router.push("/household");
+        try {
+            await loginWithGoogle();
+            router.push("/household");
+        } catch (err) {
+            // Never route into the app on a failed sync — see the note in
+            // components/Navbar.tsx's handleLogin.
+            setIsWarping(false);
+            if (err instanceof Error && err.name === "UserSyncError") {
+                setLoginError(err.message);
+            } else if (isPopupDismissal(err)) {
+                // The person closed the popup. Not an error worth showing.
+            } else {
+                setLoginError("Could not sign in. Please try again.");
+            }
+            console.error("[auth] sign-in failed:", err);
+        }
     };
 
     // h-full rather than min-h-screen: the root layout already sizes this
@@ -95,6 +111,15 @@ export default function LandingPage() {
 
                     <p className="text-xs text-foreground/50 mt-4">No credit card required.</p>
 
+
+                    {loginError && (
+                        <p
+                            role="alert"
+                            className="pointer-events-auto mt-6 max-w-md rounded-lg border border-danger/30 bg-danger/10 px-4 py-2 text-sm text-danger"
+                        >
+                            {loginError}
+                        </p>
+                    )}
 
                     <div className="pointer-events-auto mt-10 flex flex-wrap items-center justify-center gap-3">
                         {loading ? (

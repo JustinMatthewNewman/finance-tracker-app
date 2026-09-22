@@ -23,6 +23,9 @@ import { fetchAllPages } from "@/lib/dataconnectPagination";
 import { normalizeHexColor } from "@/lib/entityColor";
 import { type Direction, type Minor, normalizeDirection } from "@/lib/money";
 
+export type TransactionSource = "MANUAL" | "PLAID" | "FORECAST";
+export type TransactionStatus = "POSTED" | "PENDING" | "FORECASTED" | "MATCHED";
+
 export interface TransactionCategoryRef {
   id: string;
   name: string;
@@ -41,6 +44,9 @@ export interface Transaction {
   merchant: string | null;
   method: string | null;
   recurrence: string | null;
+  source: TransactionSource;
+  status: TransactionStatus;
+  matchedTransactionId: string | null;
   createdAt: string;
   familyMemberId: string;
   familyMemberName: string;
@@ -55,6 +61,9 @@ export interface TransactionInput {
   merchant?: string | null;
   method?: string | null;
   recurrence?: string | null;
+  source?: TransactionSource;
+  status?: TransactionStatus;
+  matchedTransactionId?: string | null;
   /** Category name, or null/"" for uncategorized. Created if it doesn't exist. */
   categoryName?: string | null;
 }
@@ -70,6 +79,9 @@ type Row =
       merchant?: string | null;
       method?: string | null;
       recurrence?: string | null;
+      source?: string;
+      status?: string;
+      matchedTransactionId?: string | null;
       createdAt: string;
       familyMember: { id: string; name: string };
       category?: { id: string; name: string; kind: string; color?: string | null } | null;
@@ -93,6 +105,9 @@ export function toTransaction(row: Row): Transaction {
     merchant: row.merchant ?? null,
     method: row.method ?? null,
     recurrence: row.recurrence ?? null,
+    source: (row.source as TransactionSource) ?? "MANUAL",
+    status: (row.status as TransactionStatus) ?? "POSTED",
+    matchedTransactionId: row.matchedTransactionId ?? null,
     createdAt: row.createdAt,
     familyMemberId: row.familyMember.id,
     familyMemberName: row.familyMember.name,
@@ -190,6 +205,9 @@ export function useTransactions(familyMemberId: string | null) {
         method: data.method || undefined,
         recurrence: data.recurrence || undefined,
         categoryName: categoryName ?? undefined,
+        source: data.source || "MANUAL",
+        status: data.status || (data.source === "FORECAST" ? "FORECASTED" : "POSTED"),
+        matchedTransactionId: data.matchedTransactionId || undefined,
       } as CreateTransactionVariables);
 
       await refetch();
@@ -213,6 +231,9 @@ export function useTransactions(familyMemberId: string | null) {
           method: data.method ?? null,
           recurrence: data.recurrence ?? null,
           categoryName,
+          source: data.source || "MANUAL",
+          status: data.status || (data.source === "FORECAST" ? "FORECASTED" : "POSTED"),
+          matchedTransactionId: data.matchedTransactionId ?? null,
         } as UpdateTransactionVariables);
       } else {
         // Separate mutation, not `categoryName: null` on the one above — a
@@ -228,6 +249,9 @@ export function useTransactions(familyMemberId: string | null) {
           merchant: data.merchant ?? null,
           method: data.method ?? null,
           recurrence: data.recurrence ?? null,
+          source: data.source || "MANUAL",
+          status: data.status || (data.source === "FORECAST" ? "FORECASTED" : "POSTED"),
+          matchedTransactionId: data.matchedTransactionId ?? null,
         } as UpdateTransactionClearCategoryVariables);
       }
 
