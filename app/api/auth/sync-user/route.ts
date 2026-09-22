@@ -1,48 +1,81 @@
 // app/api/auth/sync-user/route.ts
 import { NextRequest, NextResponse } from "next/server";
-// Import the dynamic function instead of the static adminAuth constant
+// Imported dynamically at runtime inside getAdminAuth, not statically here —
+// see the note in lib/firebase-admin.ts.
 import { getAdminAuth } from "@/lib/firebase-admin";
-import { createUserFromGoogle } from "@/src/dataconnect-admin-generated"; 
+import {
+  createUserFromGoogle,
+  getUserAccessByGoogleUid,
+} from "@/src/dataconnect-admin-generated";
 
+/**
+ * Creates the signed-in account's `User` row, if it doesn't already exist.
+ *
+ * Called on every sign-in, and also whenever the app notices an authenticated
+ * session with no row behind it (see components/Utilities/UserRecordSync.tsx).
+ * It must therefore be idempotent and safe to call repeatedly.
+ *
+ * The uid comes from verifying the ID token, never from the request body — a
+ * caller must not be able to create or claim a row for somebody else's
+ * account.
+ */
 export async function POST(req: NextRequest) {
   try {
     const { idToken } = await req.json();
-    
-    // 1. Initialize Firebase Admin dynamically at runtime
+
+    if (typeof idToken !== "string" || !idToken) {
+      return NextResponse.json({ error: "Missing idToken" }, { status: 400 });
+    }
+
     const adminAuth = await getAdminAuth();
-    
-    // 2. Safely verify the token now that adminAuth is initialized
+
+    // Fails closed: an invalid or expired token throws and lands in the catch
+    // below as a 500 rather than creating anything.
     const decoded = await adminAuth.verifyIdToken(idToken);
-    
-    const firebaseUid = decoded.uid;
+
+    const googleUid = decoded.uid;
     const email = decoded.email ?? null;
     const username = decoded.name ?? email?.split("@")[0] ?? "User";
 
-    try {
-      // 1. Try to create the user record (Works perfectly for first-time sign-ups)
-      await createUserFromGoogle({
-        googleUid: firebaseUid,
-        username: username,
-        email: email ?? "",
-        createdAt: new Date().toISOString()
-      });
-    } catch (dbErr: any) {
-      // 2. Intercept the unique constraint check for returning users
-      const errMsg = dbErr.message || "";
-      if (errMsg.includes("user_googleUid_uidx") || errMsg.includes("unique constraint")) {
-        console.log(`[Sync] Returning user logged in: ${username} (${firebaseUid}).`);
-        // We gracefully swallow this error because the user already exists!
-      } else {
-        // If it's a completely different database error, raise the alarm
-        throw dbErr;
-      }
+    // Look first, then insert.
+    //
+    // This used to be insert-then-catch, deciding "already exists" by
+    // string-matching the Postgres error for `user_googleUid_uidx`. That
+    // works only for as long as nobody renames that index: the day it
+    // changes, every returning user's sign-in starts 500ing, and the failure
+    // would land on returning users rather than on whoever made the change.
+    // Asking the database whether the row exists has no such coupling.
+    const existing = await getUserAccessByGoogleUid({ googleUid });
+    if (existing.data.user) {
+      return NextResponse.json({ success: true, created: false });
     }
 
-    return NextResponse.json({ success: true, message: "Auth sync completed" });
-  } catch (err: any) {
-    console.error("SQL Connect Sync Error:", err);
+    try {
+      await createUserFromGoogle({
+        googleUid,
+        username,
+        email: email ?? "",
+        createdAt: new Date().toISOString(),
+      });
+    } catch (dbErr: unknown) {
+      // Backstop for the race the lookup above cannot close: two sign-ins for
+      // a brand-new account arriving together both see "no row" and both
+      // insert. The loser hits the unique constraint, and that is a success —
+      // the row it wanted exists. Any other database error is real and must
+      // propagate, so this stays a narrow check rather than a blanket catch.
+      const message = dbErr instanceof Error ? dbErr.message : String(dbErr);
+      if (!/unique constraint|already exists|duplicate key/i.test(message)) {
+        throw dbErr;
+      }
+      return NextResponse.json({ success: true, created: false });
+    }
+
+    return NextResponse.json({ success: true, created: true });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("[sync-user] failed:", message);
     return NextResponse.json(
-      { error: "Internal Server Error", details: err.message }, 
+      { error: "Internal Server Error", details: message },
       { status: 500 }
     );
   }

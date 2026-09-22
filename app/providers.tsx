@@ -18,6 +18,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useMemo } from "react";
 import DbThemeApplier from "@/components/Utilities/DbThemeApplier";
+import UserRecordSync from "@/components/Utilities/UserRecordSync";
 
 // ORDER MATTERS in one specific way: every preference provider below reads
 // its stored value from UserSettingsProvider, which owns the single shared
@@ -47,6 +48,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
                             <SidebarProvider>
                               <SelectedFamilyMemberProvider>
                                 <DbThemeApplier />
+                                <UserRecordSync />
                                 {children}
                               </SelectedFamilyMemberProvider>
                             </SidebarProvider>
