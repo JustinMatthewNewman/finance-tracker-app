@@ -30,7 +30,8 @@ mutation CreateUserFromGoogle(
   $email: String!
   $createdAt: Timestamp!
   $userTypeName: String! = "Regular"
-) @auth(level: NO_ACCESS) {
+) @auth(level: NO_ACCESS) @transaction {
+  userType_upsert(data: { name: $userTypeName })
   user_insert(data: {
     googleUid: $googleUid
     username: $username
@@ -285,6 +286,9 @@ mutation CreateTransaction(
   $method: String
   $recurrence: String
   $categoryName: String
+  $source: String = "MANUAL"
+  $status: String = "POSTED"
+  $matchedTransactionId: UUID
 ) @auth(level: USER) @transaction {
   query @redact {
     familyMember(key: { id: $familyMemberId }) {
@@ -306,6 +310,9 @@ mutation CreateTransaction(
     method: $method
     recurrence: $recurrence
     categoryName: $categoryName
+    source: $source
+    status: $status
+    matchedTransactionId: $matchedTransactionId
   })
 }
 
@@ -319,6 +326,9 @@ mutation UpdateTransaction(
   $method: String
   $recurrence: String
   $categoryName: String
+  $source: String = "MANUAL"
+  $status: String = "POSTED"
+  $matchedTransactionId: UUID
 ) @auth(level: USER) @transaction {
   query @redact {
     transaction(key: { id: $transactionId }) {
@@ -337,6 +347,9 @@ mutation UpdateTransaction(
     method: $method
     recurrence: $recurrence
     categoryName: $categoryName
+    source: $source
+    status: $status
+    matchedTransactionId: $matchedTransactionId
   })
 }
 
@@ -352,6 +365,9 @@ mutation UpdateTransactionClearCategory(
   $merchant: String
   $method: String
   $recurrence: String
+  $source: String = "MANUAL"
+  $status: String = "POSTED"
+  $matchedTransactionId: UUID
 ) @auth(level: USER) @transaction {
   query @redact {
     transaction(key: { id: $transactionId }) {
@@ -370,6 +386,9 @@ mutation UpdateTransactionClearCategory(
     method: $method
     recurrence: $recurrence
     categoryName: null
+    source: $source
+    status: $status
+    matchedTransactionId: $matchedTransactionId
   })
 }
 
@@ -386,4 +405,100 @@ mutation DeleteTransaction($transactionId: UUID!) @auth(level: USER) @transactio
     }
   }
   transaction_delete(id: $transactionId)
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Plaid Integration Mutations
+# ─────────────────────────────────────────────────────────────────────────────
+
+mutation UpsertPlaidItem(
+  $id: UUID!
+  $userId: UUID!
+  $plaidItemId: String!
+  $accessTokenEncrypted: String!
+  $institutionId: String
+  $institutionName: String!
+  $syncCursor: String
+  $status: String = "ACTIVE"
+) @auth(level: USER) {
+  plaidItem_upsert(data: {
+    id: $id
+    userId: $userId
+    plaidItemId: $plaidItemId
+    accessTokenEncrypted: $accessTokenEncrypted
+    institutionId: $institutionId
+    institutionName: $institutionName
+    syncCursor: $syncCursor
+    status: $status
+  })
+}
+
+mutation UpsertBankAccount(
+  $id: UUID!
+  $userId: UUID!
+  $plaidItemId: UUID!
+  $plaidAccountId: String!
+  $name: String!
+  $officialName: String
+  $mask: String
+  $type: String!
+  $subtype: String
+  $currentBalanceMinor: Int
+  $availableBalanceMinor: Int
+  $isoCurrencyCode: String = "USD"
+  $familyMemberId: UUID
+) @auth(level: USER) {
+  bankAccount_upsert(data: {
+    id: $id
+    userId: $userId
+    plaidItemId: $plaidItemId
+    plaidAccountId: $plaidAccountId
+    name: $name
+    officialName: $officialName
+    mask: $mask
+    type: $type
+    subtype: $subtype
+    currentBalanceMinor: $currentBalanceMinor
+    availableBalanceMinor: $availableBalanceMinor
+    isoCurrencyCode: $isoCurrencyCode
+    familyMemberId: $familyMemberId
+  })
+}
+
+mutation SyncPlaidTransaction(
+  $transactionId: UUID!
+  $userId: UUID!
+  $familyMemberId: UUID!
+  $bankAccountId: UUID
+  $plaidTransactionId: String!
+  $amountMinor: Int!
+  $direction: String!
+  $occurredOn: Date!
+  $createdAt: Timestamp!
+  $description: String
+  $merchant: String
+  $method: String
+  $categoryName: String
+  $plaidCategory: String
+  $isPending: Boolean = false
+  $plaidPendingTransactionId: String
+) @auth(level: USER) {
+  transaction_upsert(data: {
+    id: $transactionId
+    userId: $userId
+    familyMemberId: $familyMemberId
+    bankAccountId: $bankAccountId
+    plaidTransactionId: $plaidTransactionId
+    amountMinor: $amountMinor
+    direction: $direction
+    occurredOn: $occurredOn
+    createdAt: $createdAt
+    description: $description
+    merchant: $merchant
+    method: $method
+    categoryName: $categoryName
+    plaidCategory: $plaidCategory
+    isPending: $isPending
+    plaidPendingTransactionId: $plaidPendingTransactionId
+  })
 }

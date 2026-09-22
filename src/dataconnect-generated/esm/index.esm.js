@@ -286,6 +286,42 @@ export function deleteTransaction(dcOrVars, vars) {
   return executeMutation(deleteTransactionRef(dcInstance, inputVars));
 }
 
+export const upsertPlaidItemRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpsertPlaidItem', inputVars);
+}
+upsertPlaidItemRef.operationName = 'UpsertPlaidItem';
+
+export function upsertPlaidItem(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertPlaidItemRef(dcInstance, inputVars));
+}
+
+export const upsertBankAccountRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpsertBankAccount', inputVars);
+}
+upsertBankAccountRef.operationName = 'UpsertBankAccount';
+
+export function upsertBankAccount(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertBankAccountRef(dcInstance, inputVars));
+}
+
+export const syncPlaidTransactionRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'SyncPlaidTransaction', inputVars);
+}
+syncPlaidTransactionRef.operationName = 'SyncPlaidTransaction';
+
+export function syncPlaidTransaction(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(syncPlaidTransactionRef(dcInstance, inputVars));
+}
+
 export const listUsersRef = (dc) => {
   const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
   dcInstance._useGeneratedSdk();

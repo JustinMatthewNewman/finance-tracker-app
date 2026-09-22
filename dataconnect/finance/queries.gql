@@ -182,6 +182,9 @@ query ListTransactionsByFamilyMember(
     merchant
     method
     recurrence
+    source
+    status
+    matchedTransactionId
     createdAt
     familyMember {
       id
@@ -213,6 +216,9 @@ query ListMyTransactions($limit: Int = 500, $offset: Int = 0) @auth(level: USER)
     merchant
     method
     recurrence
+    source
+    status
+    matchedTransactionId
     createdAt
     familyMember {
       id
@@ -252,6 +258,9 @@ query ListMyTransactionsByDateRange(
     merchant
     method
     recurrence
+    source
+    status
+    matchedTransactionId
     createdAt
     familyMember {
       id
@@ -276,6 +285,9 @@ query GetTransaction($transactionId: UUID!) @auth(level: USER) {
     merchant
     method
     recurrence
+    source
+    status
+    matchedTransactionId
     createdAt
     familyMember {
       id

@@ -1,3 +1,246 @@
+extend type BankAccount {
+  """
+  ✨ List `Transaction` objects in a one-to-many relationship (where `Transaction`.`bankAccount` is this object).
+  """
+  transactions_on_bankAccount(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Transaction_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Transaction_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Transaction_Having
+  ): [Transaction!]! @fdc_generated(from: "Transaction.bankAccount", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "BankAccount", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `BankAccount` table.
+  """
+  _count: Int! @fdc_generated(from: "BankAccount.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `BankAccount` table where the `availableBalanceMinor` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  availableBalanceMinor_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "BankAccount.availableBalanceMinor", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `BankAccount` table where the `createdAt` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  createdAt_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "BankAccount.createdAt", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `BankAccount` table where the `currentBalanceMinor` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  currentBalanceMinor_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "BankAccount.currentBalanceMinor", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `BankAccount` table where the `familyMemberId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  familyMemberId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "BankAccount.familyMemberId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `BankAccount` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "BankAccount.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `BankAccount` table where the `isMuted` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  isMuted_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "BankAccount.isMuted", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `BankAccount` table where the `isoCurrencyCode` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  isoCurrencyCode_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "BankAccount.isoCurrencyCode", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `BankAccount` table where the `mask` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  mask_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "BankAccount.mask", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `BankAccount` table where the `name` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  name_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "BankAccount.name", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `BankAccount` table where the `officialName` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  officialName_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "BankAccount.officialName", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `BankAccount` table where the `plaidAccountId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  plaidAccountId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "BankAccount.plaidAccountId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `BankAccount` table where the `plaidItemId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  plaidItemId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "BankAccount.plaidItemId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `BankAccount` table where the `subtype` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  subtype_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "BankAccount.subtype", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `BankAccount` table where the `type` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  type_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "BankAccount.type", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `BankAccount` table where the `userId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  userId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "BankAccount.userId", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `availableBalanceMinor` field in the `BankAccount` table.
+  """
+  availableBalanceMinor_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "BankAccount.availableBalanceMinor", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `currentBalanceMinor` field in the `BankAccount` table.
+  """
+  currentBalanceMinor_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "BankAccount.currentBalanceMinor", purpose: QUERY_SUM)
+  """
+  ✨ Average the `availableBalanceMinor` field in the `BankAccount` table.
+  """
+  availableBalanceMinor_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "BankAccount.availableBalanceMinor", purpose: QUERY_AVG)
+  """
+  ✨ Average the `currentBalanceMinor` field in the `BankAccount` table.
+  """
+  currentBalanceMinor_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "BankAccount.currentBalanceMinor", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `availableBalanceMinor` field in the `BankAccount` table.
+  """
+  availableBalanceMinor_min: Int @fdc_generated(from: "BankAccount.availableBalanceMinor", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `createdAt` field in the `BankAccount` table.
+  """
+  createdAt_min: Timestamp @fdc_generated(from: "BankAccount.createdAt", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `currentBalanceMinor` field in the `BankAccount` table.
+  """
+  currentBalanceMinor_min: Int @fdc_generated(from: "BankAccount.currentBalanceMinor", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `availableBalanceMinor` field in the `BankAccount` table.
+  """
+  availableBalanceMinor_max: Int @fdc_generated(from: "BankAccount.availableBalanceMinor", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `createdAt` field in the `BankAccount` table.
+  """
+  createdAt_max: Timestamp @fdc_generated(from: "BankAccount.createdAt", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `currentBalanceMinor` field in the `BankAccount` table.
+  """
+  currentBalanceMinor_max: Int @fdc_generated(from: "BankAccount.currentBalanceMinor", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "BankAccount.id", purpose: ENTITY_ID)
+}
 extend type Category {
   """
   ✨ List `Transaction` objects in a one-to-many relationship (where `Transaction`.`category` is this object).
@@ -226,6 +469,40 @@ extend type ColorScheme {
   _id: ID! @fdc_generated(from: "ColorScheme.id", purpose: ENTITY_ID)
 }
 extend type FamilyMember {
+  """
+  ✨ List `BankAccount` objects in a one-to-many relationship (where `BankAccount`.`familyMember` is this object).
+  """
+  bankAccounts_on_familyMember(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: BankAccount_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [BankAccount_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: BankAccount_Having
+  ): [BankAccount!]! @fdc_generated(from: "BankAccount.familyMember", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
   ✨ List `Transaction` objects in a one-to-many relationship (where `Transaction`.`familyMember` is this object).
   """
@@ -514,6 +791,160 @@ extend type Feature {
   """
   _id: ID! @fdc_generated(from: "Feature.name", purpose: ENTITY_ID)
 }
+extend type PlaidItem {
+  """
+  ✨ List `BankAccount` objects in a one-to-many relationship (where `BankAccount`.`plaidItem` is this object).
+  """
+  bankAccounts_on_plaidItem(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: BankAccount_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [BankAccount_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: BankAccount_Having
+  ): [BankAccount!]! @fdc_generated(from: "BankAccount.plaidItem", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "PlaidItem", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `PlaidItem` table.
+  """
+  _count: Int! @fdc_generated(from: "PlaidItem.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PlaidItem` table where the `accessTokenEncrypted` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  accessTokenEncrypted_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PlaidItem.accessTokenEncrypted", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PlaidItem` table where the `createdAt` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  createdAt_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PlaidItem.createdAt", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PlaidItem` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PlaidItem.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PlaidItem` table where the `institutionId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  institutionId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PlaidItem.institutionId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PlaidItem` table where the `institutionName` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  institutionName_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PlaidItem.institutionName", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PlaidItem` table where the `lastSyncedAt` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  lastSyncedAt_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PlaidItem.lastSyncedAt", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PlaidItem` table where the `plaidItemId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  plaidItemId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PlaidItem.plaidItemId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PlaidItem` table where the `status` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  status_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PlaidItem.status", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PlaidItem` table where the `syncCursor` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  syncCursor_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PlaidItem.syncCursor", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `PlaidItem` table where the `userId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  userId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "PlaidItem.userId", purpose: QUERY_COUNT)
+  """
+  ✨ Minimum of the `createdAt` field in the `PlaidItem` table.
+  """
+  createdAt_min: Timestamp @fdc_generated(from: "PlaidItem.createdAt", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `lastSyncedAt` field in the `PlaidItem` table.
+  """
+  lastSyncedAt_min: Timestamp @fdc_generated(from: "PlaidItem.lastSyncedAt", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `createdAt` field in the `PlaidItem` table.
+  """
+  createdAt_max: Timestamp @fdc_generated(from: "PlaidItem.createdAt", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `lastSyncedAt` field in the `PlaidItem` table.
+  """
+  lastSyncedAt_max: Timestamp @fdc_generated(from: "PlaidItem.lastSyncedAt", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "PlaidItem.id", purpose: ENTITY_ID)
+}
 extend type Theme {
   """
   Implicit metadata field that cannot be written. It provides extra information about query results.
@@ -708,6 +1139,15 @@ extend type Transaction {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Transaction.amountMinor", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Transaction` table where the `bankAccountId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  bankAccountId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Transaction.bankAccountId", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Transaction` table where the `categoryName` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   categoryName_count(
@@ -762,6 +1202,24 @@ extend type Transaction {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Transaction.id", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Transaction` table where the `isPending` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  isPending_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Transaction.isPending", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Transaction` table where the `matchedTransactionId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  matchedTransactionId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Transaction.matchedTransactionId", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Transaction` table where the `merchant` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   merchant_count(
@@ -789,6 +1247,33 @@ extend type Transaction {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Transaction.occurredOn", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Transaction` table where the `plaidCategory` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  plaidCategory_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Transaction.plaidCategory", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Transaction` table where the `plaidPendingTransactionId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  plaidPendingTransactionId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Transaction.plaidPendingTransactionId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Transaction` table where the `plaidTransactionId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  plaidTransactionId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Transaction.plaidTransactionId", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Transaction` table where the `recurrence` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   recurrence_count(
@@ -797,6 +1282,24 @@ extend type Transaction {
     """
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Transaction.recurrence", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Transaction` table where the `source` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  source_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Transaction.source", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Transaction` table where the `status` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  status_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Transaction.status", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `Transaction` table where the `userId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -855,6 +1358,40 @@ extend type Transaction {
 }
 extend type User {
   """
+  ✨ List `BankAccount` objects in a one-to-many relationship (where `BankAccount`.`user` is this object).
+  """
+  bankAccounts_on_user(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: BankAccount_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [BankAccount_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: BankAccount_Having
+  ): [BankAccount!]! @fdc_generated(from: "BankAccount.user", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
   ✨ List `FamilyMember` objects in a one-to-many relationship (where `FamilyMember`.`user` is this object).
   """
   familyMembers_on_user(
@@ -888,6 +1425,40 @@ extend type User {
     """
     having: FamilyMember_Having
   ): [FamilyMember!]! @fdc_generated(from: "FamilyMember.user", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `PlaidItem` objects in a one-to-many relationship (where `PlaidItem`.`user` is this object).
+  """
+  plaidItems_on_user(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: PlaidItem_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [PlaidItem_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: PlaidItem_Having
+  ): [PlaidItem!]! @fdc_generated(from: "PlaidItem.user", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
   ✨ List `Transaction` objects in a one-to-many relationship (where `Transaction`.`user` is this object).
   """

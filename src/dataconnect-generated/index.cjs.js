@@ -335,6 +335,48 @@ exports.deleteTransaction = function deleteTransaction(dcOrVars, vars) {
 }
 ;
 
+const upsertPlaidItemRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpsertPlaidItem', inputVars);
+}
+upsertPlaidItemRef.operationName = 'UpsertPlaidItem';
+exports.upsertPlaidItemRef = upsertPlaidItemRef;
+
+exports.upsertPlaidItem = function upsertPlaidItem(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertPlaidItemRef(dcInstance, inputVars));
+}
+;
+
+const upsertBankAccountRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpsertBankAccount', inputVars);
+}
+upsertBankAccountRef.operationName = 'UpsertBankAccount';
+exports.upsertBankAccountRef = upsertBankAccountRef;
+
+exports.upsertBankAccount = function upsertBankAccount(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(upsertBankAccountRef(dcInstance, inputVars));
+}
+;
+
+const syncPlaidTransactionRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'SyncPlaidTransaction', inputVars);
+}
+syncPlaidTransactionRef.operationName = 'SyncPlaidTransaction';
+exports.syncPlaidTransactionRef = syncPlaidTransactionRef;
+
+exports.syncPlaidTransaction = function syncPlaidTransaction(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(syncPlaidTransactionRef(dcInstance, inputVars));
+}
+;
+
 const listUsersRef = (dc) => {
   const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
   dcInstance._useGeneratedSdk();

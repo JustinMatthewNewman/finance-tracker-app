@@ -45,6 +45,9 @@ This README will guide you through the process of using the generated JavaScript
   - [*UpdateTransaction*](#updatetransaction)
   - [*UpdateTransactionClearCategory*](#updatetransactionclearcategory)
   - [*DeleteTransaction*](#deletetransaction)
+  - [*UpsertPlaidItem*](#upsertplaiditem)
+  - [*UpsertBankAccount*](#upsertbankaccount)
+  - [*SyncPlaidTransaction*](#syncplaidtransaction)
 
 # Accessing the connector
 A connector is a collection of Queries and Mutations. One SDK is generated for each connector - this SDK is generated for the connector `finance`. You can find more information about connectors in the [Data Connect documentation](https://firebase.google.com/docs/data-connect#how-does).
@@ -931,6 +934,9 @@ export interface ListTransactionsByFamilyMemberData {
     merchant?: string | null;
     method?: string | null;
     recurrence?: string | null;
+    source: string;
+    status: string;
+    matchedTransactionId?: UUIDString | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -1065,6 +1071,9 @@ export interface ListMyTransactionsData {
     merchant?: string | null;
     method?: string | null;
     recurrence?: string | null;
+    source: string;
+    status: string;
+    matchedTransactionId?: UUIDString | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -1203,6 +1212,9 @@ export interface ListMyTransactionsByDateRangeData {
     merchant?: string | null;
     method?: string | null;
     recurrence?: string | null;
+    source: string;
+    status: string;
+    matchedTransactionId?: UUIDString | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -1338,6 +1350,9 @@ export interface GetTransactionData {
     merchant?: string | null;
     method?: string | null;
     recurrence?: string | null;
+    source: string;
+    status: string;
+    matchedTransactionId?: UUIDString | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -1477,6 +1492,7 @@ Recall that executing the `CreateUserFromGoogle` mutation returns a `MutationPro
 The `data` property is an object of type `CreateUserFromGoogleData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
 ```typescript
 export interface CreateUserFromGoogleData {
+  userType_upsert: UserType_Key;
   user_insert: User_Key;
 }
 ```
@@ -1505,11 +1521,13 @@ const { data } = await createUserFromGoogle({ googleUid: ..., username: ..., ema
 const dataConnect = getDataConnect(connectorConfig);
 const { data } = await createUserFromGoogle(dataConnect, createUserFromGoogleVars);
 
+console.log(data.userType_upsert);
 console.log(data.user_insert);
 
 // Or, you can use the `Promise` API.
 createUserFromGoogle(createUserFromGoogleVars).then((response) => {
   const data = response.data;
+  console.log(data.userType_upsert);
   console.log(data.user_insert);
 });
 ```
@@ -1542,11 +1560,13 @@ const ref = createUserFromGoogleRef(dataConnect, createUserFromGoogleVars);
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await executeMutation(ref);
 
+console.log(data.userType_upsert);
 console.log(data.user_insert);
 
 // Or, you can use the `Promise` API.
 executeMutation(ref).then((response) => {
   const data = response.data;
+  console.log(data.userType_upsert);
   console.log(data.user_insert);
 });
 ```
@@ -3601,6 +3621,9 @@ export interface CreateTransactionVariables {
   method?: string | null;
   recurrence?: string | null;
   categoryName?: string | null;
+  source?: string | null;
+  status?: string | null;
+  matchedTransactionId?: UUIDString | null;
 }
 ```
 ### Return Type
@@ -3631,13 +3654,16 @@ const createTransactionVars: CreateTransactionVariables = {
   method: ..., // optional
   recurrence: ..., // optional
   categoryName: ..., // optional
+  source: ..., // optional
+  status: ..., // optional
+  matchedTransactionId: ..., // optional
 };
 
 // Call the `createTransaction()` function to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await createTransaction(createTransactionVars);
 // Variables can be defined inline as well.
-const { data } = await createTransaction({ userId: ..., familyMemberId: ..., amountMinor: ..., direction: ..., occurredOn: ..., createdAt: ..., description: ..., merchant: ..., method: ..., recurrence: ..., categoryName: ..., });
+const { data } = await createTransaction({ userId: ..., familyMemberId: ..., amountMinor: ..., direction: ..., occurredOn: ..., createdAt: ..., description: ..., merchant: ..., method: ..., recurrence: ..., categoryName: ..., source: ..., status: ..., matchedTransactionId: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -3671,12 +3697,15 @@ const createTransactionVars: CreateTransactionVariables = {
   method: ..., // optional
   recurrence: ..., // optional
   categoryName: ..., // optional
+  source: ..., // optional
+  status: ..., // optional
+  matchedTransactionId: ..., // optional
 };
 
 // Call the `createTransactionRef()` function to get a reference to the mutation.
 const ref = createTransactionRef(createTransactionVars);
 // Variables can be defined inline as well.
-const ref = createTransactionRef({ userId: ..., familyMemberId: ..., amountMinor: ..., direction: ..., occurredOn: ..., createdAt: ..., description: ..., merchant: ..., method: ..., recurrence: ..., categoryName: ..., });
+const ref = createTransactionRef({ userId: ..., familyMemberId: ..., amountMinor: ..., direction: ..., occurredOn: ..., createdAt: ..., description: ..., merchant: ..., method: ..., recurrence: ..., categoryName: ..., source: ..., status: ..., matchedTransactionId: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -3738,6 +3767,9 @@ export interface UpdateTransactionVariables {
   method?: string | null;
   recurrence?: string | null;
   categoryName?: string | null;
+  source?: string | null;
+  status?: string | null;
+  matchedTransactionId?: UUIDString | null;
 }
 ```
 ### Return Type
@@ -3766,13 +3798,16 @@ const updateTransactionVars: UpdateTransactionVariables = {
   method: ..., // optional
   recurrence: ..., // optional
   categoryName: ..., // optional
+  source: ..., // optional
+  status: ..., // optional
+  matchedTransactionId: ..., // optional
 };
 
 // Call the `updateTransaction()` function to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await updateTransaction(updateTransactionVars);
 // Variables can be defined inline as well.
-const { data } = await updateTransaction({ transactionId: ..., amountMinor: ..., direction: ..., occurredOn: ..., description: ..., merchant: ..., method: ..., recurrence: ..., categoryName: ..., });
+const { data } = await updateTransaction({ transactionId: ..., amountMinor: ..., direction: ..., occurredOn: ..., description: ..., merchant: ..., method: ..., recurrence: ..., categoryName: ..., source: ..., status: ..., matchedTransactionId: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -3804,12 +3839,15 @@ const updateTransactionVars: UpdateTransactionVariables = {
   method: ..., // optional
   recurrence: ..., // optional
   categoryName: ..., // optional
+  source: ..., // optional
+  status: ..., // optional
+  matchedTransactionId: ..., // optional
 };
 
 // Call the `updateTransactionRef()` function to get a reference to the mutation.
 const ref = updateTransactionRef(updateTransactionVars);
 // Variables can be defined inline as well.
-const ref = updateTransactionRef({ transactionId: ..., amountMinor: ..., direction: ..., occurredOn: ..., description: ..., merchant: ..., method: ..., recurrence: ..., categoryName: ..., });
+const ref = updateTransactionRef({ transactionId: ..., amountMinor: ..., direction: ..., occurredOn: ..., description: ..., merchant: ..., method: ..., recurrence: ..., categoryName: ..., source: ..., status: ..., matchedTransactionId: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -3870,6 +3908,9 @@ export interface UpdateTransactionClearCategoryVariables {
   merchant?: string | null;
   method?: string | null;
   recurrence?: string | null;
+  source?: string | null;
+  status?: string | null;
+  matchedTransactionId?: UUIDString | null;
 }
 ```
 ### Return Type
@@ -3897,13 +3938,16 @@ const updateTransactionClearCategoryVars: UpdateTransactionClearCategoryVariable
   merchant: ..., // optional
   method: ..., // optional
   recurrence: ..., // optional
+  source: ..., // optional
+  status: ..., // optional
+  matchedTransactionId: ..., // optional
 };
 
 // Call the `updateTransactionClearCategory()` function to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await updateTransactionClearCategory(updateTransactionClearCategoryVars);
 // Variables can be defined inline as well.
-const { data } = await updateTransactionClearCategory({ transactionId: ..., amountMinor: ..., direction: ..., occurredOn: ..., description: ..., merchant: ..., method: ..., recurrence: ..., });
+const { data } = await updateTransactionClearCategory({ transactionId: ..., amountMinor: ..., direction: ..., occurredOn: ..., description: ..., merchant: ..., method: ..., recurrence: ..., source: ..., status: ..., matchedTransactionId: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -3934,12 +3978,15 @@ const updateTransactionClearCategoryVars: UpdateTransactionClearCategoryVariable
   merchant: ..., // optional
   method: ..., // optional
   recurrence: ..., // optional
+  source: ..., // optional
+  status: ..., // optional
+  matchedTransactionId: ..., // optional
 };
 
 // Call the `updateTransactionClearCategoryRef()` function to get a reference to the mutation.
 const ref = updateTransactionClearCategoryRef(updateTransactionClearCategoryVars);
 // Variables can be defined inline as well.
-const ref = updateTransactionClearCategoryRef({ transactionId: ..., amountMinor: ..., direction: ..., occurredOn: ..., description: ..., merchant: ..., method: ..., recurrence: ..., });
+const ref = updateTransactionClearCategoryRef({ transactionId: ..., amountMinor: ..., direction: ..., occurredOn: ..., description: ..., merchant: ..., method: ..., recurrence: ..., source: ..., status: ..., matchedTransactionId: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -4064,6 +4111,435 @@ console.log(data.transaction_delete);
 executeMutation(ref).then((response) => {
   const data = response.data;
   console.log(data.transaction_delete);
+});
+```
+
+## UpsertPlaidItem
+You can execute the `UpsertPlaidItem` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+upsertPlaidItem(vars: UpsertPlaidItemVariables): MutationPromise<UpsertPlaidItemData, UpsertPlaidItemVariables>;
+
+interface UpsertPlaidItemRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpsertPlaidItemVariables): MutationRef<UpsertPlaidItemData, UpsertPlaidItemVariables>;
+}
+export const upsertPlaidItemRef: UpsertPlaidItemRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+upsertPlaidItem(dc: DataConnect, vars: UpsertPlaidItemVariables): MutationPromise<UpsertPlaidItemData, UpsertPlaidItemVariables>;
+
+interface UpsertPlaidItemRef {
+  ...
+  (dc: DataConnect, vars: UpsertPlaidItemVariables): MutationRef<UpsertPlaidItemData, UpsertPlaidItemVariables>;
+}
+export const upsertPlaidItemRef: UpsertPlaidItemRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the upsertPlaidItemRef:
+```typescript
+const name = upsertPlaidItemRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UpsertPlaidItem` mutation requires an argument of type `UpsertPlaidItemVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UpsertPlaidItemVariables {
+  id: UUIDString;
+  userId: UUIDString;
+  plaidItemId: string;
+  accessTokenEncrypted: string;
+  institutionId?: string | null;
+  institutionName: string;
+  syncCursor?: string | null;
+  status?: string | null;
+}
+```
+### Return Type
+Recall that executing the `UpsertPlaidItem` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UpsertPlaidItemData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UpsertPlaidItemData {
+  plaidItem_upsert: PlaidItem_Key;
+}
+```
+### Using `UpsertPlaidItem`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, upsertPlaidItem, UpsertPlaidItemVariables } from '@financeconnect/generated';
+
+// The `UpsertPlaidItem` mutation requires an argument of type `UpsertPlaidItemVariables`:
+const upsertPlaidItemVars: UpsertPlaidItemVariables = {
+  id: ..., 
+  userId: ..., 
+  plaidItemId: ..., 
+  accessTokenEncrypted: ..., 
+  institutionId: ..., // optional
+  institutionName: ..., 
+  syncCursor: ..., // optional
+  status: ..., // optional
+};
+
+// Call the `upsertPlaidItem()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await upsertPlaidItem(upsertPlaidItemVars);
+// Variables can be defined inline as well.
+const { data } = await upsertPlaidItem({ id: ..., userId: ..., plaidItemId: ..., accessTokenEncrypted: ..., institutionId: ..., institutionName: ..., syncCursor: ..., status: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await upsertPlaidItem(dataConnect, upsertPlaidItemVars);
+
+console.log(data.plaidItem_upsert);
+
+// Or, you can use the `Promise` API.
+upsertPlaidItem(upsertPlaidItemVars).then((response) => {
+  const data = response.data;
+  console.log(data.plaidItem_upsert);
+});
+```
+
+### Using `UpsertPlaidItem`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, upsertPlaidItemRef, UpsertPlaidItemVariables } from '@financeconnect/generated';
+
+// The `UpsertPlaidItem` mutation requires an argument of type `UpsertPlaidItemVariables`:
+const upsertPlaidItemVars: UpsertPlaidItemVariables = {
+  id: ..., 
+  userId: ..., 
+  plaidItemId: ..., 
+  accessTokenEncrypted: ..., 
+  institutionId: ..., // optional
+  institutionName: ..., 
+  syncCursor: ..., // optional
+  status: ..., // optional
+};
+
+// Call the `upsertPlaidItemRef()` function to get a reference to the mutation.
+const ref = upsertPlaidItemRef(upsertPlaidItemVars);
+// Variables can be defined inline as well.
+const ref = upsertPlaidItemRef({ id: ..., userId: ..., plaidItemId: ..., accessTokenEncrypted: ..., institutionId: ..., institutionName: ..., syncCursor: ..., status: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = upsertPlaidItemRef(dataConnect, upsertPlaidItemVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.plaidItem_upsert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.plaidItem_upsert);
+});
+```
+
+## UpsertBankAccount
+You can execute the `UpsertBankAccount` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+upsertBankAccount(vars: UpsertBankAccountVariables): MutationPromise<UpsertBankAccountData, UpsertBankAccountVariables>;
+
+interface UpsertBankAccountRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpsertBankAccountVariables): MutationRef<UpsertBankAccountData, UpsertBankAccountVariables>;
+}
+export const upsertBankAccountRef: UpsertBankAccountRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+upsertBankAccount(dc: DataConnect, vars: UpsertBankAccountVariables): MutationPromise<UpsertBankAccountData, UpsertBankAccountVariables>;
+
+interface UpsertBankAccountRef {
+  ...
+  (dc: DataConnect, vars: UpsertBankAccountVariables): MutationRef<UpsertBankAccountData, UpsertBankAccountVariables>;
+}
+export const upsertBankAccountRef: UpsertBankAccountRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the upsertBankAccountRef:
+```typescript
+const name = upsertBankAccountRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UpsertBankAccount` mutation requires an argument of type `UpsertBankAccountVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UpsertBankAccountVariables {
+  id: UUIDString;
+  userId: UUIDString;
+  plaidItemId: UUIDString;
+  plaidAccountId: string;
+  name: string;
+  officialName?: string | null;
+  mask?: string | null;
+  type: string;
+  subtype?: string | null;
+  currentBalanceMinor?: number | null;
+  availableBalanceMinor?: number | null;
+  isoCurrencyCode?: string | null;
+  familyMemberId?: UUIDString | null;
+}
+```
+### Return Type
+Recall that executing the `UpsertBankAccount` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UpsertBankAccountData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UpsertBankAccountData {
+  bankAccount_upsert: BankAccount_Key;
+}
+```
+### Using `UpsertBankAccount`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, upsertBankAccount, UpsertBankAccountVariables } from '@financeconnect/generated';
+
+// The `UpsertBankAccount` mutation requires an argument of type `UpsertBankAccountVariables`:
+const upsertBankAccountVars: UpsertBankAccountVariables = {
+  id: ..., 
+  userId: ..., 
+  plaidItemId: ..., 
+  plaidAccountId: ..., 
+  name: ..., 
+  officialName: ..., // optional
+  mask: ..., // optional
+  type: ..., 
+  subtype: ..., // optional
+  currentBalanceMinor: ..., // optional
+  availableBalanceMinor: ..., // optional
+  isoCurrencyCode: ..., // optional
+  familyMemberId: ..., // optional
+};
+
+// Call the `upsertBankAccount()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await upsertBankAccount(upsertBankAccountVars);
+// Variables can be defined inline as well.
+const { data } = await upsertBankAccount({ id: ..., userId: ..., plaidItemId: ..., plaidAccountId: ..., name: ..., officialName: ..., mask: ..., type: ..., subtype: ..., currentBalanceMinor: ..., availableBalanceMinor: ..., isoCurrencyCode: ..., familyMemberId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await upsertBankAccount(dataConnect, upsertBankAccountVars);
+
+console.log(data.bankAccount_upsert);
+
+// Or, you can use the `Promise` API.
+upsertBankAccount(upsertBankAccountVars).then((response) => {
+  const data = response.data;
+  console.log(data.bankAccount_upsert);
+});
+```
+
+### Using `UpsertBankAccount`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, upsertBankAccountRef, UpsertBankAccountVariables } from '@financeconnect/generated';
+
+// The `UpsertBankAccount` mutation requires an argument of type `UpsertBankAccountVariables`:
+const upsertBankAccountVars: UpsertBankAccountVariables = {
+  id: ..., 
+  userId: ..., 
+  plaidItemId: ..., 
+  plaidAccountId: ..., 
+  name: ..., 
+  officialName: ..., // optional
+  mask: ..., // optional
+  type: ..., 
+  subtype: ..., // optional
+  currentBalanceMinor: ..., // optional
+  availableBalanceMinor: ..., // optional
+  isoCurrencyCode: ..., // optional
+  familyMemberId: ..., // optional
+};
+
+// Call the `upsertBankAccountRef()` function to get a reference to the mutation.
+const ref = upsertBankAccountRef(upsertBankAccountVars);
+// Variables can be defined inline as well.
+const ref = upsertBankAccountRef({ id: ..., userId: ..., plaidItemId: ..., plaidAccountId: ..., name: ..., officialName: ..., mask: ..., type: ..., subtype: ..., currentBalanceMinor: ..., availableBalanceMinor: ..., isoCurrencyCode: ..., familyMemberId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = upsertBankAccountRef(dataConnect, upsertBankAccountVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.bankAccount_upsert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.bankAccount_upsert);
+});
+```
+
+## SyncPlaidTransaction
+You can execute the `SyncPlaidTransaction` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+syncPlaidTransaction(vars: SyncPlaidTransactionVariables): MutationPromise<SyncPlaidTransactionData, SyncPlaidTransactionVariables>;
+
+interface SyncPlaidTransactionRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SyncPlaidTransactionVariables): MutationRef<SyncPlaidTransactionData, SyncPlaidTransactionVariables>;
+}
+export const syncPlaidTransactionRef: SyncPlaidTransactionRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+syncPlaidTransaction(dc: DataConnect, vars: SyncPlaidTransactionVariables): MutationPromise<SyncPlaidTransactionData, SyncPlaidTransactionVariables>;
+
+interface SyncPlaidTransactionRef {
+  ...
+  (dc: DataConnect, vars: SyncPlaidTransactionVariables): MutationRef<SyncPlaidTransactionData, SyncPlaidTransactionVariables>;
+}
+export const syncPlaidTransactionRef: SyncPlaidTransactionRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the syncPlaidTransactionRef:
+```typescript
+const name = syncPlaidTransactionRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `SyncPlaidTransaction` mutation requires an argument of type `SyncPlaidTransactionVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface SyncPlaidTransactionVariables {
+  transactionId: UUIDString;
+  userId: UUIDString;
+  familyMemberId: UUIDString;
+  bankAccountId?: UUIDString | null;
+  plaidTransactionId: string;
+  amountMinor: number;
+  direction: string;
+  occurredOn: DateString;
+  createdAt: TimestampString;
+  description?: string | null;
+  merchant?: string | null;
+  method?: string | null;
+  categoryName?: string | null;
+  plaidCategory?: string | null;
+  isPending?: boolean | null;
+  plaidPendingTransactionId?: string | null;
+}
+```
+### Return Type
+Recall that executing the `SyncPlaidTransaction` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `SyncPlaidTransactionData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface SyncPlaidTransactionData {
+  transaction_upsert: Transaction_Key;
+}
+```
+### Using `SyncPlaidTransaction`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, syncPlaidTransaction, SyncPlaidTransactionVariables } from '@financeconnect/generated';
+
+// The `SyncPlaidTransaction` mutation requires an argument of type `SyncPlaidTransactionVariables`:
+const syncPlaidTransactionVars: SyncPlaidTransactionVariables = {
+  transactionId: ..., 
+  userId: ..., 
+  familyMemberId: ..., 
+  bankAccountId: ..., // optional
+  plaidTransactionId: ..., 
+  amountMinor: ..., 
+  direction: ..., 
+  occurredOn: ..., 
+  createdAt: ..., 
+  description: ..., // optional
+  merchant: ..., // optional
+  method: ..., // optional
+  categoryName: ..., // optional
+  plaidCategory: ..., // optional
+  isPending: ..., // optional
+  plaidPendingTransactionId: ..., // optional
+};
+
+// Call the `syncPlaidTransaction()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await syncPlaidTransaction(syncPlaidTransactionVars);
+// Variables can be defined inline as well.
+const { data } = await syncPlaidTransaction({ transactionId: ..., userId: ..., familyMemberId: ..., bankAccountId: ..., plaidTransactionId: ..., amountMinor: ..., direction: ..., occurredOn: ..., createdAt: ..., description: ..., merchant: ..., method: ..., categoryName: ..., plaidCategory: ..., isPending: ..., plaidPendingTransactionId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await syncPlaidTransaction(dataConnect, syncPlaidTransactionVars);
+
+console.log(data.transaction_upsert);
+
+// Or, you can use the `Promise` API.
+syncPlaidTransaction(syncPlaidTransactionVars).then((response) => {
+  const data = response.data;
+  console.log(data.transaction_upsert);
+});
+```
+
+### Using `SyncPlaidTransaction`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, syncPlaidTransactionRef, SyncPlaidTransactionVariables } from '@financeconnect/generated';
+
+// The `SyncPlaidTransaction` mutation requires an argument of type `SyncPlaidTransactionVariables`:
+const syncPlaidTransactionVars: SyncPlaidTransactionVariables = {
+  transactionId: ..., 
+  userId: ..., 
+  familyMemberId: ..., 
+  bankAccountId: ..., // optional
+  plaidTransactionId: ..., 
+  amountMinor: ..., 
+  direction: ..., 
+  occurredOn: ..., 
+  createdAt: ..., 
+  description: ..., // optional
+  merchant: ..., // optional
+  method: ..., // optional
+  categoryName: ..., // optional
+  plaidCategory: ..., // optional
+  isPending: ..., // optional
+  plaidPendingTransactionId: ..., // optional
+};
+
+// Call the `syncPlaidTransactionRef()` function to get a reference to the mutation.
+const ref = syncPlaidTransactionRef(syncPlaidTransactionVars);
+// Variables can be defined inline as well.
+const ref = syncPlaidTransactionRef({ transactionId: ..., userId: ..., familyMemberId: ..., bankAccountId: ..., plaidTransactionId: ..., amountMinor: ..., direction: ..., occurredOn: ..., createdAt: ..., description: ..., merchant: ..., method: ..., categoryName: ..., plaidCategory: ..., isPending: ..., plaidPendingTransactionId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = syncPlaidTransactionRef(dataConnect, syncPlaidTransactionVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.transaction_upsert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.transaction_upsert);
 });
 ```
 
