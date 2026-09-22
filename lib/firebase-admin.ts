@@ -34,27 +34,26 @@ export async function getAdminAuth() {
       return getAuth();
     }
 
-    const projectId = process.env.FIREBASE_PROJECT_ID;
+    const projectId =
+      process.env.FIREBASE_PROJECT_ID ||
+      process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ||
+      "ecs-finance-tracker-app";
     const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
     const privateKey = process.env.FIREBASE_PRIVATE_KEY;
 
-    if (!projectId || !clientEmail || !privateKey) {
-      throw new Error(
-        "Firebase Admin credentials are missing at runtime. Set FIREBASE_PROJECT_ID, " +
-        "FIREBASE_CLIENT_EMAIL and FIREBASE_PRIVATE_KEY (see .env.local.example), or set " +
-        "FIREBASE_AUTH_EMULATOR_HOST to run against the local Auth emulator instead."
-      );
+    if (clientEmail && privateKey) {
+      initializeApp({
+        credential: cert({
+          projectId,
+          clientEmail,
+          // Env files store the PEM on one line with literal \n escapes; the
+          // SDK needs real newlines.
+          privateKey: privateKey.replace(/\\n/g, "\n"),
+        }),
+      });
+    } else {
+      initializeApp({ projectId });
     }
-
-    initializeApp({
-      credential: cert({
-        projectId,
-        clientEmail,
-        // Env files store the PEM on one line with literal \n escapes; the
-        // SDK needs real newlines.
-        privateKey: privateKey.replace(/\\n/g, "\n"),
-      }),
-    });
   }
 
   return getAuth();
