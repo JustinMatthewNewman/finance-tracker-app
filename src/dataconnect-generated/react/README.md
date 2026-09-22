@@ -248,20 +248,23 @@ export interface GetMyUserData {
     googleUid: string;
     username: string;
     email?: string | null;
-    performanceMode?: boolean | null;
-    backgroundOpacity?: number | null;
-    externalAccountLinkTemplate?: string | null;
-    cardOpacity?: number | null;
-    cardBlur?: number | null;
-    bordersEnabled?: boolean | null;
-    categoryColorsEnabled?: boolean | null;
-    squareCorners?: boolean | null;
-    currencyCode?: string | null;
     createdAt: TimestampString;
-    colorScheme?: {
+    userSetting?: {
       id: UUIDString;
-      name: string;
-    } & ColorScheme_Key;
+      performanceMode?: boolean | null;
+      backgroundOpacity?: number | null;
+      externalAccountLinkTemplate?: string | null;
+      cardOpacity?: number | null;
+      cardBlur?: number | null;
+      bordersEnabled?: boolean | null;
+      categoryColorsEnabled?: boolean | null;
+      squareCorners?: boolean | null;
+      currencyCode?: string | null;
+      colorScheme?: {
+        id: UUIDString;
+        name: string;
+      } & ColorScheme_Key;
+    } & UserSetting_Key;
     userType: {
       name: string;
       features: ({
@@ -1456,7 +1459,7 @@ To execute the Mutation, call `UseMutationResult.mutate()`. This function execut
 To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `SelectMyColorScheme` Mutation is of type `SelectMyColorSchemeData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 ```javascript
 export interface SelectMyColorSchemeData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 ```
 
@@ -1516,7 +1519,7 @@ export default function SelectMyColorSchemeComponent() {
 
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
-    console.log(mutation.data.user_update);
+    console.log(mutation.data.userSetting_update);
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }
@@ -1544,7 +1547,7 @@ To execute the Mutation, call `UseMutationResult.mutate()`. This function execut
 To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `ClearMyColorScheme` Mutation is of type `ClearMyColorSchemeData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 ```javascript
 export interface ClearMyColorSchemeData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 ```
 
@@ -1599,7 +1602,7 @@ export default function ClearMyColorSchemeComponent() {
 
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
-    console.log(mutation.data.user_update);
+    console.log(mutation.data.userSetting_update);
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }
@@ -1633,7 +1636,7 @@ To execute the Mutation, call `UseMutationResult.mutate()`. This function execut
 To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `SelectMyPerformanceMode` Mutation is of type `SelectMyPerformanceModeData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 ```javascript
 export interface SelectMyPerformanceModeData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 ```
 
@@ -1693,7 +1696,7 @@ export default function SelectMyPerformanceModeComponent() {
 
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
-    console.log(mutation.data.user_update);
+    console.log(mutation.data.userSetting_update);
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }
@@ -1727,7 +1730,7 @@ To execute the Mutation, call `UseMutationResult.mutate()`. This function execut
 To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `SelectMyBackgroundOpacity` Mutation is of type `SelectMyBackgroundOpacityData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 ```javascript
 export interface SelectMyBackgroundOpacityData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 ```
 
@@ -1787,7 +1790,7 @@ export default function SelectMyBackgroundOpacityComponent() {
 
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
-    console.log(mutation.data.user_update);
+    console.log(mutation.data.userSetting_update);
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }
@@ -1821,7 +1824,7 @@ To execute the Mutation, call `UseMutationResult.mutate()`. This function execut
 To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `SelectMyExternalAccountLinkTemplate` Mutation is of type `SelectMyExternalAccountLinkTemplateData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 ```javascript
 export interface SelectMyExternalAccountLinkTemplateData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 ```
 
@@ -1885,7 +1888,7 @@ export default function SelectMyExternalAccountLinkTemplateComponent() {
 
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
-    console.log(mutation.data.user_update);
+    console.log(mutation.data.userSetting_update);
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }
@@ -1920,7 +1923,7 @@ To execute the Mutation, call `UseMutationResult.mutate()`. This function execut
 To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `SelectMyCardStyle` Mutation is of type `SelectMyCardStyleData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 ```javascript
 export interface SelectMyCardStyleData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 ```
 
@@ -1981,7 +1984,7 @@ export default function SelectMyCardStyleComponent() {
 
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
-    console.log(mutation.data.user_update);
+    console.log(mutation.data.userSetting_update);
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }
@@ -2015,7 +2018,7 @@ To execute the Mutation, call `UseMutationResult.mutate()`. This function execut
 To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `SelectMySquareCorners` Mutation is of type `SelectMySquareCornersData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 ```javascript
 export interface SelectMySquareCornersData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 ```
 
@@ -2075,7 +2078,7 @@ export default function SelectMySquareCornersComponent() {
 
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
-    console.log(mutation.data.user_update);
+    console.log(mutation.data.userSetting_update);
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }
@@ -2109,7 +2112,7 @@ To execute the Mutation, call `UseMutationResult.mutate()`. This function execut
 To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `SelectMyBordersEnabled` Mutation is of type `SelectMyBordersEnabledData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 ```javascript
 export interface SelectMyBordersEnabledData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 ```
 
@@ -2169,7 +2172,7 @@ export default function SelectMyBordersEnabledComponent() {
 
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
-    console.log(mutation.data.user_update);
+    console.log(mutation.data.userSetting_update);
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }
@@ -2203,7 +2206,7 @@ To execute the Mutation, call `UseMutationResult.mutate()`. This function execut
 To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `SelectMyCategoryColorsEnabled` Mutation is of type `SelectMyCategoryColorsEnabledData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 ```javascript
 export interface SelectMyCategoryColorsEnabledData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 ```
 
@@ -2263,7 +2266,7 @@ export default function SelectMyCategoryColorsEnabledComponent() {
 
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
-    console.log(mutation.data.user_update);
+    console.log(mutation.data.userSetting_update);
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }
@@ -2297,7 +2300,7 @@ To execute the Mutation, call `UseMutationResult.mutate()`. This function execut
 To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `SelectMyCurrency` Mutation is of type `SelectMyCurrencyData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 ```javascript
 export interface SelectMyCurrencyData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 ```
 
@@ -2357,7 +2360,7 @@ export default function SelectMyCurrencyComponent() {
 
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
-    console.log(mutation.data.user_update);
+    console.log(mutation.data.userSetting_update);
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }

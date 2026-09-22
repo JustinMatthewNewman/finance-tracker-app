@@ -81,6 +81,15 @@ extend type Mutation {
     data: User_Data!
   ): User_KeyOutput! @fdc_generated(from: "User", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `UserSetting` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  userSetting_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: UserSetting_Data!
+  ): UserSetting_KeyOutput! @fdc_generated(from: "UserSetting", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `UserType` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   userType_insert(
@@ -179,6 +188,15 @@ extend type Mutation {
     """
     data: [User_Data!]!
   ): [User_KeyOutput!]! @fdc_generated(from: "User", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `UserSetting` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  userSetting_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [UserSetting_Data!]!
+  ): [UserSetting_KeyOutput!]! @fdc_generated(from: "UserSetting", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `UserType` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -279,6 +297,15 @@ extend type Mutation {
     data: User_Data!
   ): User_KeyOutput! @fdc_generated(from: "User", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `UserSetting` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `UserSetting`.
+  """
+  userSetting_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: UserSetting_Data!
+  ): UserSetting_KeyOutput! @fdc_generated(from: "UserSetting", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `UserType` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `UserType`.
   """
   userType_upsert(
@@ -377,6 +404,15 @@ extend type Mutation {
     """
     data: [User_Data!]!
   ): [User_KeyOutput!]! @fdc_generated(from: "User", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `UserSetting` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `UserSetting`.
+  """
+  userSetting_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [UserSetting_Data!]!
+  ): [UserSetting_KeyOutput!]! @fdc_generated(from: "UserSetting", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `UserType` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `UserType`.
   """
@@ -602,6 +638,30 @@ extend type Mutation {
     data: User_Data!
   ): User_KeyOutput @fdc_generated(from: "User", purpose: UPDATE_SINGLE)
   """
+  ✨ Update a single `UserSetting` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `UserSetting` or `null` if not found.
+  """
+  userSetting_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: UserSetting_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: UserSetting_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: UserSetting_Data!
+  ): UserSetting_KeyOutput @fdc_generated(from: "UserSetting", purpose: UPDATE_SINGLE)
+  """
   ✨ Update a single `UserType` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `UserType` or `null` if not found.
   """
   userType_update(
@@ -811,6 +871,25 @@ extend type Mutation {
     data: User_Data!
   ): Int! @fdc_generated(from: "User", purpose: UPDATE_MULTIPLE)
   """
+  ✨ Update `UserSetting` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  userSetting_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: UserSetting_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: UserSetting_Data!
+  ): Int! @fdc_generated(from: "UserSetting", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `UserType` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   userType_updateMany(
@@ -1010,6 +1089,25 @@ extend type Mutation {
     first: User_FirstRow
   ): User_KeyOutput @fdc_generated(from: "User", purpose: DELETE_SINGLE)
   """
+  ✨ Delete a single `UserSetting` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  userSetting_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: UserSetting_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: UserSetting_FirstRow
+  ): UserSetting_KeyOutput @fdc_generated(from: "UserSetting", purpose: DELETE_SINGLE)
+  """
   ✨ Delete a single `UserType` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   userType_delete(
@@ -1163,6 +1261,20 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "User", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `UserSetting` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  userSetting_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: UserSetting_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "UserSetting", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `UserType` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """

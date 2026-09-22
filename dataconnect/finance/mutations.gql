@@ -55,8 +55,8 @@ mutation SetUserType($userId: UUID!, $userTypeName: String!) @auth(level: NO_ACC
 # ─────────────────────────────────────────────────────────────────────────────
 
 mutation SelectMyColorScheme($colorSchemeId: UUID!) @auth(level: USER) {
-  user_update(
-    first: { where: { googleUid: { eq_expr: "auth.uid" } } }
+  userSetting_update(
+    first: { where: { user: { googleUid: { eq_expr: "auth.uid" } } } }
     data: { colorSchemeId: $colorSchemeId }
   )
 }
@@ -65,8 +65,8 @@ mutation SelectMyColorScheme($colorSchemeId: UUID!) @auth(level: USER) {
 # HeroUI's built-in default palette). A separate mutation because a literal
 # `null` can't share a document with a variant that sets a required variable.
 mutation ClearMyColorScheme @auth(level: USER) {
-  user_update(
-    first: { where: { googleUid: { eq_expr: "auth.uid" } } }
+  userSetting_update(
+    first: { where: { user: { googleUid: { eq_expr: "auth.uid" } } } }
     data: { colorSchemeId: null }
   )
 }
@@ -74,16 +74,16 @@ mutation ClearMyColorScheme @auth(level: USER) {
 # Persists the signed-in user's performance-mode preference so it follows
 # them across devices instead of living only in localStorage.
 mutation SelectMyPerformanceMode($performanceMode: Boolean!) @auth(level: USER) {
-  user_update(
-    first: { where: { googleUid: { eq_expr: "auth.uid" } } }
+  userSetting_update(
+    first: { where: { user: { googleUid: { eq_expr: "auth.uid" } } } }
     data: { performanceMode: $performanceMode }
   )
 }
 
 # Percentage multiplier for AmbientBackground's intensity (see schema.gql).
 mutation SelectMyBackgroundOpacity($backgroundOpacity: Int!) @auth(level: USER) {
-  user_update(
-    first: { where: { googleUid: { eq_expr: "auth.uid" } } }
+  userSetting_update(
+    first: { where: { user: { googleUid: { eq_expr: "auth.uid" } } } }
     data: { backgroundOpacity: $backgroundOpacity }
   )
 }
@@ -92,8 +92,8 @@ mutation SelectMyBackgroundOpacity($backgroundOpacity: Int!) @auth(level: USER) 
 # required Boolean), so a single mutation covers both setting and clearing
 # the template — no separate Clear variant needed like ClearMyColorScheme.
 mutation SelectMyExternalAccountLinkTemplate($externalAccountLinkTemplate: String) @auth(level: USER) {
-  user_update(
-    first: { where: { googleUid: { eq_expr: "auth.uid" } } }
+  userSetting_update(
+    first: { where: { user: { googleUid: { eq_expr: "auth.uid" } } } }
     data: { externalAccountLinkTemplate: $externalAccountLinkTemplate }
   )
 }
@@ -101,36 +101,36 @@ mutation SelectMyExternalAccountLinkTemplate($externalAccountLinkTemplate: Strin
 # Opacity and blur move together in the UI (one "glass" control), so they
 # share one mutation rather than costing two round trips per drag.
 mutation SelectMyCardStyle($cardOpacity: Int!, $cardBlur: Int!) @auth(level: USER) {
-  user_update(
-    first: { where: { googleUid: { eq_expr: "auth.uid" } } }
+  userSetting_update(
+    first: { where: { user: { googleUid: { eq_expr: "auth.uid" } } } }
     data: { cardOpacity: $cardOpacity, cardBlur: $cardBlur }
   )
 }
 
 mutation SelectMySquareCorners($squareCorners: Boolean!) @auth(level: USER) {
-  user_update(
-    first: { where: { googleUid: { eq_expr: "auth.uid" } } }
+  userSetting_update(
+    first: { where: { user: { googleUid: { eq_expr: "auth.uid" } } } }
     data: { squareCorners: $squareCorners }
   )
 }
 
 mutation SelectMyBordersEnabled($bordersEnabled: Boolean!) @auth(level: USER) {
-  user_update(
-    first: { where: { googleUid: { eq_expr: "auth.uid" } } }
+  userSetting_update(
+    first: { where: { user: { googleUid: { eq_expr: "auth.uid" } } } }
     data: { bordersEnabled: $bordersEnabled }
   )
 }
 
 mutation SelectMyCategoryColorsEnabled($categoryColorsEnabled: Boolean!) @auth(level: USER) {
-  user_update(
-    first: { where: { googleUid: { eq_expr: "auth.uid" } } }
+  userSetting_update(
+    first: { where: { user: { googleUid: { eq_expr: "auth.uid" } } } }
     data: { categoryColorsEnabled: $categoryColorsEnabled }
   )
 }
 
 mutation SelectMyCurrency($currencyCode: String!) @auth(level: USER) {
-  user_update(
-    first: { where: { googleUid: { eq_expr: "auth.uid" } } }
+  userSetting_update(
+    first: { where: { user: { googleUid: { eq_expr: "auth.uid" } } } }
     data: { currencyCode: $currencyCode }
   )
 }

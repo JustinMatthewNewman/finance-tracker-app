@@ -22,7 +22,7 @@ export interface Category_Key {
 }
 
 export interface ClearMyColorSchemeData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 
 export interface ColorScheme_Key {
@@ -109,20 +109,23 @@ export interface GetMyUserData {
     googleUid: string;
     username: string;
     email?: string | null;
-    performanceMode?: boolean | null;
-    backgroundOpacity?: number | null;
-    externalAccountLinkTemplate?: string | null;
-    cardOpacity?: number | null;
-    cardBlur?: number | null;
-    bordersEnabled?: boolean | null;
-    categoryColorsEnabled?: boolean | null;
-    squareCorners?: boolean | null;
-    currencyCode?: string | null;
     createdAt: TimestampString;
-    colorScheme?: {
+    userSetting?: {
       id: UUIDString;
-      name: string;
-    } & ColorScheme_Key;
+      performanceMode?: boolean | null;
+      backgroundOpacity?: number | null;
+      externalAccountLinkTemplate?: string | null;
+      cardOpacity?: number | null;
+      cardBlur?: number | null;
+      bordersEnabled?: boolean | null;
+      categoryColorsEnabled?: boolean | null;
+      squareCorners?: boolean | null;
+      currencyCode?: string | null;
+      colorScheme?: {
+        id: UUIDString;
+        name: string;
+      } & ColorScheme_Key;
+    } & UserSetting_Key;
     userType: {
       name: string;
       features: ({
@@ -379,7 +382,7 @@ export interface RestoreFamilyMemberVariables {
 }
 
 export interface SelectMyBackgroundOpacityData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 
 export interface SelectMyBackgroundOpacityVariables {
@@ -387,7 +390,7 @@ export interface SelectMyBackgroundOpacityVariables {
 }
 
 export interface SelectMyBordersEnabledData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 
 export interface SelectMyBordersEnabledVariables {
@@ -395,7 +398,7 @@ export interface SelectMyBordersEnabledVariables {
 }
 
 export interface SelectMyCardStyleData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 
 export interface SelectMyCardStyleVariables {
@@ -404,7 +407,7 @@ export interface SelectMyCardStyleVariables {
 }
 
 export interface SelectMyCategoryColorsEnabledData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 
 export interface SelectMyCategoryColorsEnabledVariables {
@@ -412,7 +415,7 @@ export interface SelectMyCategoryColorsEnabledVariables {
 }
 
 export interface SelectMyColorSchemeData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 
 export interface SelectMyColorSchemeVariables {
@@ -420,7 +423,7 @@ export interface SelectMyColorSchemeVariables {
 }
 
 export interface SelectMyCurrencyData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 
 export interface SelectMyCurrencyVariables {
@@ -428,7 +431,7 @@ export interface SelectMyCurrencyVariables {
 }
 
 export interface SelectMyExternalAccountLinkTemplateData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 
 export interface SelectMyExternalAccountLinkTemplateVariables {
@@ -436,7 +439,7 @@ export interface SelectMyExternalAccountLinkTemplateVariables {
 }
 
 export interface SelectMyPerformanceModeData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 
 export interface SelectMyPerformanceModeVariables {
@@ -444,7 +447,7 @@ export interface SelectMyPerformanceModeVariables {
 }
 
 export interface SelectMySquareCornersData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 
 export interface SelectMySquareCornersVariables {
@@ -598,6 +601,11 @@ export interface UpsertPlaidItemVariables {
   institutionName: string;
   syncCursor?: string | null;
   status?: string | null;
+}
+
+export interface UserSetting_Key {
+  id: UUIDString;
+  __typename?: 'UserSetting_Key';
 }
 
 export interface UserTypeFeature_Key {
