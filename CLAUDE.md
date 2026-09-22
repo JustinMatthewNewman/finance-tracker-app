@@ -36,6 +36,19 @@ Next.js 16 App Router · React 19 · TypeScript · Tailwind v4 · HeroUI v3 ·
 - **Call `useFamilyMembers()` once per page** and pass the result down; it
   holds state in `useState`, not context, so two calls drift apart.
 
+## Deployment environment
+
+**Never copy `.env.local` into a hosting provider.** It contains
+`FIREBASE_AUTH_EMULATOR_HOST` and `NEXT_PUBLIC_USE_FIREBASE_EMULATOR`, which
+are local-only. firebase-admin treats `FIREBASE_AUTH_EMULATOR_HOST` being set
+as "verify ID tokens with `algorithms: ['none']`" — that rejects every real
+Google-signed token *and accepts any unsigned one bearing any `sub`*, which is
+an authentication bypass. `lib/emulatorGuard.ts` now refuses to start the
+Admin SDK in that state; do not weaken it.
+
+Deployed environments need only the six `NEXT_PUBLIC_FIREBASE_*` values and
+the three `FIREBASE_*` admin values. See `.env.local.example`.
+
 ## Dependencies
 
 `package.json`'s `overrides` block pins `jose` to v4 for `jwks-rsa`. It looks

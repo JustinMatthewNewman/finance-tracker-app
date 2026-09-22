@@ -1,3 +1,5 @@
+import { resolveEmulatorUse } from "./emulatorGuard";
+
 // Remove the static top-level imports! They are what trigger the build/runtime crash.
 
 /**
@@ -12,20 +14,22 @@ export async function getAdminAuth() {
   const apps = getApps();
 
   if (!apps.length) {
-    // Local emulator path: initialize with no credential at all.
-    //
-    // The Auth emulator does not verify signatures, so there is nothing for a
-    // service account to authenticate — and cert() parses the PEM eagerly, so
-    // a placeholder key throws "Failed to parse private key" before the
-    // emulator is ever reached. Requiring real production credentials just to
-    // run against a local emulator is the wrong trade: it puts a live private
-    // key on every contributor's machine to do work that never leaves it.
-    //
-    // Keyed off FIREBASE_AUTH_EMULATOR_HOST, which is the same variable the
-    // Admin SDK itself reads to decide where to send requests — so this branch
-    // can only be taken when the SDK is already talking to the emulator, never
-    // silently against production.
-    if (process.env.FIREBASE_AUTH_EMULATOR_HOST) {
+    // Emulator mode is gated rather than trusted — see lib/emulatorGuard.ts.
+    // firebase-admin turns OFF token signature verification whenever
+    // FIREBASE_AUTH_EMULATOR_HOST is set, so an inherited value in a deployed
+    // environment is an authentication bypass, not a cosmetic mistake. This
+    // throws there instead of quietly continuing.
+    const emulator = resolveEmulatorUse({
+      host: process.env.FIREBASE_AUTH_EMULATOR_HOST,
+      nodeEnv: process.env.NODE_ENV,
+      varName: "FIREBASE_AUTH_EMULATOR_HOST",
+    });
+
+    if (emulator.use) {
+      // No credential at all: the Auth emulator does not verify one, and
+      // cert() parses its PEM eagerly, so a placeholder key would throw
+      // before the emulator is ever reached. Requiring a real production
+      // private key to run locally is the wrong trade.
       initializeApp({ projectId: process.env.FIREBASE_PROJECT_ID ?? "finance-tracker-app" });
       return getAuth();
     }

@@ -1,6 +1,7 @@
 import { initializeApp, getApps } from "firebase/app";
 import { connectAuthEmulator, getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { resolveEmulatorUseForClient } from "./emulatorGuard";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
@@ -32,7 +33,19 @@ declare global {
   var __authEmulatorConnected: boolean | undefined;
 }
 
+// Guarded the same way as the server (see lib/emulatorGuard.ts). A build
+// that reaches real users must never point the browser at 127.0.0.1, and a
+// client/server disagreement about emulator mode produces exactly the
+// "invalid signature" failure this guard exists to prevent: the browser
+// mints an unsigned emulator token that the real backend then rejects.
 if (process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true" && !globalThis.__authEmulatorConnected) {
-  connectAuthEmulator(auth, "http://127.0.0.1:9199", { disableWarnings: true });
-  globalThis.__authEmulatorConnected = true;
+  const emulator = resolveEmulatorUseForClient({
+    host: "127.0.0.1:9199",
+    nodeEnv: process.env.NODE_ENV,
+    varName: "NEXT_PUBLIC_USE_FIREBASE_EMULATOR",
+  });
+  if (emulator.use) {
+    connectAuthEmulator(auth, "http://127.0.0.1:9199", { disableWarnings: true });
+    globalThis.__authEmulatorConnected = true;
+  }
 }
