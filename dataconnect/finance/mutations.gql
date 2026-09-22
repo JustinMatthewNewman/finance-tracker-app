@@ -1,0 +1,389 @@
+# dataconnect/finance/mutations.gql
+#
+# TWO GUARD PATTERNS ARE USED HERE, AND THEY ARE NOT INTERCHANGEABLE.
+#
+#   1. `user_update(first: { where: { googleUid: { eq_expr: "auth.uid" } } })`
+#      — for the per-account preference writes. There is no id variable at
+#      all, so there is nothing for a caller to tamper with: the row is
+#      selected by the verified token.
+#
+#   2. `@transaction` + `query @redact { ... @check(expr: ...) }` — for
+#      anything that takes a row id from the client. The check runs inside
+#      the same transaction as the write and aborts it unless the row's owner
+#      is the caller. Without it, `familyMember_update(id: $x)` happily edits
+#      another household's row: knowing a UUID is not authorization.
+#
+#      @redact keeps the guard query's result out of the response, so the
+#      mutation can't be used as an oracle to confirm a row exists.
+#
+# Any new mutation that accepts an id MUST carry pattern 2. A USER-level
+# mutation with a bare id and no @check is a cross-tenant write.
+
+# $userTypeName defaults to "Regular" so the no-arg call site in
+# app/api/auth/sync-user/route.ts stays source-compatible — same defaulting
+# trick as the $limit/$offset params over in queries.gql. Passing it explicitly
+# rather than leaning on the column default keeps the tier a new account gets
+# visible here instead of buried in the schema.
+mutation CreateUserFromGoogle(
+  $googleUid: String!
+  $username: String!
+  $email: String!
+  $createdAt: Timestamp!
+  $userTypeName: String! = "Regular"
+) @auth(level: NO_ACCESS) {
+  user_insert(data: {
+    googleUid: $googleUid
+    username: $username
+    email: $email
+    userTypeName: $userTypeName
+    createdAt: $createdAt
+  })
+}
+
+# NO_ACCESS — deliberately not callable from the browser. A USER-level version
+# of this would let any signed-in account promote itself to Admin, since the
+# only thing it takes is a target user id. Invoke it from trusted server code
+# via the Admin SDK (@financeconnect/admin-generated), the same way sync-user
+# calls CreateUserFromGoogle.
+mutation SetUserType($userId: UUID!, $userTypeName: String!) @auth(level: NO_ACCESS) {
+  user_update(id: $userId, data: { userTypeName: $userTypeName })
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Per-account preferences (pattern 1 — no id, scoped by auth.uid)
+# ─────────────────────────────────────────────────────────────────────────────
+
+mutation SelectMyColorScheme($colorSchemeId: UUID!) @auth(level: USER) {
+  user_update(
+    first: { where: { googleUid: { eq_expr: "auth.uid" } } }
+    data: { colorSchemeId: $colorSchemeId }
+  )
+}
+
+# Resets the signed-in user back to no DB color scheme (falls back to
+# HeroUI's built-in default palette). A separate mutation because a literal
+# `null` can't share a document with a variant that sets a required variable.
+mutation ClearMyColorScheme @auth(level: USER) {
+  user_update(
+    first: { where: { googleUid: { eq_expr: "auth.uid" } } }
+    data: { colorSchemeId: null }
+  )
+}
+
+# Persists the signed-in user's performance-mode preference so it follows
+# them across devices instead of living only in localStorage.
+mutation SelectMyPerformanceMode($performanceMode: Boolean!) @auth(level: USER) {
+  user_update(
+    first: { where: { googleUid: { eq_expr: "auth.uid" } } }
+    data: { performanceMode: $performanceMode }
+  )
+}
+
+# Percentage multiplier for AmbientBackground's intensity (see schema.gql).
+mutation SelectMyBackgroundOpacity($backgroundOpacity: Int!) @auth(level: USER) {
+  user_update(
+    first: { where: { googleUid: { eq_expr: "auth.uid" } } }
+    data: { backgroundOpacity: $backgroundOpacity }
+  )
+}
+
+# $externalAccountLinkTemplate is nullable (unlike SelectMyPerformanceMode's
+# required Boolean), so a single mutation covers both setting and clearing
+# the template — no separate Clear variant needed like ClearMyColorScheme.
+mutation SelectMyExternalAccountLinkTemplate($externalAccountLinkTemplate: String) @auth(level: USER) {
+  user_update(
+    first: { where: { googleUid: { eq_expr: "auth.uid" } } }
+    data: { externalAccountLinkTemplate: $externalAccountLinkTemplate }
+  )
+}
+
+# Opacity and blur move together in the UI (one "glass" control), so they
+# share one mutation rather than costing two round trips per drag.
+mutation SelectMyCardStyle($cardOpacity: Int!, $cardBlur: Int!) @auth(level: USER) {
+  user_update(
+    first: { where: { googleUid: { eq_expr: "auth.uid" } } }
+    data: { cardOpacity: $cardOpacity, cardBlur: $cardBlur }
+  )
+}
+
+mutation SelectMySquareCorners($squareCorners: Boolean!) @auth(level: USER) {
+  user_update(
+    first: { where: { googleUid: { eq_expr: "auth.uid" } } }
+    data: { squareCorners: $squareCorners }
+  )
+}
+
+mutation SelectMyBordersEnabled($bordersEnabled: Boolean!) @auth(level: USER) {
+  user_update(
+    first: { where: { googleUid: { eq_expr: "auth.uid" } } }
+    data: { bordersEnabled: $bordersEnabled }
+  )
+}
+
+mutation SelectMyCategoryColorsEnabled($categoryColorsEnabled: Boolean!) @auth(level: USER) {
+  user_update(
+    first: { where: { googleUid: { eq_expr: "auth.uid" } } }
+    data: { categoryColorsEnabled: $categoryColorsEnabled }
+  )
+}
+
+mutation SelectMyCurrency($currencyCode: String!) @auth(level: USER) {
+  user_update(
+    first: { where: { googleUid: { eq_expr: "auth.uid" } } }
+    data: { currencyCode: $currencyCode }
+  )
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Family members (pattern 2 — client-supplied id, ownership checked)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# $familyMemberId is generated client-side (crypto.randomUUID) rather than
+# returned by the server, so the caller can select the new row in the sidebar
+# immediately without a second round trip. Note the hyphen caveat in
+# hooks/useFamilyMembers.ts: Data Connect returns UUIDs with hyphens stripped.
+mutation CreateFamilyMember(
+  $userId: UUID!
+  $familyMemberId: UUID!
+  $name: String!
+  $relationship: String
+  $color: String
+  $monthlyIncomeTargetMinor: Int
+) @auth(level: USER) {
+  familyMember_insert(data: {
+    id: $familyMemberId
+    userId: $userId
+    name: $name
+    relationship: $relationship
+    color: $color
+    monthlyIncomeTargetMinor: $monthlyIncomeTargetMinor
+  })
+}
+
+mutation UpdateFamilyMember(
+  $familyMemberId: UUID!
+  $name: String!
+  $relationship: String
+  $color: String
+  $externalAccountRef: String
+  $monthlyIncomeTargetMinor: Int
+) @auth(level: USER) @transaction {
+  query @redact {
+    familyMember(key: { id: $familyMemberId }) {
+      id
+      user @check(expr: "this != null && this.googleUid == auth.uid", message: "Not authorized to modify this family member") {
+        googleUid
+      }
+    }
+  }
+  familyMember_update(id: $familyMemberId, data: {
+    name: $name
+    relationship: $relationship
+    color: $color
+    externalAccountRef: $externalAccountRef
+    monthlyIncomeTargetMinor: $monthlyIncomeTargetMinor
+  })
+}
+
+# Rename-only variant, so the sidebar's inline rename doesn't have to resend
+# (and risk clobbering) every other field with whatever it last read.
+mutation RenameFamilyMember($familyMemberId: UUID!, $name: String!) @auth(level: USER) @transaction {
+  query @redact {
+    familyMember(key: { id: $familyMemberId }) {
+      id
+      user @check(expr: "this != null && this.googleUid == auth.uid", message: "Not authorized to rename this family member") {
+        googleUid
+      }
+    }
+  }
+  familyMember_update(id: $familyMemberId, data: { name: $name })
+}
+
+# Soft delete — see the isDeleted note in schema.gql. A hard delete would
+# cascade to every transaction this person ever had.
+mutation DeleteFamilyMember($familyMemberId: UUID!) @auth(level: USER) @transaction {
+  query @redact {
+    familyMember(key: { id: $familyMemberId }) {
+      id
+      user @check(expr: "this != null && this.googleUid == auth.uid", message: "Not authorized to delete this family member") {
+        googleUid
+      }
+    }
+  }
+  familyMember_update(id: $familyMemberId, data: { isDeleted: true })
+}
+
+mutation RestoreFamilyMember($familyMemberId: UUID!) @auth(level: USER) @transaction {
+  query @redact {
+    familyMember(key: { id: $familyMemberId }) {
+      id
+      user @check(expr: "this != null && this.googleUid == auth.uid", message: "Not authorized to restore this family member") {
+        googleUid
+      }
+    }
+  }
+  familyMember_update(id: $familyMemberId, data: { isDeleted: false })
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Categories (shared lookup rows)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Find-or-create by name — the table is keyed on `name`, which is what makes
+# this idempotent. Called whenever a transaction is saved against a category
+# that may not exist yet, so typing a new category name in the form just
+# works.
+#
+# No ownership check, and that is correct rather than an oversight: Category
+# is a shared lookup table with no owner, exactly like the template's Ticket.
+# It holds no personal data — a name, a kind and a color.
+mutation UpsertCategory(
+  $name: String!
+  $kind: String! = "EXPENSE"
+  $parentGroup: String
+  $color: String
+) @auth(level: USER) {
+  category_upsert(data: {
+    name: $name
+    kind: $kind
+    parentGroup: $parentGroup
+    color: $color
+  })
+}
+
+mutation UpdateCategory(
+  $name: String!
+  $kind: String!
+  $parentGroup: String
+  $color: String
+) @auth(level: USER) {
+  category_update(key: { name: $name }, data: {
+    kind: $kind
+    parentGroup: $parentGroup
+    color: $color
+  })
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Transactions (pattern 2 on every id-taking operation)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# $categoryName rather than a category id: the table is keyed on name, and
+# the form lets people type a category that may not exist yet. Call
+# UpsertCategory first (see hooks/useTransactions.ts), then pass the name
+# here — a two-step the client owns, since Data Connect can't express
+# "insert-or-get then reference" in one document.
+mutation CreateTransaction(
+  $userId: UUID!
+  $familyMemberId: UUID!
+  $amountMinor: Int!
+  $direction: String!
+  $occurredOn: Date!
+  $createdAt: Timestamp!
+  $description: String
+  $merchant: String
+  $method: String
+  $recurrence: String
+  $categoryName: String
+) @auth(level: USER) @transaction {
+  query @redact {
+    familyMember(key: { id: $familyMemberId }) {
+      id
+      user @check(expr: "this != null && this.googleUid == auth.uid", message: "Not authorized to add transactions for this family member") {
+        googleUid
+      }
+    }
+  }
+  transaction_insert(data: {
+    userId: $userId
+    familyMemberId: $familyMemberId
+    amountMinor: $amountMinor
+    direction: $direction
+    occurredOn: $occurredOn
+    createdAt: $createdAt
+    description: $description
+    merchant: $merchant
+    method: $method
+    recurrence: $recurrence
+    categoryName: $categoryName
+  })
+}
+
+mutation UpdateTransaction(
+  $transactionId: UUID!
+  $amountMinor: Int!
+  $direction: String!
+  $occurredOn: Date!
+  $description: String
+  $merchant: String
+  $method: String
+  $recurrence: String
+  $categoryName: String
+) @auth(level: USER) @transaction {
+  query @redact {
+    transaction(key: { id: $transactionId }) {
+      id
+      user @check(expr: "this != null && this.googleUid == auth.uid", message: "Not authorized to modify this transaction") {
+        googleUid
+      }
+    }
+  }
+  transaction_update(id: $transactionId, data: {
+    amountMinor: $amountMinor
+    direction: $direction
+    occurredOn: $occurredOn
+    description: $description
+    merchant: $merchant
+    method: $method
+    recurrence: $recurrence
+    categoryName: $categoryName
+  })
+}
+
+# Clearing the category needs its own mutation: a literal `null` can't share
+# a document with the variant above that sets it from a variable. Same reason
+# ClearMyColorScheme is separate.
+mutation UpdateTransactionClearCategory(
+  $transactionId: UUID!
+  $amountMinor: Int!
+  $direction: String!
+  $occurredOn: Date!
+  $description: String
+  $merchant: String
+  $method: String
+  $recurrence: String
+) @auth(level: USER) @transaction {
+  query @redact {
+    transaction(key: { id: $transactionId }) {
+      id
+      user @check(expr: "this != null && this.googleUid == auth.uid", message: "Not authorized to modify this transaction") {
+        googleUid
+      }
+    }
+  }
+  transaction_update(id: $transactionId, data: {
+    amountMinor: $amountMinor
+    direction: $direction
+    occurredOn: $occurredOn
+    description: $description
+    merchant: $merchant
+    method: $method
+    recurrence: $recurrence
+    categoryName: null
+  })
+}
+
+# A hard delete, unlike DeleteFamilyMember. A transaction is a leaf row with
+# nothing hanging off it, and an accidentally-added row is noise the user
+# wants gone rather than hidden.
+mutation DeleteTransaction($transactionId: UUID!) @auth(level: USER) @transaction {
+  query @redact {
+    transaction(key: { id: $transactionId }) {
+      id
+      user @check(expr: "this != null && this.googleUid == auth.uid", message: "Not authorized to delete this transaction") {
+        googleUid
+      }
+    }
+  }
+  transaction_delete(id: $transactionId)
+}

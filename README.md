@@ -1,0 +1,261 @@
+# Finance Tracker Pro
+
+Household finance tracking. The sidebar lists the people in your household; the
+main panel shows one person's income and expenses for a given month, with a
+category breakdown beside it.
+
+This app is a **skeleton cloned from Time Tracker Pro**. It keeps that app's
+navbar, side menu, settings page, landing page and one content page, and
+replaces the time-tracking domain with a financial one. Everything else
+(dashboard, calendar, tickets, teams, admin, Google Calendar sync) was removed.
+
+---
+
+## Setup
+
+This app shares **no** infrastructure with Time Tracker Pro. Every service,
+database, connector and package identifier is distinct, and the local emulator
+ports differ, so both apps can run side by side without colliding.
+
+| | Time Tracker Pro | Finance Tracker Pro |
+|---|---|---|
+| Firebase project | `ecs-time-tracker-app` | `finance-tracker-app` |
+| Data Connect service | `ecs-time-tracker-app-service` | `finance-tracker-app-service` |
+| Cloud SQL instance | `ecs-time-tracker-app-instance` | `finance-tracker-app-instance` |
+| Database | `ecs-time-tracker-app-database` | `finance-tracker-app-database` |
+| Connector | `example` | `finance` |
+| Generated SDK packages | `@dataconnect/*` | `@financeconnect/*` |
+| Auth emulator port | 9099 | **9199** |
+| Data Connect emulator port | 9399 | **9499** |
+
+No credentials were copied from the source project.
+
+### Option A — run locally (no Firebase project needed)
+
+This is the fastest path and needs no cloud account, no billing and no service
+account key. It is the verified path: everything below has been run end to end.
+
+```bash
+npm install
+```
+
+A working `.env.local` for this mode is already committed to your working tree
+(gitignored, no secrets — it points at the local emulators). Then, in two
+terminals:
+
+```bash
+# terminal 1 — Auth on 9199, Data Connect on 9499
+npm run emulators
+```
+
+```bash
+# terminal 2 — load the reference data, then start the app
+DATA_CONNECT_EMULATOR_HOST=127.0.0.1:9499 npm run seed
+npm run dev
+```
+
+`npm run seed` runs the four mutations in `dataconnect/seed_data.gql` in
+dependency order and prints what it loaded. It is idempotent, so re-run it
+freely. It refuses to run unless `DATA_CONNECT_EMULATOR_HOST` points at
+localhost, so there is no path to it touching a real project.
+
+Open the app, click **Sign in with Google**, and pick or invent an account in
+the emulator's sign-in popup — the Auth emulator does not contact Google. The
+first sign-in creates your `User` row on the `Regular` tier.
+
+Emulator state lives in `dataconnect/.dataconnect/pgliteData` and is
+gitignored. Delete that directory to start from an empty database; re-seed
+afterwards.
+
+### Option B — a real Firebase project
+
+**1. Create the project and register a web app**
+
+Data Connect provisions a Cloud SQL instance, so the project must be on the
+**Blaze (pay-as-you-go)** plan — Spark cannot run it. If you only want to
+develop, Option A above needs none of this.
+
+```bash
+npx firebase login
+npx firebase projects:create finance-tracker-app        # or reuse an existing id
+npx firebase apps:create WEB "Finance Tracker Pro" --project finance-tracker-app
+```
+
+If you pick a different project id, update `.firebaserc` to match.
+
+Then, in the console: **Authentication → Sign-in method → Google → Enable**,
+and **⚙ → Usage and billing → Modify plan → Blaze**.
+
+**2. Generate .env.local**
+
+Pull the web config with the CLI rather than copying it out of the console:
+
+```bash
+npx firebase apps:sdkconfig WEB --project finance-tracker-app > web-config.json
+```
+
+Download a service account key: **⚙ Project settings → Service accounts →
+Generate new private key**. It saves a `.json` to your Downloads.
+
+Then let the script assemble both halves:
+
+```bash
+npm run make-env -- web-config.json ~/Downloads/<the-key-file>.json > .env.local
+rm web-config.json          # and delete the key file once you're done
+```
+
+Do not hand-copy the private key. It is a multi-line PEM and a `.env` file is
+line-based, so it has to become one line with literal `\n` escapes. Getting
+that wrong fails with `Failed to parse private key`, which does not point at
+the cause. The script does the escaping, checks both files belong to the same
+project, and prints to stdout so it can never silently overwrite an existing
+`.env.local`.
+
+**3. Provision Data Connect**
+
+Create a Data Connect service and a Cloud SQL (PostgreSQL) instance using the
+ids in `dataconnect/dataconnect.yaml`, then deploy the schema and connector:
+
+```bash
+npx firebase deploy --only dataconnect
+```
+
+**4. Seed the reference data**
+
+The seed script is emulator-only by design. Against a real service, run the
+four mutations in `dataconnect/seed_data.gql` from the Firebase console or the
+Firebase VS Code extension, **in this order**:
+
+1. `SeedUserTypes` — the five account tiers. **Must run before** any user row
+   exists, or the migration that adds `User.userTypeName` fails on its foreign
+   key; see the ordering note in that file.
+2. `SeedFeatures` — feature rows and their tier grants.
+3. `SeedColorSchemes` — the themes the settings page offers.
+4. `SeedCategories` — starter income and expense categories.
+
+**5. Run it**
+
+```bash
+npm run dev
+```
+
+### Making yourself an admin
+
+New accounts land on `Regular`. `AdminPage` and `UserTypeControl` are granted
+only to `Admin`, and `SetUserType` is `NO_ACCESS` — deliberately not callable
+from the browser, since a `USER`-level version would let any account promote
+itself. Promote from trusted server-side code or directly in the database.
+
+---
+
+## Architecture
+
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind v4 · HeroUI v3 ·
+Firebase Auth · Firebase Data Connect (GraphQL over PostgreSQL).
+
+```
+app/
+  layout.tsx          Root shell: fonts, Providers, Navbar, one-screen flex layout
+  providers.tsx       The context stack (order matters — see the file's header)
+  page.tsx            Landing page (signed out)
+  household/page.tsx  The one content page
+  settings/page.tsx   Settings
+  api/auth/sync-user  Creates the User row on first Google sign-in
+
+components/
+  Navbar.tsx          Dual-mode: marketing mega-menu signed out, tab strip signed in
+  Finance/            The household page: sidebar + detail + breakdown + form
+  Utilities/          ListBoxComponent (the household sidebar) + dialogs + theming
+  Settings/           Appearance, money and integration settings
+  Search/             ⌘K fuzzy search over people and transactions
+
+context/              One provider per persisted preference, all fed by one fetch
+hooks/                Data Connect read/write hooks
+lib/                  money, entityColor, monthRange, chartColor, auth, features
+dataconnect/          schema.gql + the finance connector's queries and mutations
+src/dataconnect-*     Generated SDKs (checked in; regenerate with the script below)
+```
+
+### The page's shape
+
+The sidebar owns **people**; the main panel owns **time**. This is the inverse
+of the source template, where work logs were day-scoped so the sidebar paged
+through weeks. A family member is permanent, so the sidebar is a flat roster
+and the month carousel sits next to the transaction list instead.
+
+### Things worth knowing before you change anything
+
+**Money is an integer.** Amounts are minor units (cents), never floats, and
+every conversion goes through `lib/money.ts`. `0.1` is not representable in
+binary floating point, so `12.34 * 100` is `1233.9999999999998` — a ledger
+that drifts by a cent after forty rows is worse than no ledger. `JPY` has no
+minor unit, so the per-major divisor is derived from `Intl`, not hardcoded
+to 100.
+
+**Amounts are unsigned; `direction` carries the sign.** A signed amount makes
+every aggregate ambiguous about whether it's a total or a net. `Transaction.
+direction` is authoritative per row and deliberately *not* derived from
+`Category.kind`, so a refund (money in, against a spending category) stays
+expressible.
+
+**Dates are local.** `Transaction.occurredOn` is a calendar day, not an
+instant. `new Date("2026-09-01")` parses as UTC midnight — the 31st of August
+for anyone west of Greenwich — so `lib/monthRange.ts` builds every date from
+explicit `(year, month, day)` parts and never round-trips through
+`toISOString()`.
+
+**Every id-taking mutation needs an ownership guard.** A `USER`-level mutation
+that accepts a row id and has no `@check` is a cross-tenant write: knowing a
+UUID is not authorization. See the two guard patterns documented at the top of
+`dataconnect/finance/mutations.gql`.
+
+**Feature gates are rendering hints, not security.** `hooks/useFeatures.ts`
+decides what the UI shows; the value round-trips through the browser and is
+trivially spoofed. Every privileged route must re-check server-side via
+`requireFeature()` in `lib/featureAccess.ts`.
+
+**Queries use `SERVER_ONLY`.** Data Connect's generated React query hooks
+default to a cache policy that mutations never invalidate, so a plain
+`refetch()` can return a stale list forever after a write.
+
+### Regenerating the Data Connect SDK
+
+`src/dataconnect-generated` and `src/dataconnect-admin-generated` are checked
+in so the app typechecks without a provisioned backend. After editing
+`dataconnect/schema/schema.gql` or the connector's `.gql` files:
+
+```bash
+npm run dataconnect:generate
+```
+
+---
+
+## What was intentionally left out
+
+- **No admin, teams, dashboard, calendar or tickets pages.** The feature-gate
+  mechanism that guarded them is still wired (`lib/features.ts`,
+  `hooks/useFeatures.ts`, `lib/featureAccess.ts`, the `Feature`/
+  `UserTypeFeature` tables), and no nav tab uses it — so adding the first
+  gated surface is one line plus a grant, not a rebuild.
+- **`Reports` is dark-launched.** The `Feature` row is seeded and granted to
+  nobody. That's the intended way to ship an unfinished feature: no code
+  branch, no flag file, just an absent row in `UserTypeFeature`.
+- **Recurrence is recorded, not executed.** `Transaction.recurrence` labels a
+  row as recurring; nothing generates future occurrences yet. The form says so.
+- **`components/Utilities/SideNavListBox.tsx` is unused.** It's the plain
+  sidebar list to reach for when you add a second sidebar, kept so that one
+  matches by construction rather than becoming a third copy of the same class
+  strings.
+
+## Scripts
+
+| | |
+|---|---|
+| `npm run dev` | Dev server |
+| `npm run build` | Production build |
+| `npm run emulators` | Auth (9199) + Data Connect (9499) emulators |
+| `npm run seed` | Load reference data into the emulator (idempotent) |
+| `npm run make-env` | Build `.env.local` from the Firebase config + service account key |
+| `npm run dataconnect:generate` | Regenerate the Data Connect SDKs |
+| `npm run lint` | ESLint |
+| `npm test` | Vitest |

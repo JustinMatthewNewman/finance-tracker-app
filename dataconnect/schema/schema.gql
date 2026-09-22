@@ -1,0 +1,293 @@
+# The fixed set of account tiers (Admin, Guest, Regular, Elevated, Premium),
+# referenced by User.userType. Keyed on `name` rather than a UUID for the same
+# reason Category is keyed on `name`: the natural key makes userType_upsert
+# idempotent by name, and it keeps User's foreign key column readable
+# ("Regular") instead of an opaque UUID.
+#
+# Deliberately names-only for now — feature gating keys off `name` in app code.
+# Per-tier config columns (maxHouseholdMembers, canExportData, ...) can be
+# added here later without touching User.
+#
+# WARNING — never DELETE a row from this table. Data Connect derives ON DELETE
+# from nullability and gives no override, so User.userType being a required
+# reference makes it ON DELETE CASCADE: dropping a tier here deletes every User
+# holding it, and FamilyMember.user / Transaction.user cascade in turn, taking
+# those users' household members and transactions with them. Add tiers; never
+# remove one.
+type UserType @table(key: "name") {
+  id: UUID! @default(expr: "uuidV4()") @unique
+  name: String!
+  createdAt: Timestamp! @default(expr: "request.time")
+}
+
+# A named application capability that can be granted to tiers — e.g.
+# "AdminPage". Gating on a Feature row rather than on a hardcoded
+# `userType.name == "Admin"` check means granting or revoking access is a data
+# change, not a code change: a second tier can be handed a capability without
+# touching a component, and a feature can be dark-launched by simply not
+# granting it to anyone yet.
+#
+# Keyed on `name` for the same readability reason as UserType.
+type Feature @table(key: "name") {
+  id: UUID! @default(expr: "uuidV4()") @unique
+  name: String!
+  description: String
+  createdAt: Timestamp! @default(expr: "request.time")
+}
+
+# Cross-reference granting a Feature to a UserType. Composite key means one
+# row per (tier, feature), so grants are idempotent to upsert and can't
+# duplicate.
+#
+# Generates `userType.features_via_UserTypeFeature`, which is what GetMyUser
+# reads to hand the client its whole capability set in one round trip.
+#
+# Deliberately keyed to UserType, not User — permissions live on the tier.
+# Per-user overrides, if ever needed, belong in a separate UserFeature xref
+# rather than by blurring this one.
+type UserTypeFeature @table(key: ["userType", "feature"]) {
+  userType: UserType!
+  feature: Feature!
+  createdAt: Timestamp! @default(expr: "request.time")
+}
+
+# The signed-in account. In this app a User is the *household* — the person
+# who signs in — and the people whose money is being tracked are FamilyMember
+# rows beneath it. That distinction matters: a family member is not an account
+# and never signs in, so it has no googleUid and no tier of its own.
+type User @table {
+  id: UUID! @default(expr: "uuidV4()")
+  googleUid: String! @unique
+  username: String!
+  email: String
+  # Every user has exactly one tier — non-null, no default tier at the GraphQL
+  # level beyond the column default below.
+  #
+  # The FK scalar is declared explicitly (rather than letting a bare
+  # `userType: UserType!` generate an implicit one) purely so it can carry
+  # @default: that default is what backfills every pre-existing user to
+  # "Regular" when the NOT NULL column is added.
+  #
+  # The default alone is NOT enough on a database that already has users —
+  # Data Connect adds the column and its FK constraint in one statement, so the
+  # "Regular" row must already be in user_type or the migration aborts with a
+  # foreign key violation. See the two-phase rollout note on SeedUserTypes in
+  # dataconnect/seed_data.gql.
+  userType: UserType! @ref(fields: "userTypeName", references: "name")
+  userTypeName: String! @default(value: "Regular")
+
+  # --- Per-account display preferences ---
+  #
+  # All nullable with a column default, so adding one later never requires a
+  # backfill. Every one of these is read by a single shared GetMyUser call
+  # (see context/UserSettingsContext.tsx) rather than one query per setting.
+  colorScheme: ColorScheme
+  performanceMode: Boolean @default(expr: "false")
+  # Percentage (0-100) multiplier applied on top of each page's own
+  # AmbientBackground intensity prop (see components/AmbientBackground.tsx).
+  backgroundOpacity: Int @default(expr: "100")
+  # URL template for linking out to an external institution portal, e.g.
+  # "https://bank.example.com/accounts/{account_id}". The literal
+  # "{account_id}" placeholder is substituted with a family member's external
+  # account reference when rendering the link.
+  externalAccountLinkTemplate: String
+  # Percentage (0-100) applied to Card backgrounds app-wide (see
+  # .card--default/.card--secondary/.card--tertiary in globals.css) —
+  # lower values let whatever's behind a card (AmbientBackground, page
+  # background) show through.
+  cardOpacity: Int @default(expr: "100")
+  # Gaussian blur radius in pixels applied behind Card backgrounds
+  # (backdrop-filter: blur(...)), for a frosted-glass look. 0 = no blur.
+  cardBlur: Int @default(expr: "0")
+  # Whether Cards and tables render their outer border (see [data-slot="card"]
+  # and table/th/td rules in globals.css). Off strips just the border, not
+  # the background/shadow, so cards stay visually distinct.
+  bordersEnabled: Boolean @default(expr: "true")
+  # Whether a category's assigned color (see Category.color) tints the
+  # surfaces it appears on — breakdown rows, transaction rows.
+  #
+  # A display preference rather than a data one: turning it off never clears a
+  # category's color, it only stops the app painting with it. That matters
+  # because Category.color is shared across users while this switch is per
+  # account, so one person muting the tints can't affect anyone else's view.
+  categoryColorsEnabled: Boolean @default(expr: "true")
+  # Squares off corners app-wide (see the .square-corners rules in
+  # globals.css). Defaults false so existing accounts keep the rounded look
+  # they already have rather than being restyled by a migration.
+  squareCorners: Boolean @default(expr: "false")
+  # The household's default currency, as an ISO 4217 code. Display only —
+  # amounts are stored as integer minor units (see Transaction.amountMinor)
+  # and this decides how they're formatted, never how they're stored.
+  currencyCode: String @default(value: "USD")
+  createdAt: Timestamp!
+}
+
+# A person in the household whose income and expenses are tracked — the entity
+# the finance page's sidebar lists and selects between.
+#
+# This is the structural counterpart of the source template's WorkLog: the
+# sidebar-selected parent that the main panel's detail view hangs off. It
+# differs in one important way, and the difference drives the whole page. A
+# work log was scoped to a single day, so the sidebar grouped by week and
+# paged through time. A family member is permanent, so the sidebar is a flat
+# list and the *main panel* owns the date range instead.
+#
+# Keyed on the default UUID rather than on `name`: this is user-authored data
+# that people rename casually ("Mom" -> "Sarah"), so identity lives in an
+# immutable id and renaming stays a plain update rather than a data migration.
+type FamilyMember @table {
+  id: UUID! @default(expr: "uuidV4()")
+  user: User!
+  name: String!
+  # Free text ("Spouse", "Daughter", "Self") rather than an enum table. There
+  # is no application logic that branches on it — it's a label under the name
+  # in the sidebar — and a fixed list would be wrong for somebody's household
+  # the day it shipped.
+  relationship: String
+  # Identity color, same "#rrggbb" convention as Category.color. Nullable: a
+  # member without one falls back to a derived color (see lib/entityColor.ts)
+  # rather than being assigned one by a migration.
+  color: String
+  # Opaque reference used to build an outbound link with the household's
+  # externalAccountLinkTemplate — e.g. an account number at their bank.
+  # Nullable and purely a convenience; nothing in the app reads it except the
+  # link builder.
+  externalAccountRef: String
+  # Monthly take-home this person is expected to bring in, in minor units.
+  # Nullable because most households won't set one, and a default here would
+  # invent a target nobody agreed to — attainment is simply not shown until
+  # it is set.
+  monthlyIncomeTargetMinor: Int
+  # Soft delete, exactly as the template's WorkLog does it. A hard delete
+  # would cascade to every Transaction the person ever had, which is
+  # destructive in a way "remove from the sidebar" does not imply. Every
+  # query filters on this; RestoreFamilyMember undoes it.
+  isDeleted: Boolean @default(expr: "false")
+  createdAt: Timestamp! @default(expr: "request.time")
+}
+
+# A spending or earning category ("Groceries", "Salary", "Rent"), keyed by its
+# human-entered name so category_upsert can find-or-create a row for a given
+# one. This is the structural counterpart of the template's Ticket: a shared
+# lookup row that transactions point at, carrying the color and metadata that
+# would otherwise be duplicated onto every transaction and drift.
+type Category @table(key: "name") {
+  id: UUID! @default(expr: "uuidV4()") @unique
+  name: String!
+  # "INCOME" or "EXPENSE" — which side of the ledger this category normally
+  # belongs to, used to group the category pickers and the breakdown.
+  #
+  # Not a hard constraint on the transactions that reference it: a refund is
+  # money coming *in* against a spending category, and that must stay
+  # expressible. Transaction.direction is the authoritative per-row answer;
+  # this is the category's default. Data Connect has no enum or CHECK
+  # constraint to hang this on, so the two legal values are validated in
+  # lib/money.ts and nowhere else.
+  kind: String! @default(value: "EXPENSE")
+  # Optional grouping above the category itself ("Housing" over "Rent" and
+  # "Utilities"). Free text for the same reason FamilyMember.relationship is.
+  parentGroup: String
+  # User-chosen identity color for this category, as "#rrggbb". Surfaced
+  # wherever the category appears — the breakdown tints each row with a muted
+  # version of it.
+  #
+  # Lives on Category rather than per user, matching the template's Ticket: a
+  # category is a shared lookup row, so its color is a property of the
+  # category itself and stays consistent for everyone looking at it.
+  #
+  # Nullable, and null is a real state rather than a gap to backfill — it
+  # means "no color chosen", and the UI falls back to a name-derived hue (see
+  # lib/entityColor.ts). That fallback is why this needs no migration.
+  #
+  # Stored as text, not validated by the database. Data Connect has no CHECK
+  # constraint to hang a hex pattern on, so validation lives in
+  # lib/entityColor.ts and every read goes through it — a malformed value must
+  # never reach a CSS color-mix(), which would silently drop the whole
+  # declaration rather than just the color.
+  color: String
+  createdAt: Timestamp! @default(expr: "request.time")
+}
+
+# One movement of money, attributed to a family member. The template's
+# TimeEntry in the same structural slot: the leaf row the main panel lists,
+# groups and totals.
+type Transaction @table {
+  id: UUID! @default(expr: "uuidV4()")
+  # Denormalized owner, so every query can scope by auth.uid without walking
+  # through familyMember. Same shape as the template's TimeEntry.user.
+  user: User!
+  familyMember: FamilyMember!
+  category: Category
+
+  # MONEY IS AN INTEGER. Amounts are minor units of the household's currency
+  # (cents for USD), never a float and never a GraphQL Float. Binary floating
+  # point cannot represent 0.10, so summing a column of them drifts — and a
+  # budget that is off by a cent after forty rows is worse than useless. Every
+  # read and write goes through lib/money.ts, which is the only place that
+  # converts between minor units and a display string.
+  #
+  # Always the POSITIVE magnitude. Which way the money moved is
+  # `direction` below, not the sign — a signed amount makes every aggregate
+  # ambiguous about whether it is a total or a net, and that ambiguity is
+  # exactly what produces a "total expenses" figure quietly reduced by a
+  # refund that nobody asked it to net out.
+  amountMinor: Int!
+  # "INCOME" or "EXPENSE". Authoritative per row, deliberately NOT derived
+  # from category.kind: a refund is an INCOME row against a spending category,
+  # and a payroll deduction is an EXPENSE row against an earning one. Denormal
+  # on purpose — the alternative is that every total joins to Category and
+  # still gets those two cases wrong.
+  direction: String!
+
+  occurredOn: Date!
+  description: String
+  # Counterparty — the shop, employer, or person. Free text; no Merchant
+  # table, because nothing in the app needs merchant identity, only a label
+  # to show and search on.
+  merchant: String
+  # How the money moved ("Card", "Cash", "Transfer"). Free text, display only.
+  method: String
+  # Set when this row was generated from a recurring rule rather than entered
+  # by hand — "MONTHLY", "WEEKLY", "BIWEEKLY", "YEARLY". Null means one-off.
+  # There is no recurrence engine yet; this records intent so one can be added
+  # without a migration.
+  recurrence: String
+  createdAt: Timestamp!
+}
+
+# A named color scheme (e.g. "Ocean", "Forest") a user can pick in Settings.
+# Each scheme has exactly one light and one dark Theme row (see below); the
+# existing next-themes light/dark switch selects which variant applies, so
+# switching dark mode re-themes using the same scheme instead of leaving it.
+type ColorScheme @table {
+  id: UUID! @default(expr: "uuidV4()")
+  name: String! @unique
+  createdAt: Timestamp! @default(expr: "request.time")
+}
+
+# One light or dark variant of a ColorScheme. Fields mirror HeroUI's base
+# semantic color tokens (@heroui/styles themes/default/variables.css) —
+# hover/soft/secondary variants are all derived from these via color-mix(),
+# so setting just these overrides the whole HeroUI palette consistently.
+# Status colors (success/warning/danger) are deliberately left out: they
+# stay constant across schemes so meaning (income vs. overspend) doesn't
+# shift when someone changes their theme.
+type Theme @table @unique(fields: ["colorScheme", "isDark"]) {
+  id: UUID! @default(expr: "uuidV4()")
+  colorScheme: ColorScheme!
+  isDark: Boolean!
+  background: String!
+  foreground: String!
+  surface: String!
+  surfaceForeground: String!
+  overlay: String!
+  overlayForeground: String!
+  muted: String!
+  default: String!
+  defaultForeground: String!
+  accent: String!
+  accentForeground: String!
+  border: String!
+  separator: String!
+  createdAt: Timestamp! @default(expr: "request.time")
+}

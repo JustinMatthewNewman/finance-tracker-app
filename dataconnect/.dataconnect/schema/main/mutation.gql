@@ -1,0 +1,970 @@
+extend type Mutation {
+  """
+  ✨ Insert a single `Category` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  category_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Category_Data!
+  ): Category_KeyOutput! @fdc_generated(from: "Category", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `ColorScheme` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  colorScheme_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: ColorScheme_Data!
+  ): ColorScheme_KeyOutput! @fdc_generated(from: "ColorScheme", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `FamilyMember` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  familyMember_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: FamilyMember_Data!
+  ): FamilyMember_KeyOutput! @fdc_generated(from: "FamilyMember", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Feature` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  feature_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Feature_Data!
+  ): Feature_KeyOutput! @fdc_generated(from: "Feature", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Theme` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  theme_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Theme_Data!
+  ): Theme_KeyOutput! @fdc_generated(from: "Theme", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Transaction` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  transaction_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Transaction_Data!
+  ): Transaction_KeyOutput! @fdc_generated(from: "Transaction", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `User` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  user_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: User_Data!
+  ): User_KeyOutput! @fdc_generated(from: "User", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `UserType` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  userType_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: UserType_Data!
+  ): UserType_KeyOutput! @fdc_generated(from: "UserType", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `UserTypeFeature` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  userTypeFeature_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: UserTypeFeature_Data!
+  ): UserTypeFeature_KeyOutput! @fdc_generated(from: "UserTypeFeature", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert `Category` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  category_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Category_Data!]!
+  ): [Category_KeyOutput!]! @fdc_generated(from: "Category", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `ColorScheme` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  colorScheme_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [ColorScheme_Data!]!
+  ): [ColorScheme_KeyOutput!]! @fdc_generated(from: "ColorScheme", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `FamilyMember` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  familyMember_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [FamilyMember_Data!]!
+  ): [FamilyMember_KeyOutput!]! @fdc_generated(from: "FamilyMember", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Feature` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  feature_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Feature_Data!]!
+  ): [Feature_KeyOutput!]! @fdc_generated(from: "Feature", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Theme` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  theme_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Theme_Data!]!
+  ): [Theme_KeyOutput!]! @fdc_generated(from: "Theme", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Transaction` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  transaction_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Transaction_Data!]!
+  ): [Transaction_KeyOutput!]! @fdc_generated(from: "Transaction", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `User` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  user_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [User_Data!]!
+  ): [User_KeyOutput!]! @fdc_generated(from: "User", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `UserType` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  userType_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [UserType_Data!]!
+  ): [UserType_KeyOutput!]! @fdc_generated(from: "UserType", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `UserTypeFeature` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  userTypeFeature_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [UserTypeFeature_Data!]!
+  ): [UserTypeFeature_KeyOutput!]! @fdc_generated(from: "UserTypeFeature", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert or update a single `Category` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Category`.
+  """
+  category_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Category_Data!
+  ): Category_KeyOutput! @fdc_generated(from: "Category", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `ColorScheme` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ColorScheme`.
+  """
+  colorScheme_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: ColorScheme_Data!
+  ): ColorScheme_KeyOutput! @fdc_generated(from: "ColorScheme", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `FamilyMember` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `FamilyMember`.
+  """
+  familyMember_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: FamilyMember_Data!
+  ): FamilyMember_KeyOutput! @fdc_generated(from: "FamilyMember", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Feature` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Feature`.
+  """
+  feature_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Feature_Data!
+  ): Feature_KeyOutput! @fdc_generated(from: "Feature", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Theme` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Theme`.
+  """
+  theme_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Theme_Data!
+  ): Theme_KeyOutput! @fdc_generated(from: "Theme", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Transaction` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Transaction`.
+  """
+  transaction_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Transaction_Data!
+  ): Transaction_KeyOutput! @fdc_generated(from: "Transaction", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `User` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `User`.
+  """
+  user_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: User_Data!
+  ): User_KeyOutput! @fdc_generated(from: "User", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `UserType` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `UserType`.
+  """
+  userType_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: UserType_Data!
+  ): UserType_KeyOutput! @fdc_generated(from: "UserType", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `UserTypeFeature` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `UserTypeFeature`.
+  """
+  userTypeFeature_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: UserTypeFeature_Data!
+  ): UserTypeFeature_KeyOutput! @fdc_generated(from: "UserTypeFeature", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update `Category` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Category`.
+  """
+  category_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Category_Data!]!
+  ): [Category_KeyOutput!]! @fdc_generated(from: "Category", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `ColorScheme` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `ColorScheme`.
+  """
+  colorScheme_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [ColorScheme_Data!]!
+  ): [ColorScheme_KeyOutput!]! @fdc_generated(from: "ColorScheme", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `FamilyMember` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `FamilyMember`.
+  """
+  familyMember_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [FamilyMember_Data!]!
+  ): [FamilyMember_KeyOutput!]! @fdc_generated(from: "FamilyMember", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Feature` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Feature`.
+  """
+  feature_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Feature_Data!]!
+  ): [Feature_KeyOutput!]! @fdc_generated(from: "Feature", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Theme` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Theme`.
+  """
+  theme_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Theme_Data!]!
+  ): [Theme_KeyOutput!]! @fdc_generated(from: "Theme", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Transaction` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Transaction`.
+  """
+  transaction_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Transaction_Data!]!
+  ): [Transaction_KeyOutput!]! @fdc_generated(from: "Transaction", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `User` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `User`.
+  """
+  user_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [User_Data!]!
+  ): [User_KeyOutput!]! @fdc_generated(from: "User", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `UserType` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `UserType`.
+  """
+  userType_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [UserType_Data!]!
+  ): [UserType_KeyOutput!]! @fdc_generated(from: "UserType", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `UserTypeFeature` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `UserTypeFeature`.
+  """
+  userTypeFeature_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [UserTypeFeature_Data!]!
+  ): [UserTypeFeature_KeyOutput!]! @fdc_generated(from: "UserTypeFeature", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Update a single `Category` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Category` or `null` if not found.
+  """
+  category_update(
+    """
+    The key used to identify the object.
+    """
+    key: Category_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Category_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Category_Data!
+  ): Category_KeyOutput @fdc_generated(from: "Category", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `ColorScheme` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `ColorScheme` or `null` if not found.
+  """
+  colorScheme_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: ColorScheme_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ColorScheme_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: ColorScheme_Data!
+  ): ColorScheme_KeyOutput @fdc_generated(from: "ColorScheme", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `FamilyMember` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `FamilyMember` or `null` if not found.
+  """
+  familyMember_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: FamilyMember_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: FamilyMember_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: FamilyMember_Data!
+  ): FamilyMember_KeyOutput @fdc_generated(from: "FamilyMember", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Feature` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Feature` or `null` if not found.
+  """
+  feature_update(
+    """
+    The key used to identify the object.
+    """
+    key: Feature_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Feature_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Feature_Data!
+  ): Feature_KeyOutput @fdc_generated(from: "Feature", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Theme` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Theme` or `null` if not found.
+  """
+  theme_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Theme_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Theme_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Theme_Data!
+  ): Theme_KeyOutput @fdc_generated(from: "Theme", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Transaction` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Transaction` or `null` if not found.
+  """
+  transaction_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Transaction_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Transaction_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Transaction_Data!
+  ): Transaction_KeyOutput @fdc_generated(from: "Transaction", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `User` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `User` or `null` if not found.
+  """
+  user_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: User_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: User_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: User_Data!
+  ): User_KeyOutput @fdc_generated(from: "User", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `UserType` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `UserType` or `null` if not found.
+  """
+  userType_update(
+    """
+    The key used to identify the object.
+    """
+    key: UserType_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: UserType_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: UserType_Data!
+  ): UserType_KeyOutput @fdc_generated(from: "UserType", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `UserTypeFeature` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `UserTypeFeature` or `null` if not found.
+  """
+  userTypeFeature_update(
+    """
+    The key used to identify the object.
+    """
+    key: UserTypeFeature_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: UserTypeFeature_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: UserTypeFeature_Data!
+  ): UserTypeFeature_KeyOutput @fdc_generated(from: "UserTypeFeature", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update `Category` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  category_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Category_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Category_Data!
+  ): Int! @fdc_generated(from: "Category", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `ColorScheme` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  colorScheme_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: ColorScheme_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: ColorScheme_Data!
+  ): Int! @fdc_generated(from: "ColorScheme", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `FamilyMember` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  familyMember_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: FamilyMember_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: FamilyMember_Data!
+  ): Int! @fdc_generated(from: "FamilyMember", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Feature` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  feature_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Feature_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Feature_Data!
+  ): Int! @fdc_generated(from: "Feature", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Theme` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  theme_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Theme_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Theme_Data!
+  ): Int! @fdc_generated(from: "Theme", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Transaction` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  transaction_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Transaction_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Transaction_Data!
+  ): Int! @fdc_generated(from: "Transaction", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `User` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  user_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: User_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: User_Data!
+  ): Int! @fdc_generated(from: "User", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `UserType` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  userType_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: UserType_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: UserType_Data!
+  ): Int! @fdc_generated(from: "UserType", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `UserTypeFeature` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  userTypeFeature_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: UserTypeFeature_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: UserTypeFeature_Data!
+  ): Int! @fdc_generated(from: "UserTypeFeature", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Delete a single `Category` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  category_delete(
+    """
+    The key used to identify the object.
+    """
+    key: Category_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Category_FirstRow
+  ): Category_KeyOutput @fdc_generated(from: "Category", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `ColorScheme` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  colorScheme_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: ColorScheme_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ColorScheme_FirstRow
+  ): ColorScheme_KeyOutput @fdc_generated(from: "ColorScheme", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `FamilyMember` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  familyMember_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: FamilyMember_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: FamilyMember_FirstRow
+  ): FamilyMember_KeyOutput @fdc_generated(from: "FamilyMember", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Feature` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  feature_delete(
+    """
+    The key used to identify the object.
+    """
+    key: Feature_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Feature_FirstRow
+  ): Feature_KeyOutput @fdc_generated(from: "Feature", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Theme` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  theme_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Theme_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Theme_FirstRow
+  ): Theme_KeyOutput @fdc_generated(from: "Theme", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Transaction` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  transaction_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Transaction_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Transaction_FirstRow
+  ): Transaction_KeyOutput @fdc_generated(from: "Transaction", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `User` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  user_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: User_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: User_FirstRow
+  ): User_KeyOutput @fdc_generated(from: "User", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `UserType` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  userType_delete(
+    """
+    The key used to identify the object.
+    """
+    key: UserType_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: UserType_FirstRow
+  ): UserType_KeyOutput @fdc_generated(from: "UserType", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `UserTypeFeature` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  userTypeFeature_delete(
+    """
+    The key used to identify the object.
+    """
+    key: UserTypeFeature_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: UserTypeFeature_FirstRow
+  ): UserTypeFeature_KeyOutput @fdc_generated(from: "UserTypeFeature", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete `Category` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  category_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Category_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Category", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `ColorScheme` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  colorScheme_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: ColorScheme_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "ColorScheme", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `FamilyMember` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  familyMember_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: FamilyMember_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "FamilyMember", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Feature` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  feature_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Feature_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Feature", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Theme` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  theme_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Theme_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Theme", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Transaction` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  transaction_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Transaction_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Transaction", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `User` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  user_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: User_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "User", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `UserType` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  userType_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: UserType_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "UserType", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `UserTypeFeature` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  userTypeFeature_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: UserTypeFeature_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "UserTypeFeature", purpose: DELETE_MULTIPLE)
+}

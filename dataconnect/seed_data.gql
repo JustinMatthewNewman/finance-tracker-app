@@ -1,0 +1,286 @@
+# dataconnect/seed_data.gql
+# LOCAL ONLY — excluded from production deploys and client SDK generation.
+# Re-run any time to reset these rows: colorScheme_upsert/nested Theme rows
+# match on `id`, and these ids are fixed, so this is idempotent.
+#
+# Each scheme carries HeroUI's base semantic tokens (see
+# @heroui/styles themes/default/variables.css) for both a light and dark
+# variant. Status colors (success/warning/danger) are intentionally left to
+# HeroUI's own defaults, so they aren't set here.
+
+mutation SeedColorSchemes @transaction {
+  ocean: colorScheme_upsert(data: {
+    id: "00000000-0000-0000-0000-000000000010"
+    name: "Ocean"
+    themes_on_colorScheme: [
+      {
+        id: "00000000-0000-0000-0000-000000000011"
+        isDark: false
+        background: "#f0f9fa"
+        foreground: "#0f2a2e"
+        surface: "#ffffff"
+        surfaceForeground: "#0f2a2e"
+        overlay: "#ffffff"
+        overlayForeground: "#0f2a2e"
+        muted: "#5f7c80"
+        default: "#e0f2f4"
+        defaultForeground: "#0f2a2e"
+        accent: "#0891b2"
+        accentForeground: "#ffffff"
+        border: "#cde8ea"
+        separator: "#cde8ea"
+      }
+      {
+        id: "00000000-0000-0000-0000-000000000012"
+        isDark: true
+        background: "#041619"
+        foreground: "#e0f7fa"
+        surface: "#0b2529"
+        surfaceForeground: "#e0f7fa"
+        overlay: "#0b2529"
+        overlayForeground: "#e0f7fa"
+        muted: "#7fa3a8"
+        default: "#123338"
+        defaultForeground: "#e0f7fa"
+        accent: "#22d3ee"
+        accentForeground: "#041619"
+        border: "#123338"
+        separator: "#123338"
+      }
+    ]
+  })
+
+  forest: colorScheme_upsert(data: {
+    id: "00000000-0000-0000-0000-000000000020"
+    name: "Forest"
+    themes_on_colorScheme: [
+      {
+        id: "00000000-0000-0000-0000-000000000021"
+        isDark: false
+        background: "#f3f9f2"
+        foreground: "#14261a"
+        surface: "#ffffff"
+        surfaceForeground: "#14261a"
+        overlay: "#ffffff"
+        overlayForeground: "#14261a"
+        muted: "#5c7a63"
+        default: "#e5f2e3"
+        defaultForeground: "#14261a"
+        accent: "#16a34a"
+        accentForeground: "#ffffff"
+        border: "#d7ead3"
+        separator: "#d7ead3"
+      }
+      {
+        id: "00000000-0000-0000-0000-000000000022"
+        isDark: true
+        background: "#0a150d"
+        foreground: "#e6f4e3"
+        surface: "#142218"
+        surfaceForeground: "#e6f4e3"
+        overlay: "#142218"
+        overlayForeground: "#e6f4e3"
+        muted: "#86a68c"
+        default: "#1c3122"
+        defaultForeground: "#e6f4e3"
+        accent: "#4ade80"
+        accentForeground: "#0a150d"
+        border: "#1c3122"
+        separator: "#1c3122"
+      }
+    ]
+  })
+
+  sunset: colorScheme_upsert(data: {
+    id: "00000000-0000-0000-0000-000000000030"
+    name: "Sunset"
+    themes_on_colorScheme: [
+      {
+        id: "00000000-0000-0000-0000-000000000031"
+        isDark: false
+        background: "#fff8f2"
+        foreground: "#2b1810"
+        surface: "#ffffff"
+        surfaceForeground: "#2b1810"
+        overlay: "#ffffff"
+        overlayForeground: "#2b1810"
+        muted: "#8a6a5c"
+        default: "#ffe9d9"
+        defaultForeground: "#2b1810"
+        accent: "#ea580c"
+        accentForeground: "#ffffff"
+        border: "#ffdcc2"
+        separator: "#ffdcc2"
+      }
+      {
+        id: "00000000-0000-0000-0000-000000000032"
+        isDark: true
+        background: "#1a0f0a"
+        foreground: "#ffe8d9"
+        surface: "#2b1810"
+        surfaceForeground: "#ffe8d9"
+        overlay: "#2b1810"
+        overlayForeground: "#ffe8d9"
+        muted: "#b08a72"
+        default: "#3a2317"
+        defaultForeground: "#ffe8d9"
+        accent: "#fb923c"
+        accentForeground: "#1a0f0a"
+        border: "#3a2317"
+        separator: "#3a2317"
+      }
+    ]
+  })
+
+  grape: colorScheme_upsert(data: {
+    id: "00000000-0000-0000-0000-000000000040"
+    name: "Grape"
+    themes_on_colorScheme: [
+      {
+        id: "00000000-0000-0000-0000-000000000041"
+        isDark: false
+        background: "#f8f5ff"
+        foreground: "#241832"
+        surface: "#ffffff"
+        surfaceForeground: "#241832"
+        overlay: "#ffffff"
+        overlayForeground: "#241832"
+        muted: "#7c6a8f"
+        default: "#ede5fb"
+        defaultForeground: "#241832"
+        accent: "#9333ea"
+        accentForeground: "#ffffff"
+        border: "#e3d5f7"
+        separator: "#e3d5f7"
+      }
+      {
+        id: "00000000-0000-0000-0000-000000000042"
+        isDark: true
+        background: "#150d1e"
+        foreground: "#ede2fa"
+        surface: "#241832"
+        surfaceForeground: "#ede2fa"
+        overlay: "#241832"
+        overlayForeground: "#ede2fa"
+        muted: "#a690b8"
+        default: "#32213f"
+        defaultForeground: "#ede2fa"
+        accent: "#c084fc"
+        accentForeground: "#150d1e"
+        border: "#32213f"
+        separator: "#32213f"
+      }
+    ]
+  })
+}
+
+# The five account tiers referenced by User.userType.
+#
+# ORDERING — these rows must exist BEFORE the migration that adds
+# User.userTypeName, not after. Data Connect emits that migration as a single
+# statement:
+#
+#   ALTER TABLE "user" ADD COLUMN "user_type_name" text NOT NULL DEFAULT 'Regular',
+#     ADD CONSTRAINT ... FOREIGN KEY ("user_type_name") REFERENCES "user_type" ("name")
+#
+# so on a database that already has users, every existing row is backfilled to
+# 'Regular' and the FK is validated in the same breath. If "Regular" isn't in
+# user_type yet the whole migration aborts with a foreign key violation and the
+# column is never added (observed exactly this on the local emulator).
+#
+# Rolling this out against a non-empty database is therefore two-phase:
+#   1. Land the UserType table alone (no User.userType field yet) and migrate.
+#   2. Run this mutation to populate the five tiers.
+#   3. Add User.userType + userTypeName to the schema and migrate again.
+# A fresh/empty database is unaffected — no user rows means nothing to validate.
+#
+# Idempotent — userType_upsert matches on `name`, this table's key.
+mutation SeedUserTypes @transaction {
+  admin: userType_upsert(data: { name: "Admin" })
+  guest: userType_upsert(data: { name: "Guest" })
+  regular: userType_upsert(data: { name: "Regular" })
+  elevated: userType_upsert(data: { name: "Elevated" })
+  premium: userType_upsert(data: { name: "Premium" })
+}
+
+# Application features and the tiers they're granted to.
+#
+# Unlike SeedUserTypes there's no migration-ordering hazard here — Feature and
+# UserTypeFeature are new tables, so nothing pre-existing references them.
+# Just needs the UserType rows to already exist (SeedUserTypes above).
+#
+# Idempotent: feature_upsert matches on `name`, and userTypeFeature_upsert on
+# its (userType, feature) composite key.
+#
+# RENAMING A FEATURE is a data migration, not an edit. Feature is keyed on
+# `name` and UserTypeFeature's FK references it with ON UPDATE NO ACTION, so
+# changing a name in place fails while grants point at it. Replace instead:
+#   1. feature_upsert the new name
+#   2. userTypeFeature_upsert the same grants against the new name
+#   3. feature_delete the old name — its grants CASCADE away with it
+#
+# NOTE FOR THIS SKELETON: none of the nav tabs that ship here are gated — the
+# household and settings pages are core, and gating them would only hide the
+# app from its own user. The mechanism is seeded and wired anyway (see the
+# `feature` field on NavLink in components/Navbar.tsx) so the first gated
+# surface you add is a data change plus one line, not a rebuild.
+mutation SeedFeatures @transaction {
+  adminPage: feature_upsert(data: {
+    name: "AdminPage"
+    description: "Access to the admin page and its APIs."
+  })
+  userTypeControl: feature_upsert(data: {
+    name: "UserTypeControl"
+    description: "Change which tier a user belongs to."
+  })
+  # Dark-launched on purpose: the row exists and the gate works, but it is
+  # granted to nobody, so the surface stays invisible until a grant is
+  # inserted here. That is the intended way to ship an unfinished feature —
+  # no code branch, no feature-flag file, just an absent row.
+  reports: feature_upsert(data: {
+    name: "Reports"
+    description: "Cross-household spending reports and exports."
+  })
+
+  # Only Admin holds AdminPage. Granting it to another tier is an INSERT here,
+  # not a code change — that's the whole point of the xref.
+  adminPageForAdmin: userTypeFeature_upsert(data: {
+    userTypeName: "Admin"
+    featureName: "AdminPage"
+  })
+  # Separate from AdminPage deliberately: this one is a privilege-escalation
+  # vector (whoever holds it can promote anyone, themselves included), so a
+  # future read-only auditor tier can hold AdminPage without it.
+  userTypeControlForAdmin: userTypeFeature_upsert(data: {
+    userTypeName: "Admin"
+    featureName: "UserTypeControl"
+  })
+  # No grants for "Reports" — see the dark-launch note above.
+}
+
+# Starter categories, so a brand-new household isn't staring at an empty
+# picker on its first transaction.
+#
+# Colors are set explicitly rather than left to the name-derived fallback in
+# lib/entityColor.ts, because these are the categories people see most and a
+# hand-picked set reads better together than a golden-angle spread. Anything
+# created later gets the derived color and looks fine next to these.
+#
+# Idempotent — category_upsert matches on `name`, this table's key. Re-running
+# resets these rows' kind/color but leaves user-created categories alone.
+mutation SeedCategories @transaction {
+  salary: category_upsert(data: { name: "Salary", kind: "INCOME", parentGroup: "Earnings", color: "#059669" })
+  bonus: category_upsert(data: { name: "Bonus", kind: "INCOME", parentGroup: "Earnings", color: "#65a30d" })
+  interest: category_upsert(data: { name: "Interest", kind: "INCOME", parentGroup: "Earnings", color: "#0891b2" })
+  refund: category_upsert(data: { name: "Refund", kind: "INCOME", parentGroup: "Earnings", color: "#0284c7" })
+
+  rent: category_upsert(data: { name: "Rent", kind: "EXPENSE", parentGroup: "Housing", color: "#4f46e5" })
+  utilities: category_upsert(data: { name: "Utilities", kind: "EXPENSE", parentGroup: "Housing", color: "#7c3aed" })
+  groceries: category_upsert(data: { name: "Groceries", kind: "EXPENSE", parentGroup: "Living", color: "#ea580c" })
+  dining: category_upsert(data: { name: "Dining", kind: "EXPENSE", parentGroup: "Living", color: "#d97706" })
+  transport: category_upsert(data: { name: "Transport", kind: "EXPENSE", parentGroup: "Living", color: "#c026d3" })
+  health: category_upsert(data: { name: "Health", kind: "EXPENSE", parentGroup: "Living", color: "#e11d48" })
+  education: category_upsert(data: { name: "Education", kind: "EXPENSE", parentGroup: "Living", color: "#0891b2" })
+  subscriptions: category_upsert(data: { name: "Subscriptions", kind: "EXPENSE", parentGroup: "Living", color: "#78716c" })
+  savings: category_upsert(data: { name: "Savings", kind: "EXPENSE", parentGroup: "Future", color: "#059669" })
+}

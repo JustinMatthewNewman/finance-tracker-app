@@ -1,0 +1,108 @@
+import { CreateUserFromGoogleData, CreateUserFromGoogleVariables, SetUserTypeData, SetUserTypeVariables, SelectMyColorSchemeData, SelectMyColorSchemeVariables, ClearMyColorSchemeData, SelectMyPerformanceModeData, SelectMyPerformanceModeVariables, SelectMyBackgroundOpacityData, SelectMyBackgroundOpacityVariables, SelectMyExternalAccountLinkTemplateData, SelectMyExternalAccountLinkTemplateVariables, SelectMyCardStyleData, SelectMyCardStyleVariables, SelectMySquareCornersData, SelectMySquareCornersVariables, SelectMyBordersEnabledData, SelectMyBordersEnabledVariables, SelectMyCategoryColorsEnabledData, SelectMyCategoryColorsEnabledVariables, SelectMyCurrencyData, SelectMyCurrencyVariables, CreateFamilyMemberData, CreateFamilyMemberVariables, UpdateFamilyMemberData, UpdateFamilyMemberVariables, RenameFamilyMemberData, RenameFamilyMemberVariables, DeleteFamilyMemberData, DeleteFamilyMemberVariables, RestoreFamilyMemberData, RestoreFamilyMemberVariables, UpsertCategoryData, UpsertCategoryVariables, UpdateCategoryData, UpdateCategoryVariables, CreateTransactionData, CreateTransactionVariables, UpdateTransactionData, UpdateTransactionVariables, UpdateTransactionClearCategoryData, UpdateTransactionClearCategoryVariables, DeleteTransactionData, DeleteTransactionVariables, ListUsersData, GetMyUserData, ListColorSchemesData, ListUserTypesData, GetUserAccessByGoogleUidData, GetUserAccessByGoogleUidVariables, ListFamilyMembersData, ListFamilyMembersVariables, ListCategoriesData, ListCategoriesVariables, ListTransactionsByFamilyMemberData, ListTransactionsByFamilyMemberVariables, ListMyTransactionsData, ListMyTransactionsVariables, ListMyTransactionsByDateRangeData, ListMyTransactionsByDateRangeVariables, GetTransactionData, GetTransactionVariables } from '../';
+import { UseDataConnectQueryResult, useDataConnectQueryOptions, UseDataConnectMutationResult, useDataConnectMutationOptions} from '@tanstack-query-firebase/react/data-connect';
+import { UseQueryResult, UseMutationResult} from '@tanstack/react-query';
+import { DataConnect } from 'firebase/data-connect';
+import { FirebaseError } from 'firebase/app';
+
+
+export function useCreateUserFromGoogle(options?: useDataConnectMutationOptions<CreateUserFromGoogleData, FirebaseError, CreateUserFromGoogleVariables>): UseDataConnectMutationResult<CreateUserFromGoogleData, CreateUserFromGoogleVariables>;
+export function useCreateUserFromGoogle(dc: DataConnect, options?: useDataConnectMutationOptions<CreateUserFromGoogleData, FirebaseError, CreateUserFromGoogleVariables>): UseDataConnectMutationResult<CreateUserFromGoogleData, CreateUserFromGoogleVariables>;
+
+export function useSetUserType(options?: useDataConnectMutationOptions<SetUserTypeData, FirebaseError, SetUserTypeVariables>): UseDataConnectMutationResult<SetUserTypeData, SetUserTypeVariables>;
+export function useSetUserType(dc: DataConnect, options?: useDataConnectMutationOptions<SetUserTypeData, FirebaseError, SetUserTypeVariables>): UseDataConnectMutationResult<SetUserTypeData, SetUserTypeVariables>;
+
+export function useSelectMyColorScheme(options?: useDataConnectMutationOptions<SelectMyColorSchemeData, FirebaseError, SelectMyColorSchemeVariables>): UseDataConnectMutationResult<SelectMyColorSchemeData, SelectMyColorSchemeVariables>;
+export function useSelectMyColorScheme(dc: DataConnect, options?: useDataConnectMutationOptions<SelectMyColorSchemeData, FirebaseError, SelectMyColorSchemeVariables>): UseDataConnectMutationResult<SelectMyColorSchemeData, SelectMyColorSchemeVariables>;
+
+export function useClearMyColorScheme(options?: useDataConnectMutationOptions<ClearMyColorSchemeData, FirebaseError, void>): UseDataConnectMutationResult<ClearMyColorSchemeData, undefined>;
+export function useClearMyColorScheme(dc: DataConnect, options?: useDataConnectMutationOptions<ClearMyColorSchemeData, FirebaseError, void>): UseDataConnectMutationResult<ClearMyColorSchemeData, undefined>;
+
+export function useSelectMyPerformanceMode(options?: useDataConnectMutationOptions<SelectMyPerformanceModeData, FirebaseError, SelectMyPerformanceModeVariables>): UseDataConnectMutationResult<SelectMyPerformanceModeData, SelectMyPerformanceModeVariables>;
+export function useSelectMyPerformanceMode(dc: DataConnect, options?: useDataConnectMutationOptions<SelectMyPerformanceModeData, FirebaseError, SelectMyPerformanceModeVariables>): UseDataConnectMutationResult<SelectMyPerformanceModeData, SelectMyPerformanceModeVariables>;
+
+export function useSelectMyBackgroundOpacity(options?: useDataConnectMutationOptions<SelectMyBackgroundOpacityData, FirebaseError, SelectMyBackgroundOpacityVariables>): UseDataConnectMutationResult<SelectMyBackgroundOpacityData, SelectMyBackgroundOpacityVariables>;
+export function useSelectMyBackgroundOpacity(dc: DataConnect, options?: useDataConnectMutationOptions<SelectMyBackgroundOpacityData, FirebaseError, SelectMyBackgroundOpacityVariables>): UseDataConnectMutationResult<SelectMyBackgroundOpacityData, SelectMyBackgroundOpacityVariables>;
+
+export function useSelectMyExternalAccountLinkTemplate(options?: useDataConnectMutationOptions<SelectMyExternalAccountLinkTemplateData, FirebaseError, SelectMyExternalAccountLinkTemplateVariables | void>): UseDataConnectMutationResult<SelectMyExternalAccountLinkTemplateData, SelectMyExternalAccountLinkTemplateVariables>;
+export function useSelectMyExternalAccountLinkTemplate(dc: DataConnect, options?: useDataConnectMutationOptions<SelectMyExternalAccountLinkTemplateData, FirebaseError, SelectMyExternalAccountLinkTemplateVariables | void>): UseDataConnectMutationResult<SelectMyExternalAccountLinkTemplateData, SelectMyExternalAccountLinkTemplateVariables>;
+
+export function useSelectMyCardStyle(options?: useDataConnectMutationOptions<SelectMyCardStyleData, FirebaseError, SelectMyCardStyleVariables>): UseDataConnectMutationResult<SelectMyCardStyleData, SelectMyCardStyleVariables>;
+export function useSelectMyCardStyle(dc: DataConnect, options?: useDataConnectMutationOptions<SelectMyCardStyleData, FirebaseError, SelectMyCardStyleVariables>): UseDataConnectMutationResult<SelectMyCardStyleData, SelectMyCardStyleVariables>;
+
+export function useSelectMySquareCorners(options?: useDataConnectMutationOptions<SelectMySquareCornersData, FirebaseError, SelectMySquareCornersVariables>): UseDataConnectMutationResult<SelectMySquareCornersData, SelectMySquareCornersVariables>;
+export function useSelectMySquareCorners(dc: DataConnect, options?: useDataConnectMutationOptions<SelectMySquareCornersData, FirebaseError, SelectMySquareCornersVariables>): UseDataConnectMutationResult<SelectMySquareCornersData, SelectMySquareCornersVariables>;
+
+export function useSelectMyBordersEnabled(options?: useDataConnectMutationOptions<SelectMyBordersEnabledData, FirebaseError, SelectMyBordersEnabledVariables>): UseDataConnectMutationResult<SelectMyBordersEnabledData, SelectMyBordersEnabledVariables>;
+export function useSelectMyBordersEnabled(dc: DataConnect, options?: useDataConnectMutationOptions<SelectMyBordersEnabledData, FirebaseError, SelectMyBordersEnabledVariables>): UseDataConnectMutationResult<SelectMyBordersEnabledData, SelectMyBordersEnabledVariables>;
+
+export function useSelectMyCategoryColorsEnabled(options?: useDataConnectMutationOptions<SelectMyCategoryColorsEnabledData, FirebaseError, SelectMyCategoryColorsEnabledVariables>): UseDataConnectMutationResult<SelectMyCategoryColorsEnabledData, SelectMyCategoryColorsEnabledVariables>;
+export function useSelectMyCategoryColorsEnabled(dc: DataConnect, options?: useDataConnectMutationOptions<SelectMyCategoryColorsEnabledData, FirebaseError, SelectMyCategoryColorsEnabledVariables>): UseDataConnectMutationResult<SelectMyCategoryColorsEnabledData, SelectMyCategoryColorsEnabledVariables>;
+
+export function useSelectMyCurrency(options?: useDataConnectMutationOptions<SelectMyCurrencyData, FirebaseError, SelectMyCurrencyVariables>): UseDataConnectMutationResult<SelectMyCurrencyData, SelectMyCurrencyVariables>;
+export function useSelectMyCurrency(dc: DataConnect, options?: useDataConnectMutationOptions<SelectMyCurrencyData, FirebaseError, SelectMyCurrencyVariables>): UseDataConnectMutationResult<SelectMyCurrencyData, SelectMyCurrencyVariables>;
+
+export function useCreateFamilyMember(options?: useDataConnectMutationOptions<CreateFamilyMemberData, FirebaseError, CreateFamilyMemberVariables>): UseDataConnectMutationResult<CreateFamilyMemberData, CreateFamilyMemberVariables>;
+export function useCreateFamilyMember(dc: DataConnect, options?: useDataConnectMutationOptions<CreateFamilyMemberData, FirebaseError, CreateFamilyMemberVariables>): UseDataConnectMutationResult<CreateFamilyMemberData, CreateFamilyMemberVariables>;
+
+export function useUpdateFamilyMember(options?: useDataConnectMutationOptions<UpdateFamilyMemberData, FirebaseError, UpdateFamilyMemberVariables>): UseDataConnectMutationResult<UpdateFamilyMemberData, UpdateFamilyMemberVariables>;
+export function useUpdateFamilyMember(dc: DataConnect, options?: useDataConnectMutationOptions<UpdateFamilyMemberData, FirebaseError, UpdateFamilyMemberVariables>): UseDataConnectMutationResult<UpdateFamilyMemberData, UpdateFamilyMemberVariables>;
+
+export function useRenameFamilyMember(options?: useDataConnectMutationOptions<RenameFamilyMemberData, FirebaseError, RenameFamilyMemberVariables>): UseDataConnectMutationResult<RenameFamilyMemberData, RenameFamilyMemberVariables>;
+export function useRenameFamilyMember(dc: DataConnect, options?: useDataConnectMutationOptions<RenameFamilyMemberData, FirebaseError, RenameFamilyMemberVariables>): UseDataConnectMutationResult<RenameFamilyMemberData, RenameFamilyMemberVariables>;
+
+export function useDeleteFamilyMember(options?: useDataConnectMutationOptions<DeleteFamilyMemberData, FirebaseError, DeleteFamilyMemberVariables>): UseDataConnectMutationResult<DeleteFamilyMemberData, DeleteFamilyMemberVariables>;
+export function useDeleteFamilyMember(dc: DataConnect, options?: useDataConnectMutationOptions<DeleteFamilyMemberData, FirebaseError, DeleteFamilyMemberVariables>): UseDataConnectMutationResult<DeleteFamilyMemberData, DeleteFamilyMemberVariables>;
+
+export function useRestoreFamilyMember(options?: useDataConnectMutationOptions<RestoreFamilyMemberData, FirebaseError, RestoreFamilyMemberVariables>): UseDataConnectMutationResult<RestoreFamilyMemberData, RestoreFamilyMemberVariables>;
+export function useRestoreFamilyMember(dc: DataConnect, options?: useDataConnectMutationOptions<RestoreFamilyMemberData, FirebaseError, RestoreFamilyMemberVariables>): UseDataConnectMutationResult<RestoreFamilyMemberData, RestoreFamilyMemberVariables>;
+
+export function useUpsertCategory(options?: useDataConnectMutationOptions<UpsertCategoryData, FirebaseError, UpsertCategoryVariables>): UseDataConnectMutationResult<UpsertCategoryData, UpsertCategoryVariables>;
+export function useUpsertCategory(dc: DataConnect, options?: useDataConnectMutationOptions<UpsertCategoryData, FirebaseError, UpsertCategoryVariables>): UseDataConnectMutationResult<UpsertCategoryData, UpsertCategoryVariables>;
+
+export function useUpdateCategory(options?: useDataConnectMutationOptions<UpdateCategoryData, FirebaseError, UpdateCategoryVariables>): UseDataConnectMutationResult<UpdateCategoryData, UpdateCategoryVariables>;
+export function useUpdateCategory(dc: DataConnect, options?: useDataConnectMutationOptions<UpdateCategoryData, FirebaseError, UpdateCategoryVariables>): UseDataConnectMutationResult<UpdateCategoryData, UpdateCategoryVariables>;
+
+export function useCreateTransaction(options?: useDataConnectMutationOptions<CreateTransactionData, FirebaseError, CreateTransactionVariables>): UseDataConnectMutationResult<CreateTransactionData, CreateTransactionVariables>;
+export function useCreateTransaction(dc: DataConnect, options?: useDataConnectMutationOptions<CreateTransactionData, FirebaseError, CreateTransactionVariables>): UseDataConnectMutationResult<CreateTransactionData, CreateTransactionVariables>;
+
+export function useUpdateTransaction(options?: useDataConnectMutationOptions<UpdateTransactionData, FirebaseError, UpdateTransactionVariables>): UseDataConnectMutationResult<UpdateTransactionData, UpdateTransactionVariables>;
+export function useUpdateTransaction(dc: DataConnect, options?: useDataConnectMutationOptions<UpdateTransactionData, FirebaseError, UpdateTransactionVariables>): UseDataConnectMutationResult<UpdateTransactionData, UpdateTransactionVariables>;
+
+export function useUpdateTransactionClearCategory(options?: useDataConnectMutationOptions<UpdateTransactionClearCategoryData, FirebaseError, UpdateTransactionClearCategoryVariables>): UseDataConnectMutationResult<UpdateTransactionClearCategoryData, UpdateTransactionClearCategoryVariables>;
+export function useUpdateTransactionClearCategory(dc: DataConnect, options?: useDataConnectMutationOptions<UpdateTransactionClearCategoryData, FirebaseError, UpdateTransactionClearCategoryVariables>): UseDataConnectMutationResult<UpdateTransactionClearCategoryData, UpdateTransactionClearCategoryVariables>;
+
+export function useDeleteTransaction(options?: useDataConnectMutationOptions<DeleteTransactionData, FirebaseError, DeleteTransactionVariables>): UseDataConnectMutationResult<DeleteTransactionData, DeleteTransactionVariables>;
+export function useDeleteTransaction(dc: DataConnect, options?: useDataConnectMutationOptions<DeleteTransactionData, FirebaseError, DeleteTransactionVariables>): UseDataConnectMutationResult<DeleteTransactionData, DeleteTransactionVariables>;
+
+export function useListUsers(options?: useDataConnectQueryOptions<ListUsersData>): UseDataConnectQueryResult<ListUsersData, undefined>;
+export function useListUsers(dc: DataConnect, options?: useDataConnectQueryOptions<ListUsersData>): UseDataConnectQueryResult<ListUsersData, undefined>;
+
+export function useGetMyUser(options?: useDataConnectQueryOptions<GetMyUserData>): UseDataConnectQueryResult<GetMyUserData, undefined>;
+export function useGetMyUser(dc: DataConnect, options?: useDataConnectQueryOptions<GetMyUserData>): UseDataConnectQueryResult<GetMyUserData, undefined>;
+
+export function useListColorSchemes(options?: useDataConnectQueryOptions<ListColorSchemesData>): UseDataConnectQueryResult<ListColorSchemesData, undefined>;
+export function useListColorSchemes(dc: DataConnect, options?: useDataConnectQueryOptions<ListColorSchemesData>): UseDataConnectQueryResult<ListColorSchemesData, undefined>;
+
+export function useListUserTypes(options?: useDataConnectQueryOptions<ListUserTypesData>): UseDataConnectQueryResult<ListUserTypesData, undefined>;
+export function useListUserTypes(dc: DataConnect, options?: useDataConnectQueryOptions<ListUserTypesData>): UseDataConnectQueryResult<ListUserTypesData, undefined>;
+
+export function useGetUserAccessByGoogleUid(vars: GetUserAccessByGoogleUidVariables, options?: useDataConnectQueryOptions<GetUserAccessByGoogleUidData>): UseDataConnectQueryResult<GetUserAccessByGoogleUidData, GetUserAccessByGoogleUidVariables>;
+export function useGetUserAccessByGoogleUid(dc: DataConnect, vars: GetUserAccessByGoogleUidVariables, options?: useDataConnectQueryOptions<GetUserAccessByGoogleUidData>): UseDataConnectQueryResult<GetUserAccessByGoogleUidData, GetUserAccessByGoogleUidVariables>;
+
+export function useListFamilyMembers(vars?: ListFamilyMembersVariables, options?: useDataConnectQueryOptions<ListFamilyMembersData>): UseDataConnectQueryResult<ListFamilyMembersData, ListFamilyMembersVariables>;
+export function useListFamilyMembers(dc: DataConnect, vars?: ListFamilyMembersVariables, options?: useDataConnectQueryOptions<ListFamilyMembersData>): UseDataConnectQueryResult<ListFamilyMembersData, ListFamilyMembersVariables>;
+
+export function useListCategories(vars?: ListCategoriesVariables, options?: useDataConnectQueryOptions<ListCategoriesData>): UseDataConnectQueryResult<ListCategoriesData, ListCategoriesVariables>;
+export function useListCategories(dc: DataConnect, vars?: ListCategoriesVariables, options?: useDataConnectQueryOptions<ListCategoriesData>): UseDataConnectQueryResult<ListCategoriesData, ListCategoriesVariables>;
+
+export function useListTransactionsByFamilyMember(vars: ListTransactionsByFamilyMemberVariables, options?: useDataConnectQueryOptions<ListTransactionsByFamilyMemberData>): UseDataConnectQueryResult<ListTransactionsByFamilyMemberData, ListTransactionsByFamilyMemberVariables>;
+export function useListTransactionsByFamilyMember(dc: DataConnect, vars: ListTransactionsByFamilyMemberVariables, options?: useDataConnectQueryOptions<ListTransactionsByFamilyMemberData>): UseDataConnectQueryResult<ListTransactionsByFamilyMemberData, ListTransactionsByFamilyMemberVariables>;
+
+export function useListMyTransactions(vars?: ListMyTransactionsVariables, options?: useDataConnectQueryOptions<ListMyTransactionsData>): UseDataConnectQueryResult<ListMyTransactionsData, ListMyTransactionsVariables>;
+export function useListMyTransactions(dc: DataConnect, vars?: ListMyTransactionsVariables, options?: useDataConnectQueryOptions<ListMyTransactionsData>): UseDataConnectQueryResult<ListMyTransactionsData, ListMyTransactionsVariables>;
+
+export function useListMyTransactionsByDateRange(vars: ListMyTransactionsByDateRangeVariables, options?: useDataConnectQueryOptions<ListMyTransactionsByDateRangeData>): UseDataConnectQueryResult<ListMyTransactionsByDateRangeData, ListMyTransactionsByDateRangeVariables>;
+export function useListMyTransactionsByDateRange(dc: DataConnect, vars: ListMyTransactionsByDateRangeVariables, options?: useDataConnectQueryOptions<ListMyTransactionsByDateRangeData>): UseDataConnectQueryResult<ListMyTransactionsByDateRangeData, ListMyTransactionsByDateRangeVariables>;
+
+export function useGetTransaction(vars: GetTransactionVariables, options?: useDataConnectQueryOptions<GetTransactionData>): UseDataConnectQueryResult<GetTransactionData, GetTransactionVariables>;
+export function useGetTransaction(dc: DataConnect, vars: GetTransactionVariables, options?: useDataConnectQueryOptions<GetTransactionData>): UseDataConnectQueryResult<GetTransactionData, GetTransactionVariables>;

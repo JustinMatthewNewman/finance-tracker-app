@@ -1,0 +1,291 @@
+# Every operation here declares an @auth level, and the level IS the security
+# boundary — not the UI that calls it.
+#
+#   USER       — reachable from the browser, and scoped by auth.uid in its own
+#                where clause. A client can only ever read its own rows.
+#   NO_ACCESS  — unreachable from the browser. Called only from a route
+#                handler through the admin SDK, after that route has verified
+#                the caller's ID token (see lib/featureAccess.ts).
+#
+# A query that returns another account's data must be NO_ACCESS. There is no
+# third option where the client is trusted to pass the right userId.
+
+# Server-side only: the full account list, for administrative tooling.
+query ListUsers @auth(level: NO_ACCESS) {
+  users {
+    id
+    googleUid
+    username
+    email
+    userTypeName
+    createdAt
+  }
+}
+
+# The one query the whole client-side settings layer is built on. Returns the
+# signed-in account's preferences AND its capability set in a single round
+# trip, which is why context/UserSettingsContext.tsx and hooks/useFeatures.ts
+# can both read from it without either issuing a second fetch.
+#
+# Scoped by auth.uid, so "my user" is decided by the verified token and never
+# by a variable the caller supplies.
+query GetMyUser @auth(level: USER) {
+  # `first: { where: ... }`, not `key:` — User is keyed on its UUID `id`,
+  # and googleUid is merely @unique, so it is not addressable as a key.
+  user(first: { where: { googleUid: { eq_expr: "auth.uid" } } }) {
+    id
+    googleUid
+    username
+    email
+    performanceMode
+    backgroundOpacity
+    externalAccountLinkTemplate
+    cardOpacity
+    cardBlur
+    bordersEnabled
+    categoryColorsEnabled
+    squareCorners
+    currencyCode
+    createdAt
+    colorScheme {
+      id
+      name
+    }
+    userType {
+      name
+      features: features_via_UserTypeFeature {
+        name
+        description
+      }
+    }
+  }
+}
+
+# Every scheme with both of its variants, for the Settings page's theme
+# picker. USER rather than PUBLIC only because there is no reason for a
+# signed-out visitor to fetch it — the rows themselves are not sensitive.
+query ListColorSchemes @auth(level: USER) {
+  colorSchemes(orderBy: { name: ASC }) {
+    id
+    name
+    themes: themes_on_colorScheme {
+      id
+      isDark
+      background
+      foreground
+      surface
+      surfaceForeground
+      overlay
+      overlayForeground
+      muted
+      default
+      defaultForeground
+      accent
+      accentForeground
+      border
+      separator
+    }
+  }
+}
+
+query ListUserTypes @auth(level: USER, insecureReason: "Tiers are non-sensitive public metadata") {
+  userTypes(orderBy: { name: ASC }) {
+    id
+    name
+    createdAt
+  }
+}
+
+# Backs requireFeature() in lib/featureAccess.ts — the server-side half of
+# feature gating. NO_ACCESS because it takes a googleUid as a variable: if the
+# client could call it, it could pass somebody else's uid and read their tier.
+# The route resolves that uid from a verified token instead.
+query GetUserAccessByGoogleUid($googleUid: String!) @auth(level: NO_ACCESS) {
+  user(first: { where: { googleUid: { eq: $googleUid } } }) {
+    id
+    username
+    userType {
+      name
+      features: features_via_UserTypeFeature {
+        name
+      }
+    }
+  }
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Household
+# ─────────────────────────────────────────────────────────────────────────────
+
+# The finance page's sidebar. Scoped to the caller and filtered to
+# non-deleted members — DeleteFamilyMember is a soft delete (see the schema),
+# so without this filter removed people keep appearing in the list.
+#
+# `isDeleted: { eq: false }` rather than `ne: true`: the column is nullable,
+# and in SQL `NULL <> true` is NULL, not true — so a row written before the
+# column existed would be silently filtered out by the `ne` form.
+query ListFamilyMembers($limit: Int = 500, $offset: Int = 0) @auth(level: USER) {
+  familyMembers(
+    where: { user: { googleUid: { eq_expr: "auth.uid" } }, isDeleted: { eq: false } }
+    orderBy: [{ createdAt: ASC }]
+    limit: $limit
+    offset: $offset
+  ) {
+    id
+    name
+    relationship
+    color
+    externalAccountRef
+    monthlyIncomeTargetMinor
+    createdAt
+  }
+}
+
+# The shared category lookup, for the transaction form's picker and for
+# resolving a category's color when rendering a breakdown.
+query ListCategories($limit: Int = 500, $offset: Int = 0) @auth(level: USER) {
+  categories(orderBy: [{ name: ASC }], limit: $limit, offset: $offset) {
+    id
+    name
+    kind
+    parentGroup
+    color
+    createdAt
+  }
+}
+
+# The main panel: one family member's transactions.
+#
+# Scoped by auth.uid on the transaction itself (not only through
+# familyMember), so passing another household's memberId returns nothing
+# rather than their data. Belt and braces, but the cost is one indexed
+# predicate and the failure mode it prevents is a cross-household leak.
+query ListTransactionsByFamilyMember(
+  $familyMemberId: UUID!
+  $limit: Int = 500
+  $offset: Int = 0
+) @auth(level: USER) {
+  transactions(
+    where: {
+      familyMemberId: { eq: $familyMemberId }
+      user: { googleUid: { eq_expr: "auth.uid" } }
+    }
+    orderBy: [{ occurredOn: DESC }, { createdAt: DESC }]
+    limit: $limit
+    offset: $offset
+  ) {
+    id
+    amountMinor
+    direction
+    occurredOn
+    description
+    merchant
+    method
+    recurrence
+    createdAt
+    familyMember {
+      id
+      name
+    }
+    category {
+      id
+      name
+      kind
+      color
+    }
+  }
+}
+
+# Every transaction in the household, for the global search index and for
+# household-wide totals across all members.
+query ListMyTransactions($limit: Int = 500, $offset: Int = 0) @auth(level: USER) {
+  transactions(
+    where: { user: { googleUid: { eq_expr: "auth.uid" } } }
+    orderBy: [{ occurredOn: DESC }, { createdAt: DESC }]
+    limit: $limit
+    offset: $offset
+  ) {
+    id
+    amountMinor
+    direction
+    occurredOn
+    description
+    merchant
+    method
+    recurrence
+    createdAt
+    familyMember {
+      id
+      name
+    }
+    category {
+      id
+      name
+      kind
+      color
+    }
+  }
+}
+
+# Date-bounded variant, for the month the main panel is showing. Both bounds
+# are inclusive.
+query ListMyTransactionsByDateRange(
+  $startDate: Date!
+  $endDate: Date!
+  $limit: Int = 500
+  $offset: Int = 0
+) @auth(level: USER) {
+  transactions(
+    where: {
+      user: { googleUid: { eq_expr: "auth.uid" } }
+      occurredOn: { ge: $startDate, le: $endDate }
+    }
+    orderBy: [{ occurredOn: DESC }, { createdAt: DESC }]
+    limit: $limit
+    offset: $offset
+  ) {
+    id
+    amountMinor
+    direction
+    occurredOn
+    description
+    merchant
+    method
+    recurrence
+    createdAt
+    familyMember {
+      id
+      name
+    }
+    category {
+      id
+      name
+      kind
+      color
+    }
+  }
+}
+
+query GetTransaction($transactionId: UUID!) @auth(level: USER) {
+  transaction(key: { id: $transactionId }) {
+    id
+    amountMinor
+    direction
+    occurredOn
+    description
+    merchant
+    method
+    recurrence
+    createdAt
+    familyMember {
+      id
+      name
+    }
+    category {
+      id
+      name
+      kind
+      color
+    }
+  }
+}

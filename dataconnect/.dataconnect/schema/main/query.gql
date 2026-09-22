@@ -1,0 +1,459 @@
+extend type Query {
+  """
+  ✨ Look up a single `Category` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  category(
+    """
+    The key used to identify the object.
+    """
+    key: Category_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Category_FirstRow
+  ): Category @fdc_generated(from: "Category", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `ColorScheme` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  colorScheme(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: ColorScheme_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: ColorScheme_FirstRow
+  ): ColorScheme @fdc_generated(from: "ColorScheme", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `FamilyMember` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  familyMember(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: FamilyMember_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: FamilyMember_FirstRow
+  ): FamilyMember @fdc_generated(from: "FamilyMember", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Feature` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  feature(
+    """
+    The key used to identify the object.
+    """
+    key: Feature_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Feature_FirstRow
+  ): Feature @fdc_generated(from: "Feature", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Theme` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  theme(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Theme_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Theme_FirstRow
+  ): Theme @fdc_generated(from: "Theme", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Transaction` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  transaction(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Transaction_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Transaction_FirstRow
+  ): Transaction @fdc_generated(from: "Transaction", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `User` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  user(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: User_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: User_FirstRow
+  ): User @fdc_generated(from: "User", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `UserType` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  userType(
+    """
+    The key used to identify the object.
+    """
+    key: UserType_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: UserType_FirstRow
+  ): UserType @fdc_generated(from: "UserType", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `UserTypeFeature` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  userTypeFeature(
+    """
+    The key used to identify the object.
+    """
+    key: UserTypeFeature_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: UserTypeFeature_FirstRow
+  ): UserTypeFeature @fdc_generated(from: "UserTypeFeature", purpose: QUERY_SINGLE)
+  """
+  ✨ List `Category` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  categories(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Category_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Category_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Category_Having
+  ): [Category!]! @fdc_generated(from: "Category", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `ColorScheme` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  colorSchemes(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: ColorScheme_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [ColorScheme_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: ColorScheme_Having
+  ): [ColorScheme!]! @fdc_generated(from: "ColorScheme", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `FamilyMember` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  familyMembers(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: FamilyMember_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [FamilyMember_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: FamilyMember_Having
+  ): [FamilyMember!]! @fdc_generated(from: "FamilyMember", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Feature` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  features(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Feature_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Feature_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Feature_Having
+  ): [Feature!]! @fdc_generated(from: "Feature", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Theme` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  themes(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Theme_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Theme_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Theme_Having
+  ): [Theme!]! @fdc_generated(from: "Theme", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Transaction` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  transactions(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Transaction_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Transaction_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Transaction_Having
+  ): [Transaction!]! @fdc_generated(from: "Transaction", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `User` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  users(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: User_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [User_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: User_Having
+  ): [User!]! @fdc_generated(from: "User", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `UserType` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  userTypes(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: UserType_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [UserType_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: UserType_Having
+  ): [UserType!]! @fdc_generated(from: "UserType", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `UserTypeFeature` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  userTypeFeatures(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: UserTypeFeature_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [UserTypeFeature_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: UserTypeFeature_Having
+  ): [UserTypeFeature!]! @fdc_generated(from: "UserTypeFeature", purpose: QUERY_MULTIPLE)
+}

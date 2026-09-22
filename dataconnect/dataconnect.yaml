@@ -1,0 +1,25 @@
+specVersion: "v1"
+serviceId: "finance-tracker-app-service"
+location: "us-east4"
+schema:
+  source: "./schema"
+  datasource:
+    postgresql:
+      database: "finance-tracker-app-database"
+      cloudSql:
+        instanceId: "finance-tracker-app-instance"
+schemaValidation: "COMPATIBLE"
+connectorDirs: ["./finance"]
+connectorId: finance
+generate:
+  adminNodeSdk:
+    - outputDir: ../../src/dataconnect-admin-generated
+      package: "@financeconnect/admin-generated"
+      packageJsonDir: ../..
+  javascriptSdk:
+    - outputDir: ../../src/dataconnect-generated
+      package: "@financeconnect/generated"
+      packageJsonDir: ../..
+      react: true
+      angular: false
+      clientCache: {}

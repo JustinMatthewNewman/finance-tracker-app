@@ -1,0 +1,13 @@
+connectorId: finance
+generate:
+  adminNodeSdk:
+    - outputDir: ../../src/dataconnect-admin-generated
+      package: "@financeconnect/admin-generated"
+      packageJsonDir: ../..
+  javascriptSdk:
+    - outputDir: ../../src/dataconnect-generated
+      package: "@financeconnect/generated"
+      packageJsonDir: ../..
+      react: true
+      angular: false
+      clientCache: {}
