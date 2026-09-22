@@ -97,7 +97,7 @@ export function SideNavListBox({
             <Tabs.ListContainer className="h-full w-full min-w-0">
               <Tabs.List
                 aria-label={ariaLabel}
-                className={`h-full w-full min-w-0 overflow-hidden bg-surface ${
+                className={`h-full w-full min-w-0 overflow-hidden rounded-2xl p-1.5 bg-surface ${
                   bordersEnabled ? "border border-default-200" : ""
                 }`}
                 data-glass="surface"
@@ -108,7 +108,7 @@ export function SideNavListBox({
                     <Tabs.Tab
                       key={item.id}
                       id={item.id}
-                      className="h-auto w-full min-w-0 justify-start border-l-2 border-transparent px-3 py-2 text-left text-foreground/60 data-[selected=true]:border-accent data-[selected=true]:bg-accent-soft data-[selected=true]:text-foreground"
+                      className="h-auto w-full min-w-0 justify-start rounded-xl px-3 py-2.5 text-left text-foreground/60 transition-all hover:bg-default-100/50 data-[selected=true]:bg-accent-soft data-[selected=true]:text-foreground data-[selected=true]:font-semibold"
                     >
                       <div className="flex min-w-0 flex-1 items-start gap-2">
                         {Icon && <Icon className="mt-0.5 size-4 shrink-0" aria-hidden />}

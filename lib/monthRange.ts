@@ -124,3 +124,47 @@ export function formatDayHeading(dateString: string): string {
     day: "numeric",
   });
 }
+
+export interface MonthGridDay {
+  date: Date;
+  /** "yyyy-mm-dd" */
+  dayKey: string;
+  /** False for the padding days borrowed from the adjacent months. */
+  isCurrentMonth: boolean;
+}
+
+/**
+ * A full Monday-first calendar grid for a month, padded with the trailing
+ * days of the previous month and the leading days of the next so every row
+ * is a complete week.
+ *
+ * Every date is built from local (year, month, day) parts for the reason
+ * given at the top of this file — a grid built via `new Date("yyyy-mm-dd")`
+ * is off by one day for anyone west of Greenwich, which shifts the entire
+ * calendar by a column.
+ */
+export function buildMonthGrid(key: MonthKey): MonthGridDay[] {
+  const first = new Date(key.year, key.month, 1);
+  const last = new Date(key.year, key.month + 1, 0);
+
+  // getDay() is 0=Sun..6=Sat; this grid is Monday-first, so Sunday needs 6
+  // leading days rather than 0.
+  const firstWeekday = first.getDay();
+  const leading = firstWeekday === 0 ? 6 : firstWeekday - 1;
+  const lastWeekday = last.getDay();
+  const trailing = lastWeekday === 0 ? 0 : 7 - lastWeekday;
+
+  const days: MonthGridDay[] = [];
+  const cursor = new Date(key.year, key.month, 1 - leading);
+  const end = new Date(key.year, key.month, last.getDate() + trailing);
+
+  while (cursor <= end) {
+    days.push({
+      date: new Date(cursor),
+      dayKey: toDateString(cursor),
+      isCurrentMonth: cursor.getMonth() === key.month && cursor.getFullYear() === key.year,
+    });
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return days;
+}
