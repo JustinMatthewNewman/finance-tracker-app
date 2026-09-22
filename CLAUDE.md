@@ -36,6 +36,18 @@ Next.js 16 App Router · React 19 · TypeScript · Tailwind v4 · HeroUI v3 ·
 - **Call `useFamilyMembers()` once per page** and pass the result down; it
   holds state in `useState`, not context, so two calls drift apart.
 
+## Dependencies
+
+`package.json`'s `overrides` block pins `jose` to v4 for `jwks-rsa`. It looks
+removable — nothing here imports either package directly — but it is
+load-bearing: `firebase-admin` -> `jwks-rsa` does a CommonJS `require('jose')`,
+and jose is ESM-only from v5, so without the pin `require('firebase-admin/auth')`
+throws `ERR_REQUIRE_ESM` and every Admin-SDK route (i.e. sign-in) 500s.
+
+It passes locally on Node 22.12+ regardless, because that Node can `require()`
+an ES module — so this breaks **only on deploy**. `lib/dependencies.test.ts`
+guards it.
+
 ## After editing `.gql`
 
 ```bash
