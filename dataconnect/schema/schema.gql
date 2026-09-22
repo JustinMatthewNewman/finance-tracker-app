@@ -75,51 +75,25 @@ type User @table {
   # dataconnect/seed_data.gql.
   userType: UserType! @ref(fields: "userTypeName", references: "name")
   userTypeName: String! @default(value: "Regular")
+  createdAt: Timestamp!
+}
 
-  # --- Per-account display preferences ---
-  #
-  # All nullable with a column default, so adding one later never requires a
-  # backfill. Every one of these is read by a single shared GetMyUser call
-  # (see context/UserSettingsContext.tsx) rather than one query per setting.
+# Dedicated per-account display preferences table, decoupled from user identity.
+# 1-to-1 relationship with User via `user: User! @unique`.
+type UserSetting @table {
+  id: UUID! @default(expr: "uuidV4()")
+  user: User! @unique
   colorScheme: ColorScheme
   performanceMode: Boolean @default(expr: "false")
-  # Percentage (0-100) multiplier applied on top of each page's own
-  # AmbientBackground intensity prop (see components/AmbientBackground.tsx).
   backgroundOpacity: Int @default(expr: "100")
-  # URL template for linking out to an external institution portal, e.g.
-  # "https://bank.example.com/accounts/{account_id}". The literal
-  # "{account_id}" placeholder is substituted with a family member's external
-  # account reference when rendering the link.
   externalAccountLinkTemplate: String
-  # Percentage (0-100) applied to Card backgrounds app-wide (see
-  # .card--default/.card--secondary/.card--tertiary in globals.css) —
-  # lower values let whatever's behind a card (AmbientBackground, page
-  # background) show through.
   cardOpacity: Int @default(expr: "100")
-  # Gaussian blur radius in pixels applied behind Card backgrounds
-  # (backdrop-filter: blur(...)), for a frosted-glass look. 0 = no blur.
   cardBlur: Int @default(expr: "0")
-  # Whether Cards and tables render their outer border (see [data-slot="card"]
-  # and table/th/td rules in globals.css). Off strips just the border, not
-  # the background/shadow, so cards stay visually distinct.
   bordersEnabled: Boolean @default(expr: "true")
-  # Whether a category's assigned color (see Category.color) tints the
-  # surfaces it appears on — breakdown rows, transaction rows.
-  #
-  # A display preference rather than a data one: turning it off never clears a
-  # category's color, it only stops the app painting with it. That matters
-  # because Category.color is shared across users while this switch is per
-  # account, so one person muting the tints can't affect anyone else's view.
   categoryColorsEnabled: Boolean @default(expr: "true")
-  # Squares off corners app-wide (see the .square-corners rules in
-  # globals.css). Defaults false so existing accounts keep the rounded look
-  # they already have rather than being restyled by a migration.
   squareCorners: Boolean @default(expr: "false")
-  # The household's default currency, as an ISO 4217 code. Display only —
-  # amounts are stored as integer minor units (see Transaction.amountMinor)
-  # and this decides how they're formatted, never how they're stored.
   currencyCode: String @default(value: "USD")
-  createdAt: Timestamp!
+  updatedAt: Timestamp! @default(expr: "request.time")
 }
 
 # A person in the household whose income and expenses are tracked — the entity

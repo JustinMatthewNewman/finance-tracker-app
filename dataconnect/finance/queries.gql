@@ -37,19 +37,22 @@ query GetMyUser @auth(level: USER) {
     googleUid
     username
     email
-    performanceMode
-    backgroundOpacity
-    externalAccountLinkTemplate
-    cardOpacity
-    cardBlur
-    bordersEnabled
-    categoryColorsEnabled
-    squareCorners
-    currencyCode
     createdAt
-    colorScheme {
+    userSetting: userSetting_on_user {
       id
-      name
+      performanceMode
+      backgroundOpacity
+      externalAccountLinkTemplate
+      cardOpacity
+      cardBlur
+      bordersEnabled
+      categoryColorsEnabled
+      squareCorners
+      currencyCode
+      colorScheme {
+        id
+        name
+      }
     }
     userType {
       name

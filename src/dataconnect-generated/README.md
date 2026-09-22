@@ -234,20 +234,23 @@ export interface GetMyUserData {
     googleUid: string;
     username: string;
     email?: string | null;
-    performanceMode?: boolean | null;
-    backgroundOpacity?: number | null;
-    externalAccountLinkTemplate?: string | null;
-    cardOpacity?: number | null;
-    cardBlur?: number | null;
-    bordersEnabled?: boolean | null;
-    categoryColorsEnabled?: boolean | null;
-    squareCorners?: boolean | null;
-    currencyCode?: string | null;
     createdAt: TimestampString;
-    colorScheme?: {
+    userSetting?: {
       id: UUIDString;
-      name: string;
-    } & ColorScheme_Key;
+      performanceMode?: boolean | null;
+      backgroundOpacity?: number | null;
+      externalAccountLinkTemplate?: string | null;
+      cardOpacity?: number | null;
+      cardBlur?: number | null;
+      bordersEnabled?: boolean | null;
+      categoryColorsEnabled?: boolean | null;
+      squareCorners?: boolean | null;
+      currencyCode?: string | null;
+      colorScheme?: {
+        id: UUIDString;
+        name: string;
+      } & ColorScheme_Key;
+    } & UserSetting_Key;
     userType: {
       name: string;
       features: ({
@@ -1726,7 +1729,7 @@ Recall that executing the `SelectMyColorScheme` mutation returns a `MutationProm
 The `data` property is an object of type `SelectMyColorSchemeData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
 ```typescript
 export interface SelectMyColorSchemeData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 ```
 ### Using `SelectMyColorScheme`'s action shortcut function
@@ -1750,12 +1753,12 @@ const { data } = await selectMyColorScheme({ colorSchemeId: ..., });
 const dataConnect = getDataConnect(connectorConfig);
 const { data } = await selectMyColorScheme(dataConnect, selectMyColorSchemeVars);
 
-console.log(data.user_update);
+console.log(data.userSetting_update);
 
 // Or, you can use the `Promise` API.
 selectMyColorScheme(selectMyColorSchemeVars).then((response) => {
   const data = response.data;
-  console.log(data.user_update);
+  console.log(data.userSetting_update);
 });
 ```
 
@@ -1783,12 +1786,12 @@ const ref = selectMyColorSchemeRef(dataConnect, selectMyColorSchemeVars);
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await executeMutation(ref);
 
-console.log(data.user_update);
+console.log(data.userSetting_update);
 
 // Or, you can use the `Promise` API.
 executeMutation(ref).then((response) => {
   const data = response.data;
-  console.log(data.user_update);
+  console.log(data.userSetting_update);
 });
 ```
 
@@ -1829,7 +1832,7 @@ Recall that executing the `ClearMyColorScheme` mutation returns a `MutationPromi
 The `data` property is an object of type `ClearMyColorSchemeData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
 ```typescript
 export interface ClearMyColorSchemeData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 ```
 ### Using `ClearMyColorScheme`'s action shortcut function
@@ -1847,12 +1850,12 @@ const { data } = await clearMyColorScheme();
 const dataConnect = getDataConnect(connectorConfig);
 const { data } = await clearMyColorScheme(dataConnect);
 
-console.log(data.user_update);
+console.log(data.userSetting_update);
 
 // Or, you can use the `Promise` API.
 clearMyColorScheme().then((response) => {
   const data = response.data;
-  console.log(data.user_update);
+  console.log(data.userSetting_update);
 });
 ```
 
@@ -1874,12 +1877,12 @@ const ref = clearMyColorSchemeRef(dataConnect);
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await executeMutation(ref);
 
-console.log(data.user_update);
+console.log(data.userSetting_update);
 
 // Or, you can use the `Promise` API.
 executeMutation(ref).then((response) => {
   const data = response.data;
-  console.log(data.user_update);
+  console.log(data.userSetting_update);
 });
 ```
 
@@ -1926,7 +1929,7 @@ Recall that executing the `SelectMyPerformanceMode` mutation returns a `Mutation
 The `data` property is an object of type `SelectMyPerformanceModeData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
 ```typescript
 export interface SelectMyPerformanceModeData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 ```
 ### Using `SelectMyPerformanceMode`'s action shortcut function
@@ -1950,12 +1953,12 @@ const { data } = await selectMyPerformanceMode({ performanceMode: ..., });
 const dataConnect = getDataConnect(connectorConfig);
 const { data } = await selectMyPerformanceMode(dataConnect, selectMyPerformanceModeVars);
 
-console.log(data.user_update);
+console.log(data.userSetting_update);
 
 // Or, you can use the `Promise` API.
 selectMyPerformanceMode(selectMyPerformanceModeVars).then((response) => {
   const data = response.data;
-  console.log(data.user_update);
+  console.log(data.userSetting_update);
 });
 ```
 
@@ -1983,12 +1986,12 @@ const ref = selectMyPerformanceModeRef(dataConnect, selectMyPerformanceModeVars)
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await executeMutation(ref);
 
-console.log(data.user_update);
+console.log(data.userSetting_update);
 
 // Or, you can use the `Promise` API.
 executeMutation(ref).then((response) => {
   const data = response.data;
-  console.log(data.user_update);
+  console.log(data.userSetting_update);
 });
 ```
 
@@ -2035,7 +2038,7 @@ Recall that executing the `SelectMyBackgroundOpacity` mutation returns a `Mutati
 The `data` property is an object of type `SelectMyBackgroundOpacityData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
 ```typescript
 export interface SelectMyBackgroundOpacityData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 ```
 ### Using `SelectMyBackgroundOpacity`'s action shortcut function
@@ -2059,12 +2062,12 @@ const { data } = await selectMyBackgroundOpacity({ backgroundOpacity: ..., });
 const dataConnect = getDataConnect(connectorConfig);
 const { data } = await selectMyBackgroundOpacity(dataConnect, selectMyBackgroundOpacityVars);
 
-console.log(data.user_update);
+console.log(data.userSetting_update);
 
 // Or, you can use the `Promise` API.
 selectMyBackgroundOpacity(selectMyBackgroundOpacityVars).then((response) => {
   const data = response.data;
-  console.log(data.user_update);
+  console.log(data.userSetting_update);
 });
 ```
 
@@ -2092,12 +2095,12 @@ const ref = selectMyBackgroundOpacityRef(dataConnect, selectMyBackgroundOpacityV
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await executeMutation(ref);
 
-console.log(data.user_update);
+console.log(data.userSetting_update);
 
 // Or, you can use the `Promise` API.
 executeMutation(ref).then((response) => {
   const data = response.data;
-  console.log(data.user_update);
+  console.log(data.userSetting_update);
 });
 ```
 
@@ -2144,7 +2147,7 @@ Recall that executing the `SelectMyExternalAccountLinkTemplate` mutation returns
 The `data` property is an object of type `SelectMyExternalAccountLinkTemplateData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
 ```typescript
 export interface SelectMyExternalAccountLinkTemplateData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 ```
 ### Using `SelectMyExternalAccountLinkTemplate`'s action shortcut function
@@ -2170,12 +2173,12 @@ const { data } = await selectMyExternalAccountLinkTemplate();
 const dataConnect = getDataConnect(connectorConfig);
 const { data } = await selectMyExternalAccountLinkTemplate(dataConnect, selectMyExternalAccountLinkTemplateVars);
 
-console.log(data.user_update);
+console.log(data.userSetting_update);
 
 // Or, you can use the `Promise` API.
 selectMyExternalAccountLinkTemplate(selectMyExternalAccountLinkTemplateVars).then((response) => {
   const data = response.data;
-  console.log(data.user_update);
+  console.log(data.userSetting_update);
 });
 ```
 
@@ -2205,12 +2208,12 @@ const ref = selectMyExternalAccountLinkTemplateRef(dataConnect, selectMyExternal
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await executeMutation(ref);
 
-console.log(data.user_update);
+console.log(data.userSetting_update);
 
 // Or, you can use the `Promise` API.
 executeMutation(ref).then((response) => {
   const data = response.data;
-  console.log(data.user_update);
+  console.log(data.userSetting_update);
 });
 ```
 
@@ -2258,7 +2261,7 @@ Recall that executing the `SelectMyCardStyle` mutation returns a `MutationPromis
 The `data` property is an object of type `SelectMyCardStyleData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
 ```typescript
 export interface SelectMyCardStyleData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 ```
 ### Using `SelectMyCardStyle`'s action shortcut function
@@ -2283,12 +2286,12 @@ const { data } = await selectMyCardStyle({ cardOpacity: ..., cardBlur: ..., });
 const dataConnect = getDataConnect(connectorConfig);
 const { data } = await selectMyCardStyle(dataConnect, selectMyCardStyleVars);
 
-console.log(data.user_update);
+console.log(data.userSetting_update);
 
 // Or, you can use the `Promise` API.
 selectMyCardStyle(selectMyCardStyleVars).then((response) => {
   const data = response.data;
-  console.log(data.user_update);
+  console.log(data.userSetting_update);
 });
 ```
 
@@ -2317,12 +2320,12 @@ const ref = selectMyCardStyleRef(dataConnect, selectMyCardStyleVars);
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await executeMutation(ref);
 
-console.log(data.user_update);
+console.log(data.userSetting_update);
 
 // Or, you can use the `Promise` API.
 executeMutation(ref).then((response) => {
   const data = response.data;
-  console.log(data.user_update);
+  console.log(data.userSetting_update);
 });
 ```
 
@@ -2369,7 +2372,7 @@ Recall that executing the `SelectMySquareCorners` mutation returns a `MutationPr
 The `data` property is an object of type `SelectMySquareCornersData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
 ```typescript
 export interface SelectMySquareCornersData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 ```
 ### Using `SelectMySquareCorners`'s action shortcut function
@@ -2393,12 +2396,12 @@ const { data } = await selectMySquareCorners({ squareCorners: ..., });
 const dataConnect = getDataConnect(connectorConfig);
 const { data } = await selectMySquareCorners(dataConnect, selectMySquareCornersVars);
 
-console.log(data.user_update);
+console.log(data.userSetting_update);
 
 // Or, you can use the `Promise` API.
 selectMySquareCorners(selectMySquareCornersVars).then((response) => {
   const data = response.data;
-  console.log(data.user_update);
+  console.log(data.userSetting_update);
 });
 ```
 
@@ -2426,12 +2429,12 @@ const ref = selectMySquareCornersRef(dataConnect, selectMySquareCornersVars);
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await executeMutation(ref);
 
-console.log(data.user_update);
+console.log(data.userSetting_update);
 
 // Or, you can use the `Promise` API.
 executeMutation(ref).then((response) => {
   const data = response.data;
-  console.log(data.user_update);
+  console.log(data.userSetting_update);
 });
 ```
 
@@ -2478,7 +2481,7 @@ Recall that executing the `SelectMyBordersEnabled` mutation returns a `MutationP
 The `data` property is an object of type `SelectMyBordersEnabledData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
 ```typescript
 export interface SelectMyBordersEnabledData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 ```
 ### Using `SelectMyBordersEnabled`'s action shortcut function
@@ -2502,12 +2505,12 @@ const { data } = await selectMyBordersEnabled({ bordersEnabled: ..., });
 const dataConnect = getDataConnect(connectorConfig);
 const { data } = await selectMyBordersEnabled(dataConnect, selectMyBordersEnabledVars);
 
-console.log(data.user_update);
+console.log(data.userSetting_update);
 
 // Or, you can use the `Promise` API.
 selectMyBordersEnabled(selectMyBordersEnabledVars).then((response) => {
   const data = response.data;
-  console.log(data.user_update);
+  console.log(data.userSetting_update);
 });
 ```
 
@@ -2535,12 +2538,12 @@ const ref = selectMyBordersEnabledRef(dataConnect, selectMyBordersEnabledVars);
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await executeMutation(ref);
 
-console.log(data.user_update);
+console.log(data.userSetting_update);
 
 // Or, you can use the `Promise` API.
 executeMutation(ref).then((response) => {
   const data = response.data;
-  console.log(data.user_update);
+  console.log(data.userSetting_update);
 });
 ```
 
@@ -2587,7 +2590,7 @@ Recall that executing the `SelectMyCategoryColorsEnabled` mutation returns a `Mu
 The `data` property is an object of type `SelectMyCategoryColorsEnabledData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
 ```typescript
 export interface SelectMyCategoryColorsEnabledData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 ```
 ### Using `SelectMyCategoryColorsEnabled`'s action shortcut function
@@ -2611,12 +2614,12 @@ const { data } = await selectMyCategoryColorsEnabled({ categoryColorsEnabled: ..
 const dataConnect = getDataConnect(connectorConfig);
 const { data } = await selectMyCategoryColorsEnabled(dataConnect, selectMyCategoryColorsEnabledVars);
 
-console.log(data.user_update);
+console.log(data.userSetting_update);
 
 // Or, you can use the `Promise` API.
 selectMyCategoryColorsEnabled(selectMyCategoryColorsEnabledVars).then((response) => {
   const data = response.data;
-  console.log(data.user_update);
+  console.log(data.userSetting_update);
 });
 ```
 
@@ -2644,12 +2647,12 @@ const ref = selectMyCategoryColorsEnabledRef(dataConnect, selectMyCategoryColors
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await executeMutation(ref);
 
-console.log(data.user_update);
+console.log(data.userSetting_update);
 
 // Or, you can use the `Promise` API.
 executeMutation(ref).then((response) => {
   const data = response.data;
-  console.log(data.user_update);
+  console.log(data.userSetting_update);
 });
 ```
 
@@ -2696,7 +2699,7 @@ Recall that executing the `SelectMyCurrency` mutation returns a `MutationPromise
 The `data` property is an object of type `SelectMyCurrencyData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
 ```typescript
 export interface SelectMyCurrencyData {
-  user_update?: User_Key | null;
+  userSetting_update?: UserSetting_Key | null;
 }
 ```
 ### Using `SelectMyCurrency`'s action shortcut function
@@ -2720,12 +2723,12 @@ const { data } = await selectMyCurrency({ currencyCode: ..., });
 const dataConnect = getDataConnect(connectorConfig);
 const { data } = await selectMyCurrency(dataConnect, selectMyCurrencyVars);
 
-console.log(data.user_update);
+console.log(data.userSetting_update);
 
 // Or, you can use the `Promise` API.
 selectMyCurrency(selectMyCurrencyVars).then((response) => {
   const data = response.data;
-  console.log(data.user_update);
+  console.log(data.userSetting_update);
 });
 ```
 
@@ -2753,12 +2756,12 @@ const ref = selectMyCurrencyRef(dataConnect, selectMyCurrencyVars);
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await executeMutation(ref);
 
-console.log(data.user_update);
+console.log(data.userSetting_update);
 
 // Or, you can use the `Promise` API.
 executeMutation(ref).then((response) => {
   const data = response.data;
-  console.log(data.user_update);
+  console.log(data.userSetting_update);
 });
 ```
 

@@ -62,17 +62,18 @@ export function UserSettingsProvider({ children }: { children: React.ReactNode }
       // just written by a mutation is never masked by a stale cached read.
       const result = await getMyUser({ fetchPolicy: QueryFetchPolicy.SERVER_ONLY });
       const dbUser = result.data.user;
+      const settings = dbUser?.userSetting;
       setState({
-        colorSchemeId: dbUser?.colorScheme?.id ?? null,
-        performanceMode: dbUser?.performanceMode ?? false,
-        backgroundOpacity: dbUser?.backgroundOpacity ?? 100,
-        externalAccountLinkTemplate: dbUser?.externalAccountLinkTemplate ?? null,
-        cardOpacity: dbUser?.cardOpacity ?? 100,
-        cardBlur: dbUser?.cardBlur ?? 0,
-        bordersEnabled: dbUser?.bordersEnabled ?? true,
-        categoryColorsEnabled: dbUser?.categoryColorsEnabled ?? true,
-        squareCorners: dbUser?.squareCorners ?? false,
-        currencyCode: dbUser?.currencyCode ?? DEFAULT_CURRENCY,
+        colorSchemeId: settings?.colorScheme?.id ?? null,
+        performanceMode: settings?.performanceMode ?? false,
+        backgroundOpacity: settings?.backgroundOpacity ?? 100,
+        externalAccountLinkTemplate: settings?.externalAccountLinkTemplate ?? null,
+        cardOpacity: settings?.cardOpacity ?? 100,
+        cardBlur: settings?.cardBlur ?? 0,
+        bordersEnabled: settings?.bordersEnabled ?? true,
+        categoryColorsEnabled: settings?.categoryColorsEnabled ?? true,
+        squareCorners: settings?.squareCorners ?? false,
+        currencyCode: settings?.currencyCode ?? DEFAULT_CURRENCY,
       });
     } finally {
       setLoading(false);
