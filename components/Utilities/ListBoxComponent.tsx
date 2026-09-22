@@ -132,7 +132,7 @@ export function FamilyMemberListBox({
             <Tabs.ListContainer className="h-full w-full min-w-0">
               <Tabs.List
                 aria-label="Family members"
-                className={`h-full w-full min-w-0 overflow-hidden bg-surface ${
+                className={`h-full w-full min-w-0 overflow-hidden rounded-2xl p-1.5 bg-surface ${
                   bordersEnabled ? "border border-default-200" : ""
                 }`}
                 data-glass="surface"
@@ -150,7 +150,7 @@ export function FamilyMemberListBox({
                       // as a mis-sized blob at the left edge. The selected
                       // fill is painted on the tab itself instead, so it is
                       // always exactly the tab's own box.
-                      className="h-auto w-full min-w-0 justify-start border-l-2 border-transparent px-3 py-2 text-left text-foreground/60 data-[selected=true]:border-accent data-[selected=true]:bg-accent-soft data-[selected=true]:text-foreground"
+                      className="h-auto w-full min-w-0 justify-start rounded-xl px-3 py-2.5 text-left text-foreground/60 transition-all hover:bg-default-100/50 data-[selected=true]:bg-accent-soft data-[selected=true]:text-foreground data-[selected=true]:font-semibold"
                     >
                       <div className="flex min-w-0 flex-1 items-center gap-2">
                         {categoryColorsEnabled && dotColor && (

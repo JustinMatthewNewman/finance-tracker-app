@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildMonthGrid,
   addMonths,
   fromDateString,
   groupByDay,
@@ -119,5 +120,76 @@ describe("groupByDay", () => {
 
   it("returns an empty map for no rows", () => {
     expect(groupByDay([], () => "")).toEqual(new Map());
+  });
+});
+
+describe("buildMonthGrid", () => {
+  it("always returns whole weeks", () => {
+    // Every month of a leap year and a non-leap year.
+    for (const year of [2024, 2026]) {
+      for (let month = 0; month < 12; month++) {
+        const grid = buildMonthGrid({ year, month });
+        expect(grid.length % 7).toBe(0);
+      }
+    }
+  });
+
+  it("starts on a Monday and ends on a Sunday", () => {
+    for (let month = 0; month < 12; month++) {
+      const grid = buildMonthGrid({ year: 2026, month });
+      expect(grid[0].date.getDay()).toBe(1); // Monday
+      expect(grid[grid.length - 1].date.getDay()).toBe(0); // Sunday
+    }
+  });
+
+  it("marks exactly the month's own days as current", () => {
+    // September 2026 has 30 days.
+    const grid = buildMonthGrid({ year: 2026, month: 8 });
+    expect(grid.filter((d) => d.isCurrentMonth)).toHaveLength(30);
+    // February 2024 was a leap February.
+    expect(buildMonthGrid({ year: 2024, month: 1 }).filter((d) => d.isCurrentMonth)).toHaveLength(29);
+    expect(buildMonthGrid({ year: 2026, month: 1 }).filter((d) => d.isCurrentMonth)).toHaveLength(28);
+  });
+
+  it("pads with the adjacent months rather than blanks", () => {
+    // 1 Sept 2026 is a Tuesday, so exactly one leading day (Mon 31 Aug).
+    const grid = buildMonthGrid({ year: 2026, month: 8 });
+    expect(grid[0].dayKey).toBe("2026-08-31");
+    expect(grid[0].isCurrentMonth).toBe(false);
+    expect(grid[1].dayKey).toBe("2026-09-01");
+    expect(grid[1].isCurrentMonth).toBe(true);
+  });
+
+  it("needs six leading days when the month starts on a Sunday", () => {
+    // 1 Feb 2026 is a Sunday — the case a 0-indexed Sunday gets wrong.
+    const grid = buildMonthGrid({ year: 2026, month: 1 });
+    expect(grid.slice(0, 6).every((d) => !d.isCurrentMonth)).toBe(true);
+    expect(grid[6].dayKey).toBe("2026-02-01");
+  });
+
+  it("produces consecutive days with no gaps or repeats", () => {
+    const grid = buildMonthGrid({ year: 2026, month: 2 });
+    const keys = grid.map((d) => d.dayKey);
+    expect(new Set(keys).size).toBe(keys.length);
+    for (let i = 1; i < grid.length; i++) {
+      const prev = grid[i - 1].date.getTime();
+      const cur = grid[i].date.getTime();
+      // Exactly one calendar day apart. Compared on the date parts rather
+      // than a fixed 86_400_000ms, which is wrong across a DST boundary.
+      const expected = new Date(grid[i - 1].date);
+      expected.setDate(expected.getDate() + 1);
+      expect(cur).toBe(expected.getTime());
+      expect(cur).toBeGreaterThan(prev);
+    }
+  });
+
+  it("spans a DST transition without dropping or duplicating a day", () => {
+    // US DST starts 8 Mar 2026 and ends 1 Nov 2026.
+    for (const month of [2, 10]) {
+      const grid = buildMonthGrid({ year: 2026, month });
+      const keys = grid.map((d) => d.dayKey);
+      expect(new Set(keys).size).toBe(keys.length);
+      expect(grid.length % 7).toBe(0);
+    }
   });
 });

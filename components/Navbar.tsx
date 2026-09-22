@@ -19,6 +19,9 @@ import {
   PlugConnection,
   ChartPie,
   ChartDonut,
+  ArrowUp,
+  ArrowDown,
+  Calendar,
   ScalesBalanced,
   ArrowsRotateLeft,
 } from "@gravity-ui/icons";
@@ -57,6 +60,13 @@ interface NavLink {
 
 const NAV_LINKS: NavLink[] = [
   { label: "Household", href: "/household", icon: Persons, authRequired: true },
+  // Income / Expenses / Calendar are UI ports from Finance Manager Pro and
+  // currently render mock data (see lib/mockFinanceData.ts) — they are not
+  // yet wired to Data Connect, so their figures will not agree with
+  // Household's. Each page says so on screen.
+  { label: "Income", href: "/income", icon: ArrowUp, authRequired: true },
+  { label: "Expenses", href: "/expenses", icon: ArrowDown, authRequired: true },
+  { label: "Calendar", href: "/calendar", icon: Calendar, authRequired: true },
   { label: "Settings", href: "/settings", icon: Gear, authRequired: true },
 ];
 
