@@ -6,7 +6,7 @@ import { LogoGithub } from "@gravity-ui/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { loginWithGoogle } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import ParticleBlob from "@/components/ParticleBlob";
+import MoneyGraphParticles from "@/components/MoneyGraphParticles";
 
 // ─────────────────────────────────────────────
 // Google "G" mark, for the sign-in CTA
@@ -79,13 +79,16 @@ export default function LandingPage() {
         <div className="flex h-full flex-col overflow-hidden bg-background text-foreground">
             {/* ── Hero ── */}
             <section className="relative flex flex-1 flex-col items-center justify-center overflow-hidden px-6 py-24 text-center">
-                <ParticleBlob isWarping={isWarping} />
+                <MoneyGraphParticles isWarping={isWarping} />
 
                 {/* pointer-events-none so this text doesn't block ParticleBlob's
                     hover-stir interaction underneath it — re-enabled below just
                     on the CTA button so it still stays clickable. */}
                 <div className="relative z-10 flex pointer-events-none flex-col items-center">
-                    <h1 className="max-w-3xl text-4xl leading-[1.15] tracking-tighter sm:text-5xl md:text-6xl">
+                    {/* Deep central vignette shadow backdrop */}
+                    <div className="pointer-events-none absolute -inset-16 -z-10 rounded-full bg-background/80 blur-3xl shadow-2xl" aria-hidden />
+
+                    <h1 className="max-w-3xl text-4xl leading-[1.15] tracking-tighter sm:text-5xl md:text-6xl drop-shadow-md">
                         <span className="font-extralight">FinanceTracker</span>{" "}
                         <span className="font-[950] [-webkit-text-stroke:1.5px_currentColor]">Pro</span>
                     </h1>
