@@ -185,6 +185,16 @@ and the month carousel sits next to the transaction list instead.
 
 ### Things worth knowing before you change anything
 
+**Projected and actual money share one table.** A bill the household expects
+on the 28th and a payment that actually went out are both `Transaction` rows,
+separated by `status` (`FORECASTED` vs `POSTED`). A separate projections table
+would look tidier and then force every total, calendar day, breakdown and
+search to read both and union them — each one a place to forget the other.
+Marking a projection as received flips `status` and deliberately leaves
+`source: "FORECAST"` alone, so the row still remembers it began as a guess.
+Anything summing real money branches on `status`; only provenance reads
+`source`.
+
 **Money is an integer.** Amounts are minor units (cents), never floats, and
 every conversion goes through `lib/money.ts`. `0.1` is not representable in
 binary floating point, so `12.34 * 100` is `1233.9999999999998` — a ledger
@@ -243,6 +253,26 @@ their local state optimistically — so toggling a setting looked like it saved
 right up until the page was reloaded. `sync-user` backfills the row for
 accounts created before this existed.
 
+### Income, Expenses and Calendar
+
+All three are household-wide views of the same `Transaction` rows for one
+month, read through `ListMyTransactionsByDateRange` so the month is bounded at
+the database rather than by fetching everything and filtering. Income and
+Expenses are a single component (`components/Records/LedgerPage.tsx`) pointed
+at opposite directions — they were two near-identical files in the app this
+was ported from, and had already drifted apart.
+
+Each shows three figures rather than one: what has moved, what is still
+expected, and the two combined. A month with half its income still to arrive
+is a different month from one where it has all landed, and a single total
+cannot tell you which you are looking at.
+
+The Calendar is the forward-looking view. Projected items render with a hollow
+marker and italic label — the shape carries the signal, not just the colour,
+because category colours are user-chosen and cannot be relied on to contrast.
+Clicking any day (including an empty one) opens it, and adding from there
+defaults to "expected".
+
 ### Households
 
 A `Family` groups **accounts**, not people — the tracked people are still
@@ -293,22 +323,31 @@ that is too wide does not error, it returns somebody else's money.
 
 ---
 
+## Deliberately absent
+
+**Plaid.** The `PlaidItem` and `BankAccount` tables, the `Transaction.plaid*`
+columns and the three sync mutations were removed rather than left in place
+unused. Nothing called them, and a `USER`-level mutation with an unchecked
+`$userId` upserting on a client-supplied `$id` is a cross-tenant write sitting
+in the connector whether or not a page happens to call it. When Plaid lands it
+writes `Transaction` rows with `source: "PLAID"` beside the manual and
+projected ones — the same model the app already renders.
+
+**An admin UI.** `ListUsers`, `ListUserTypes` and `SetUserType` are kept
+because the tier system is kept, but nothing calls them yet.
+
 ## What was intentionally left out
 
-- **No admin, teams, dashboard, calendar or tickets pages.** The feature-gate
-  mechanism that guarded them is still wired (`lib/features.ts`,
-  `hooks/useFeatures.ts`, `lib/featureAccess.ts`, the `Feature`/
-  `UserTypeFeature` tables), and no nav tab uses it — so adding the first
-  gated surface is one line plus a grant, not a rebuild.
+- **No admin or teams pages.** The feature-gate mechanism that guarded them
+  is still wired (`lib/features.ts`, `hooks/useFeatures.ts`,
+  `lib/featureAccess.ts`, the `Feature`/`UserTypeFeature` tables), and no nav
+  tab uses it — so adding the first gated surface is one line plus a grant,
+  not a rebuild. Kept deliberately; see "Deliberately absent" above.
 - **`Reports` is dark-launched.** The `Feature` row is seeded and granted to
   nobody. That's the intended way to ship an unfinished feature: no code
   branch, no flag file, just an absent row in `UserTypeFeature`.
 - **Recurrence is recorded, not executed.** `Transaction.recurrence` labels a
   row as recurring; nothing generates future occurrences yet. The form says so.
-- **`components/Utilities/SideNavListBox.tsx` is unused.** It's the plain
-  sidebar list to reach for when you add a second sidebar, kept so that one
-  matches by construction rather than becoming a third copy of the same class
-  strings.
 
 ## Scripts
 

@@ -11,17 +11,43 @@ import {
   parseAmountToMinor,
 } from "@/lib/money";
 import { toDateString } from "@/lib/monthRange";
+import { statusForSource } from "@/lib/transactionKind";
 import type { TransactionInput } from "@/hooks/useTransactions";
 import type { Transaction } from "@/hooks/useTransactions";
 
 interface TransactionFormProps {
   isOpen: boolean;
-  memberName: string;
+  /**
+   * Who the row is for, when that is already settled — the Household page
+   * opens this from inside one member's panel.
+   *
+   * Ignored when `memberOptions` is supplied, because then the person picks.
+   */
+  memberName?: string;
+  /**
+   * Members this account may write records for, for the household-wide pages
+   * (Income, Expenses, Calendar) where no member has been chosen yet.
+   *
+   * Only ever the caller's OWN members. Household reads are wider than
+   * household writes, so offering a housemate's person here would produce a
+   * form that fails at CreateTransaction's `@check` on submit.
+   */
+  memberOptions?: { id: string; name: string }[];
+  /** Pre-selects an entry in `memberOptions`. */
+  defaultMemberId?: string | null;
+  /** Pre-fills the date — the Calendar opens this on a specific day. */
+  defaultOccurredOn?: string;
+  /** Opens the form already set to record something expected rather than done. */
+  defaultProjected?: boolean;
   currency?: CurrencyCode;
   /** Present when editing; absent when adding. */
   existing?: Transaction | null;
   onClose: () => void;
-  onSubmit: (data: TransactionInput) => Promise<void>;
+  /**
+   * `familyMemberId` is present only when the form showed a picker; the
+   * single-member call site already knows who the row is for.
+   */
+  onSubmit: (data: TransactionInput, familyMemberId?: string) => Promise<void>;
 }
 
 const METHOD_SUGGESTIONS = ["Card", "Cash", "Transfer", "Direct debit", "Check"];
@@ -36,6 +62,10 @@ const RECURRENCE_OPTIONS = [
 export function TransactionForm({
   isOpen,
   memberName,
+  memberOptions,
+  defaultMemberId,
+  defaultOccurredOn,
+  defaultProjected,
   currency = DEFAULT_CURRENCY,
   existing,
   onClose,
@@ -44,9 +74,16 @@ export function TransactionForm({
   const { categories } = useCategories();
 
   const [direction, setDirection] = useState<Direction>(existing?.direction ?? "EXPENSE");
-  const [source, setSource] = useState<"MANUAL" | "FORECAST">(existing?.source === "FORECAST" ? "FORECAST" : "MANUAL");
+  const [source, setSource] = useState<"MANUAL" | "FORECAST">(
+    existing ? (existing.source === "FORECAST" ? "FORECAST" : "MANUAL") : defaultProjected ? "FORECAST" : "MANUAL"
+  );
+  const [familyMemberId, setFamilyMemberId] = useState<string>(
+    existing?.familyMemberId ?? defaultMemberId ?? memberOptions?.[0]?.id ?? ""
+  );
   const [amount, setAmount] = useState(existing ? minorToInput(existing.amountMinor, currency) : "");
-  const [occurredOn, setOccurredOn] = useState(existing?.occurredOn ?? toDateString(new Date()));
+  const [occurredOn, setOccurredOn] = useState(
+    existing?.occurredOn ?? defaultOccurredOn ?? toDateString(new Date())
+  );
   const [categoryName, setCategoryName] = useState(existing?.category?.name ?? "");
   const [merchant, setMerchant] = useState(existing?.merchant ?? "");
   const [description, setDescription] = useState(existing?.description ?? "");
@@ -110,8 +147,8 @@ export function TransactionForm({
         method: method.trim() || null,
         recurrence: recurrence || null,
         source,
-        status: source === "FORECAST" ? "FORECASTED" : "POSTED",
-      });
+        status: statusForSource(source),
+      }, memberOptions ? familyMemberId : undefined);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save transaction");
@@ -135,12 +172,34 @@ export function TransactionForm({
           <h2 className="text-2xl font-bold mb-1">
             {existing ? "Edit Transaction" : "New Transaction"}
           </h2>
-          <p className="mb-4 text-sm text-foreground/60">for {memberName}</p>
+          {!memberOptions && memberName && (
+            <p className="mb-4 text-sm text-foreground/60">for {memberName}</p>
+          )}
 
           <form className="space-y-4" onSubmit={handleSubmit}>
             {error && (
               <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">
                 {error}
+              </div>
+            )}
+
+            {memberOptions && (
+              <div>
+                <label className="mb-2 block text-sm font-semibold" htmlFor="txn-member">
+                  Who is this for? *
+                </label>
+                <select
+                  id="txn-member"
+                  className="w-full rounded border border-border bg-transparent p-2 text-sm"
+                  value={familyMemberId}
+                  onChange={(e) => setFamilyMemberId(e.target.value)}
+                >
+                  {memberOptions.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name}
+                    </option>
+                  ))}
+                </select>
               </div>
             )}
 
@@ -169,8 +228,8 @@ export function TransactionForm({
                 }}
                 aria-label="Transaction Type"
               >
-                <ToggleButton id="MANUAL">Actual</ToggleButton>
-                <ToggleButton id="FORECAST">Scheduled / Forecast</ToggleButton>
+                <ToggleButton id="MANUAL">Already happened</ToggleButton>
+                <ToggleButton id="FORECAST">Expected</ToggleButton>
               </ToggleButtonGroup>
             </div>
 

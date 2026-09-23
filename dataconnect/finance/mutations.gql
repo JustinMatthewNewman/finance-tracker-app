@@ -245,17 +245,6 @@ mutation DeleteFamilyMember($familyMemberId: UUID!) @auth(level: USER) @transact
   familyMember_update(id: $familyMemberId, data: { isDeleted: true })
 }
 
-mutation RestoreFamilyMember($familyMemberId: UUID!) @auth(level: USER) @transaction {
-  query @redact {
-    familyMember(key: { id: $familyMemberId }) {
-      id
-      user @check(expr: "this != null && this.googleUid == auth.uid", message: "Not authorized to restore this family member") {
-        googleUid
-      }
-    }
-  }
-  familyMember_update(id: $familyMemberId, data: { isDeleted: false })
-}
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Categories (shared lookup rows)
@@ -319,7 +308,6 @@ mutation CreateTransaction(
   $categoryName: String
   $source: String = "MANUAL"
   $status: String = "POSTED"
-  $matchedTransactionId: UUID
 ) @auth(level: USER) @transaction {
   query @redact {
     familyMember(key: { id: $familyMemberId }) {
@@ -354,7 +342,6 @@ mutation CreateTransaction(
     categoryName: $categoryName
     source: $source
     status: $status
-    matchedTransactionId: $matchedTransactionId
   })
 }
 
@@ -370,7 +357,6 @@ mutation UpdateTransaction(
   $categoryName: String
   $source: String = "MANUAL"
   $status: String = "POSTED"
-  $matchedTransactionId: UUID
 ) @auth(level: USER) @transaction {
   query @redact {
     transaction(key: { id: $transactionId }) {
@@ -391,7 +377,6 @@ mutation UpdateTransaction(
     categoryName: $categoryName
     source: $source
     status: $status
-    matchedTransactionId: $matchedTransactionId
   })
 }
 
@@ -409,7 +394,6 @@ mutation UpdateTransactionClearCategory(
   $recurrence: String
   $source: String = "MANUAL"
   $status: String = "POSTED"
-  $matchedTransactionId: UUID
 ) @auth(level: USER) @transaction {
   query @redact {
     transaction(key: { id: $transactionId }) {
@@ -430,8 +414,50 @@ mutation UpdateTransactionClearCategory(
     categoryName: null
     source: $source
     status: $status
-    matchedTransactionId: $matchedTransactionId
   })
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Projected -> actual
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Two mutations with the status written as a literal, rather than one taking
+# `$status: String!`. The column is free text with no CHECK constraint behind
+# it (Data Connect offers none), so a status variable is a hole through which
+# any string reaches the database — and every read would then have to cope
+# with a value the app has no meaning for. Naming the two transitions closes
+# it: the only statuses that can ever be written are the two that exist.
+#
+# Note neither touches `source`. A projection that has been received keeps
+# source "FORECAST", which is what preserves the fact that it began as a
+# projection — see the note on Transaction.status in schema.gql.
+
+# "That paycheque arrived" / "I paid that bill."
+mutation MarkTransactionPosted($transactionId: UUID!) @auth(level: USER) @transaction {
+  query @redact {
+    transaction(key: { id: $transactionId }) {
+      id
+      user @check(expr: "this != null && this.googleUid == auth.uid", message: "Not authorized to modify this transaction") {
+        googleUid
+      }
+    }
+  }
+  transaction_update(id: $transactionId, data: { status: "POSTED" })
+}
+
+# The undo. Marking something as received is one tap, so un-marking it has to
+# be one tap too — otherwise the only way back from a mis-tap is to delete the
+# row and retype it.
+mutation MarkTransactionProjected($transactionId: UUID!) @auth(level: USER) @transaction {
+  query @redact {
+    transaction(key: { id: $transactionId }) {
+      id
+      user @check(expr: "this != null && this.googleUid == auth.uid", message: "Not authorized to modify this transaction") {
+        googleUid
+      }
+    }
+  }
+  transaction_update(id: $transactionId, data: { status: "FORECASTED" })
 }
 
 # A hard delete, unlike DeleteFamilyMember. A transaction is a leaf row with
@@ -447,121 +473,6 @@ mutation DeleteTransaction($transactionId: UUID!) @auth(level: USER) @transactio
     }
   }
   transaction_delete(id: $transactionId)
-}
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Plaid Integration Mutations
-# ─────────────────────────────────────────────────────────────────────────────
-#
-# KNOWN GAP — THESE THREE ARE NOT SAFE TO CALL FROM A BROWSER YET.
-#
-# All three are @auth(level: USER), take a client-supplied $userId with no
-# ownership @check, and are _upsert operations taking a client-supplied $id.
-# Either half is a cross-tenant write on its own: the first stamps a row with
-# somebody else's ownership, and the second overwrites an existing row of
-# theirs outright given its UUID.
-#
-# They are deliberately left as they are rather than given the `user(key: {id:
-# $userId}) @check` that CreateFamilyMember and CreateTransaction now carry,
-# because that guard alone would close only the first half and would read like
-# the operation had been made safe. The $id-on-upsert half cannot be fixed
-# without deciding how Plaid sync actually runs, and nothing in the app calls
-# these — there is no Plaid integration yet, only the schema for one.
-#
-# BEFORE WIRING PLAID UP: either move these to NO_ACCESS and drive them from a
-# route handler that resolves the uid itself (the sync-user pattern), or give
-# each one both guards. Do not add a call site first.
-
-mutation UpsertPlaidItem(
-  $id: UUID!
-  $userId: UUID!
-  $plaidItemId: String!
-  $accessTokenEncrypted: String!
-  $institutionId: String
-  $institutionName: String!
-  $syncCursor: String
-  $status: String = "ACTIVE"
-) @auth(level: USER) {
-  plaidItem_upsert(data: {
-    id: $id
-    userId: $userId
-    plaidItemId: $plaidItemId
-    accessTokenEncrypted: $accessTokenEncrypted
-    institutionId: $institutionId
-    institutionName: $institutionName
-    syncCursor: $syncCursor
-    status: $status
-  })
-}
-
-mutation UpsertBankAccount(
-  $id: UUID!
-  $userId: UUID!
-  $plaidItemId: UUID!
-  $plaidAccountId: String!
-  $name: String!
-  $officialName: String
-  $mask: String
-  $type: String!
-  $subtype: String
-  $currentBalanceMinor: Int
-  $availableBalanceMinor: Int
-  $isoCurrencyCode: String = "USD"
-  $familyMemberId: UUID
-) @auth(level: USER) {
-  bankAccount_upsert(data: {
-    id: $id
-    userId: $userId
-    plaidItemId: $plaidItemId
-    plaidAccountId: $plaidAccountId
-    name: $name
-    officialName: $officialName
-    mask: $mask
-    type: $type
-    subtype: $subtype
-    currentBalanceMinor: $currentBalanceMinor
-    availableBalanceMinor: $availableBalanceMinor
-    isoCurrencyCode: $isoCurrencyCode
-    familyMemberId: $familyMemberId
-  })
-}
-
-mutation SyncPlaidTransaction(
-  $transactionId: UUID!
-  $userId: UUID!
-  $familyMemberId: UUID!
-  $bankAccountId: UUID
-  $plaidTransactionId: String!
-  $amountMinor: Int!
-  $direction: String!
-  $occurredOn: Date!
-  $createdAt: Timestamp!
-  $description: String
-  $merchant: String
-  $method: String
-  $categoryName: String
-  $plaidCategory: String
-  $isPending: Boolean = false
-  $plaidPendingTransactionId: String
-) @auth(level: USER) {
-  transaction_upsert(data: {
-    id: $transactionId
-    userId: $userId
-    familyMemberId: $familyMemberId
-    bankAccountId: $bankAccountId
-    plaidTransactionId: $plaidTransactionId
-    amountMinor: $amountMinor
-    direction: $direction
-    occurredOn: $occurredOn
-    createdAt: $createdAt
-    description: $description
-    merchant: $merchant
-    method: $method
-    categoryName: $categoryName
-    plaidCategory: $plaidCategory
-    isPending: $isPending
-    plaidPendingTransactionId: $plaidPendingTransactionId
-  })
 }
 
 # ─────────────────────────────────────────────────────────────────────────────

@@ -1,17 +1,3 @@
-extend type BankAccount {
-  """
-  ✨ Implicit foreign key field based on `BankAccount`.`familyMember`. It must match the value of `FamilyMember`.`id`. See `@ref` for how to customize it.
-  """
-  familyMemberId: UUID @fdc_generated(from: "BankAccount.familyMember", purpose: IMPLICIT_REF_FIELD)
-  """
-  ✨ Implicit foreign key field based on `BankAccount`.`plaidItem`. It must match the value of `PlaidItem`.`id`. See `@ref` for how to customize it.
-  """
-  plaidItemId: UUID! @fdc_generated(from: "BankAccount.plaidItem", purpose: IMPLICIT_REF_FIELD)
-  """
-  ✨ Implicit foreign key field based on `BankAccount`.`user`. It must match the value of `User`.`id`. See `@ref` for how to customize it.
-  """
-  userId: UUID! @fdc_generated(from: "BankAccount.user", purpose: IMPLICIT_REF_FIELD)
-}
 extend type Family {
   """
   ✨ Implicit foreign key field based on `Family`.`ownerUser`. It must match the value of `User`.`id`. See `@ref` for how to customize it.
@@ -34,12 +20,6 @@ extend type FamilyMember {
   """
   userId: UUID! @fdc_generated(from: "FamilyMember.user", purpose: IMPLICIT_REF_FIELD)
 }
-extend type PlaidItem {
-  """
-  ✨ Implicit foreign key field based on `PlaidItem`.`user`. It must match the value of `User`.`id`. See `@ref` for how to customize it.
-  """
-  userId: UUID! @fdc_generated(from: "PlaidItem.user", purpose: IMPLICIT_REF_FIELD)
-}
 extend type Theme {
   """
   ✨ Implicit foreign key field based on `Theme`.`colorScheme`. It must match the value of `ColorScheme`.`id`. See `@ref` for how to customize it.
@@ -47,10 +27,6 @@ extend type Theme {
   colorSchemeId: UUID! @fdc_generated(from: "Theme.colorScheme", purpose: IMPLICIT_REF_FIELD)
 }
 extend type Transaction {
-  """
-  ✨ Implicit foreign key field based on `Transaction`.`bankAccount`. It must match the value of `BankAccount`.`id`. See `@ref` for how to customize it.
-  """
-  bankAccountId: UUID @fdc_generated(from: "Transaction.bankAccount", purpose: IMPLICIT_REF_FIELD)
   """
   ✨ Implicit foreign key field based on `Transaction`.`category`. It must match the value of `Category`.`name`. See `@ref` for how to customize it.
   """

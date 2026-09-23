@@ -120,14 +120,9 @@ export function TransactionTable({
                         <span className="truncate text-sm text-foreground">
                           {txn.merchant || txn.description || txn.category?.name || "Transaction"}
                         </span>
-                        {txn.source === "PLAID" && (
-                          <span className="shrink-0 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
-                            Plaid
-                          </span>
-                        )}
-                        {txn.source === "FORECAST" && (
+                        {txn.status === "FORECASTED" && (
                           <span className="shrink-0 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
-                            Forecast
+                            Projected
                           </span>
                         )}
                       </div>

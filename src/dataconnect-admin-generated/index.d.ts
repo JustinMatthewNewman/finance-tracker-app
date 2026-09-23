@@ -18,11 +18,6 @@ export interface ApproveJoinRequestVariables {
   requesterId: UUIDString;
 }
 
-export interface BankAccount_Key {
-  id: UUIDString;
-  __typename?: 'BankAccount_Key';
-}
-
 export interface CancelMyJoinRequestData {
   familyJoinRequest_update?: FamilyJoinRequest_Key | null;
 }
@@ -89,7 +84,6 @@ export interface CreateTransactionVariables {
   categoryName?: string | null;
   source?: string | null;
   status?: string | null;
-  matchedTransactionId?: UUIDString | null;
 }
 
 export interface CreateUserFromGoogleData {
@@ -258,41 +252,6 @@ export interface GetMyUserData {
   } & User_Key;
 }
 
-export interface GetTransactionData {
-  transaction?: {
-    id: UUIDString;
-    amountMinor: number;
-    direction: string;
-    occurredOn: DateString;
-    description?: string | null;
-    merchant?: string | null;
-    method?: string | null;
-    recurrence?: string | null;
-    source: string;
-    status: string;
-    matchedTransactionId?: UUIDString | null;
-    createdAt: TimestampString;
-    familyMember: {
-      id: UUIDString;
-      name: string;
-    } & FamilyMember_Key;
-    category?: {
-      id: UUIDString;
-      name: string;
-      kind: string;
-      color?: string | null;
-    } & Category_Key;
-    user: {
-      id: UUIDString;
-      username: string;
-    } & User_Key;
-  } & Transaction_Key;
-}
-
-export interface GetTransactionVariables {
-  transactionId: UUIDString;
-}
-
 export interface GetUserAccessByGoogleUidData {
   user?: {
     id: UUIDString;
@@ -404,7 +363,6 @@ export interface ListMyTransactionsByDateRangeData {
     recurrence?: string | null;
     source: string;
     status: string;
-    matchedTransactionId?: UUIDString | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -442,7 +400,6 @@ export interface ListMyTransactionsData {
     recurrence?: string | null;
     source: string;
     status: string;
-    matchedTransactionId?: UUIDString | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -478,7 +435,6 @@ export interface ListTransactionsByFamilyMemberData {
     recurrence?: string | null;
     source: string;
     status: string;
-    matchedTransactionId?: UUIDString | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -522,9 +478,20 @@ export interface ListUsersData {
   } & User_Key)[];
 }
 
-export interface PlaidItem_Key {
-  id: UUIDString;
-  __typename?: 'PlaidItem_Key';
+export interface MarkTransactionPostedData {
+  transaction_update?: Transaction_Key | null;
+}
+
+export interface MarkTransactionPostedVariables {
+  transactionId: UUIDString;
+}
+
+export interface MarkTransactionProjectedData {
+  transaction_update?: Transaction_Key | null;
+}
+
+export interface MarkTransactionProjectedVariables {
+  transactionId: UUIDString;
 }
 
 export interface RegenerateFamilyInviteCodeData {
@@ -552,14 +519,6 @@ export interface RequestToJoinFamilyData {
 export interface RequestToJoinFamilyVariables {
   userId: UUIDString;
   familyId: UUIDString;
-}
-
-export interface RestoreFamilyMemberData {
-  familyMember_update?: FamilyMember_Key | null;
-}
-
-export interface RestoreFamilyMemberVariables {
-  familyMemberId: UUIDString;
 }
 
 export interface SelectMyBackgroundOpacityData {
@@ -644,29 +603,6 @@ export interface SetUserTypeVariables {
   userTypeName: string;
 }
 
-export interface SyncPlaidTransactionData {
-  transaction_upsert: Transaction_Key;
-}
-
-export interface SyncPlaidTransactionVariables {
-  transactionId: UUIDString;
-  userId: UUIDString;
-  familyMemberId: UUIDString;
-  bankAccountId?: UUIDString | null;
-  plaidTransactionId: string;
-  amountMinor: number;
-  direction: string;
-  occurredOn: DateString;
-  createdAt: TimestampString;
-  description?: string | null;
-  merchant?: string | null;
-  method?: string | null;
-  categoryName?: string | null;
-  plaidCategory?: string | null;
-  isPending?: boolean | null;
-  plaidPendingTransactionId?: string | null;
-}
-
 export interface Theme_Key {
   id: UUIDString;
   __typename?: 'Theme_Key';
@@ -716,7 +652,6 @@ export interface UpdateTransactionClearCategoryVariables {
   recurrence?: string | null;
   source?: string | null;
   status?: string | null;
-  matchedTransactionId?: UUIDString | null;
 }
 
 export interface UpdateTransactionData {
@@ -735,27 +670,6 @@ export interface UpdateTransactionVariables {
   categoryName?: string | null;
   source?: string | null;
   status?: string | null;
-  matchedTransactionId?: UUIDString | null;
-}
-
-export interface UpsertBankAccountData {
-  bankAccount_upsert: BankAccount_Key;
-}
-
-export interface UpsertBankAccountVariables {
-  id: UUIDString;
-  userId: UUIDString;
-  plaidItemId: UUIDString;
-  plaidAccountId: string;
-  name: string;
-  officialName?: string | null;
-  mask?: string | null;
-  type: string;
-  subtype?: string | null;
-  currentBalanceMinor?: number | null;
-  availableBalanceMinor?: number | null;
-  isoCurrencyCode?: string | null;
-  familyMemberId?: UUIDString | null;
 }
 
 export interface UpsertCategoryData {
@@ -767,21 +681,6 @@ export interface UpsertCategoryVariables {
   kind?: string;
   parentGroup?: string | null;
   color?: string | null;
-}
-
-export interface UpsertPlaidItemData {
-  plaidItem_upsert: PlaidItem_Key;
-}
-
-export interface UpsertPlaidItemVariables {
-  id: UUIDString;
-  userId: UUIDString;
-  plaidItemId: string;
-  accessTokenEncrypted: string;
-  institutionId?: string | null;
-  institutionName: string;
-  syncCursor?: string | null;
-  status?: string | null;
 }
 
 export interface UserSetting_Key {
@@ -885,11 +784,6 @@ export function deleteFamilyMember(dc: DataConnect, vars: DeleteFamilyMemberVari
 /** Generated Node Admin SDK operation action function for the 'DeleteFamilyMember' Mutation. Allow users to pass in custom DataConnect instances. */
 export function deleteFamilyMember(vars: DeleteFamilyMemberVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteFamilyMemberData>>;
 
-/** Generated Node Admin SDK operation action function for the 'RestoreFamilyMember' Mutation. Allow users to execute without passing in DataConnect. */
-export function restoreFamilyMember(dc: DataConnect, vars: RestoreFamilyMemberVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<RestoreFamilyMemberData>>;
-/** Generated Node Admin SDK operation action function for the 'RestoreFamilyMember' Mutation. Allow users to pass in custom DataConnect instances. */
-export function restoreFamilyMember(vars: RestoreFamilyMemberVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<RestoreFamilyMemberData>>;
-
 /** Generated Node Admin SDK operation action function for the 'UpsertCategory' Mutation. Allow users to execute without passing in DataConnect. */
 export function upsertCategory(dc: DataConnect, vars: UpsertCategoryVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpsertCategoryData>>;
 /** Generated Node Admin SDK operation action function for the 'UpsertCategory' Mutation. Allow users to pass in custom DataConnect instances. */
@@ -915,25 +809,20 @@ export function updateTransactionClearCategory(dc: DataConnect, vars: UpdateTran
 /** Generated Node Admin SDK operation action function for the 'UpdateTransactionClearCategory' Mutation. Allow users to pass in custom DataConnect instances. */
 export function updateTransactionClearCategory(vars: UpdateTransactionClearCategoryVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateTransactionClearCategoryData>>;
 
+/** Generated Node Admin SDK operation action function for the 'MarkTransactionPosted' Mutation. Allow users to execute without passing in DataConnect. */
+export function markTransactionPosted(dc: DataConnect, vars: MarkTransactionPostedVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<MarkTransactionPostedData>>;
+/** Generated Node Admin SDK operation action function for the 'MarkTransactionPosted' Mutation. Allow users to pass in custom DataConnect instances. */
+export function markTransactionPosted(vars: MarkTransactionPostedVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<MarkTransactionPostedData>>;
+
+/** Generated Node Admin SDK operation action function for the 'MarkTransactionProjected' Mutation. Allow users to execute without passing in DataConnect. */
+export function markTransactionProjected(dc: DataConnect, vars: MarkTransactionProjectedVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<MarkTransactionProjectedData>>;
+/** Generated Node Admin SDK operation action function for the 'MarkTransactionProjected' Mutation. Allow users to pass in custom DataConnect instances. */
+export function markTransactionProjected(vars: MarkTransactionProjectedVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<MarkTransactionProjectedData>>;
+
 /** Generated Node Admin SDK operation action function for the 'DeleteTransaction' Mutation. Allow users to execute without passing in DataConnect. */
 export function deleteTransaction(dc: DataConnect, vars: DeleteTransactionVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteTransactionData>>;
 /** Generated Node Admin SDK operation action function for the 'DeleteTransaction' Mutation. Allow users to pass in custom DataConnect instances. */
 export function deleteTransaction(vars: DeleteTransactionVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteTransactionData>>;
-
-/** Generated Node Admin SDK operation action function for the 'UpsertPlaidItem' Mutation. Allow users to execute without passing in DataConnect. */
-export function upsertPlaidItem(dc: DataConnect, vars: UpsertPlaidItemVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpsertPlaidItemData>>;
-/** Generated Node Admin SDK operation action function for the 'UpsertPlaidItem' Mutation. Allow users to pass in custom DataConnect instances. */
-export function upsertPlaidItem(vars: UpsertPlaidItemVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpsertPlaidItemData>>;
-
-/** Generated Node Admin SDK operation action function for the 'UpsertBankAccount' Mutation. Allow users to execute without passing in DataConnect. */
-export function upsertBankAccount(dc: DataConnect, vars: UpsertBankAccountVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpsertBankAccountData>>;
-/** Generated Node Admin SDK operation action function for the 'UpsertBankAccount' Mutation. Allow users to pass in custom DataConnect instances. */
-export function upsertBankAccount(vars: UpsertBankAccountVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpsertBankAccountData>>;
-
-/** Generated Node Admin SDK operation action function for the 'SyncPlaidTransaction' Mutation. Allow users to execute without passing in DataConnect. */
-export function syncPlaidTransaction(dc: DataConnect, vars: SyncPlaidTransactionVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<SyncPlaidTransactionData>>;
-/** Generated Node Admin SDK operation action function for the 'SyncPlaidTransaction' Mutation. Allow users to pass in custom DataConnect instances. */
-export function syncPlaidTransaction(vars: SyncPlaidTransactionVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<SyncPlaidTransactionData>>;
 
 /** Generated Node Admin SDK operation action function for the 'CreateFamily' Mutation. Allow users to execute without passing in DataConnect. */
 export function createFamily(dc: DataConnect, vars: CreateFamilyVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateFamilyData>>;
@@ -1029,11 +918,6 @@ export function listMyTransactions(vars?: ListMyTransactionsVariables, options?:
 export function listMyTransactionsByDateRange(dc: DataConnect, vars: ListMyTransactionsByDateRangeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListMyTransactionsByDateRangeData>>;
 /** Generated Node Admin SDK operation action function for the 'ListMyTransactionsByDateRange' Query. Allow users to pass in custom DataConnect instances. */
 export function listMyTransactionsByDateRange(vars: ListMyTransactionsByDateRangeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListMyTransactionsByDateRangeData>>;
-
-/** Generated Node Admin SDK operation action function for the 'GetTransaction' Query. Allow users to execute without passing in DataConnect. */
-export function getTransaction(dc: DataConnect, vars: GetTransactionVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetTransactionData>>;
-/** Generated Node Admin SDK operation action function for the 'GetTransaction' Query. Allow users to pass in custom DataConnect instances. */
-export function getTransaction(vars: GetTransactionVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetTransactionData>>;
 
 /** Generated Node Admin SDK operation action function for the 'GetFamilyByInviteCode' Query. Allow users to execute without passing in DataConnect. */
 export function getFamilyByInviteCode(dc: DataConnect, vars: GetFamilyByInviteCodeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetFamilyByInviteCodeData>>;

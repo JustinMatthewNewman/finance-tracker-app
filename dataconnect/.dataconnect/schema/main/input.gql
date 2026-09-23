@@ -1,10 +1,4 @@
 """
-✨ `BankAccount_KeyOutput` returns the primary key fields of table type `BankAccount`.
-
-It has the same format as `BankAccount_Key`, but is only used as mutation return value.
-"""
-scalar BankAccount_KeyOutput
-"""
 ✨ `Category_KeyOutput` returns the primary key fields of table type `Category`.
 
 It has the same format as `Category_Key`, but is only used as mutation return value.
@@ -41,12 +35,6 @@ It has the same format as `Feature_Key`, but is only used as mutation return val
 """
 scalar Feature_KeyOutput
 """
-✨ `PlaidItem_KeyOutput` returns the primary key fields of table type `PlaidItem`.
-
-It has the same format as `PlaidItem_Key`, but is only used as mutation return value.
-"""
-scalar PlaidItem_KeyOutput
-"""
 ✨ `Theme_KeyOutput` returns the primary key fields of table type `Theme`.
 
 It has the same format as `Theme_Key`, but is only used as mutation return value.
@@ -82,601 +70,6 @@ scalar UserType_KeyOutput
 It has the same format as `UserTypeFeature_Key`, but is only used as mutation return value.
 """
 scalar UserTypeFeature_KeyOutput
-"""
-✨ Generated data input type for table 'BankAccount'. It includes all necessary fields for creating or upserting rows into table.
-"""
-input BankAccount_Data {
-  """
-  ✨ Generated from Field `BankAccount`.`id` of type `UUID!`
-  """
-  id: UUID
-  """
-  ✨ `_expr` server value variant of `id` (✨ Generated from Field `BankAccount`.`id` of type `UUID!`)
-  """
-  id_expr: UUID_Expr @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `BankAccount`.`familyMemberId` of type `UUID`
-  """
-  familyMemberId: UUID
-  """
-  ✨ `_expr` server value variant of `familyMemberId` (✨ Generated from Field `BankAccount`.`familyMemberId` of type `UUID`)
-  """
-  familyMemberId_expr: UUID_Expr @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `BankAccount`.`plaidItemId` of type `UUID!`
-  """
-  plaidItemId: UUID
-  """
-  ✨ `_expr` server value variant of `plaidItemId` (✨ Generated from Field `BankAccount`.`plaidItemId` of type `UUID!`)
-  """
-  plaidItemId_expr: UUID_Expr @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `BankAccount`.`userId` of type `UUID!`
-  """
-  userId: UUID
-  """
-  ✨ `_expr` server value variant of `userId` (✨ Generated from Field `BankAccount`.`userId` of type `UUID!`)
-  """
-  userId_expr: UUID_Expr @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `BankAccount`.`familyMember` of type `FamilyMember`
-  """
-  familyMember: FamilyMember_Key @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `BankAccount`.`plaidItem` of type `PlaidItem!`
-  """
-  plaidItem: PlaidItem_Key @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `BankAccount`.`user` of type `User!`
-  """
-  user: User_Key @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `BankAccount`.`availableBalanceMinor` of type `Int`
-  """
-  availableBalanceMinor: Int
-  """
-  ✨ `_expr` server value variant of `availableBalanceMinor` (✨ Generated from Field `BankAccount`.`availableBalanceMinor` of type `Int`)
-  """
-  availableBalanceMinor_expr: Int_Expr @fdc_forbiddenInVariables
-  """
-  ✨ `_update` server value variant of `availableBalanceMinor` (✨ Generated from Field `BankAccount`.`availableBalanceMinor` of type `Int`)
-  """
-  availableBalanceMinor_update: [Int_Update!] @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `BankAccount`.`createdAt` of type `Timestamp!`
-  """
-  createdAt: Timestamp
-  """
-  ✨ `_expr` server value variant of `createdAt` (✨ Generated from Field `BankAccount`.`createdAt` of type `Timestamp!`)
-  """
-  createdAt_expr: Timestamp_Expr @fdc_forbiddenInVariables
-  """
-  ✨ `_time` server value variant of `createdAt` (✨ Generated from Field `BankAccount`.`createdAt` of type `Timestamp!`)
-  """
-  createdAt_time: Timestamp_Relative @fdc_forbiddenInVariables
-  """
-  ✨ `_update` server value variant of `createdAt` (✨ Generated from Field `BankAccount`.`createdAt` of type `Timestamp!`)
-  """
-  createdAt_update: [Timestamp_Update!] @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `BankAccount`.`currentBalanceMinor` of type `Int`
-  """
-  currentBalanceMinor: Int
-  """
-  ✨ `_expr` server value variant of `currentBalanceMinor` (✨ Generated from Field `BankAccount`.`currentBalanceMinor` of type `Int`)
-  """
-  currentBalanceMinor_expr: Int_Expr @fdc_forbiddenInVariables
-  """
-  ✨ `_update` server value variant of `currentBalanceMinor` (✨ Generated from Field `BankAccount`.`currentBalanceMinor` of type `Int`)
-  """
-  currentBalanceMinor_update: [Int_Update!] @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `BankAccount`.`isMuted` of type `Boolean`
-  """
-  isMuted: Boolean
-  """
-  ✨ `_expr` server value variant of `isMuted` (✨ Generated from Field `BankAccount`.`isMuted` of type `Boolean`)
-  """
-  isMuted_expr: Boolean_Expr @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `BankAccount`.`isoCurrencyCode` of type `String`
-  """
-  isoCurrencyCode: String
-  """
-  ✨ `_expr` server value variant of `isoCurrencyCode` (✨ Generated from Field `BankAccount`.`isoCurrencyCode` of type `String`)
-  """
-  isoCurrencyCode_expr: String_Expr @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `BankAccount`.`mask` of type `String`
-  """
-  mask: String
-  """
-  ✨ `_expr` server value variant of `mask` (✨ Generated from Field `BankAccount`.`mask` of type `String`)
-  """
-  mask_expr: String_Expr @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `BankAccount`.`name` of type `String!`
-  """
-  name: String
-  """
-  ✨ `_expr` server value variant of `name` (✨ Generated from Field `BankAccount`.`name` of type `String!`)
-  """
-  name_expr: String_Expr @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `BankAccount`.`officialName` of type `String`
-  """
-  officialName: String
-  """
-  ✨ `_expr` server value variant of `officialName` (✨ Generated from Field `BankAccount`.`officialName` of type `String`)
-  """
-  officialName_expr: String_Expr @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `BankAccount`.`plaidAccountId` of type `String!`
-  """
-  plaidAccountId: String
-  """
-  ✨ `_expr` server value variant of `plaidAccountId` (✨ Generated from Field `BankAccount`.`plaidAccountId` of type `String!`)
-  """
-  plaidAccountId_expr: String_Expr @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `BankAccount`.`subtype` of type `String`
-  """
-  subtype: String
-  """
-  ✨ `_expr` server value variant of `subtype` (✨ Generated from Field `BankAccount`.`subtype` of type `String`)
-  """
-  subtype_expr: String_Expr @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `BankAccount`.`type` of type `String!`
-  """
-  type: String
-  """
-  ✨ `_expr` server value variant of `type` (✨ Generated from Field `BankAccount`.`type` of type `String!`)
-  """
-  type_expr: String_Expr @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `BankAccount`.`transactions_on_bankAccount` of type `[Transaction!]!`
-  """
-  transactions_on_bankAccount: [Transaction_Data!]
-}
-"""
-✨ Generated filter input type for table 'BankAccount'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
-"""
-input BankAccount_Filter {
-  """
-  Apply multiple filter conditions using `AND` logic.
-  """
-  _and: [BankAccount_Filter!]
-  """
-  Negate the result of the provided filter condition.
-  """
-  _not: BankAccount_Filter
-  """
-  Apply multiple filter conditions using `OR` logic.
-  """
-  _or: [BankAccount_Filter!]
-  """
-  ✨ Generated from Field `BankAccount`.`id` of type `UUID!`
-  """
-  id: UUID_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`familyMemberId` of type `UUID`
-  """
-  familyMemberId: UUID_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`plaidItemId` of type `UUID!`
-  """
-  plaidItemId: UUID_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`userId` of type `UUID!`
-  """
-  userId: UUID_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`familyMember` of type `FamilyMember`
-  """
-  familyMember: FamilyMember_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`plaidItem` of type `PlaidItem!`
-  """
-  plaidItem: PlaidItem_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`user` of type `User!`
-  """
-  user: User_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`availableBalanceMinor` of type `Int`
-  """
-  availableBalanceMinor: Int_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`createdAt` of type `Timestamp!`
-  """
-  createdAt: Timestamp_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`currentBalanceMinor` of type `Int`
-  """
-  currentBalanceMinor: Int_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`isMuted` of type `Boolean`
-  """
-  isMuted: Boolean_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`isoCurrencyCode` of type `String`
-  """
-  isoCurrencyCode: String_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`mask` of type `String`
-  """
-  mask: String_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`name` of type `String!`
-  """
-  name: String_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`officialName` of type `String`
-  """
-  officialName: String_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`plaidAccountId` of type `String!`
-  """
-  plaidAccountId: String_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`subtype` of type `String`
-  """
-  subtype: String_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`type` of type `String!`
-  """
-  type: String_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`transactions_on_bankAccount` of type `[Transaction!]!`
-  """
-  transactions_on_bankAccount: Transaction_ListFilter
-}
-"""
-✨ Generated first-row input type for table 'BankAccount'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
-"""
-input BankAccount_FirstRow {
-  """
-  Order the result by the specified fields.
-  """
-  orderBy: [BankAccount_Order!]
-  """
-  Filters rows based on the specified conditions.
-  """
-  where: BankAccount_Filter
-}
-"""
-✨ Generated having input type for table 'BankAccount'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
-"""
-input BankAccount_Having {
-  """
-  Apply multiple Having conditions using `AND` logic.
-  """
-  _and: [BankAccount_Having!]
-  """
-  Whether to apply DISTINCT to the aggregate function.
-  """
-  _distinct: Boolean
-  """
-  Negate the result of the provided Having condition.
-  """
-  _not: BankAccount_Having
-  """
-  Apply multiple Having conditions using `OR` logic.
-  """
-  _or: [BankAccount_Having!]
-  """
-  ✨ Generated from Field `BankAccount`.`_count` of type `Int!`
-  """
-  _count: Int_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`availableBalanceMinor_count` of type `Int!`
-  """
-  availableBalanceMinor_count: Int_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`createdAt_count` of type `Int!`
-  """
-  createdAt_count: Int_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`currentBalanceMinor_count` of type `Int!`
-  """
-  currentBalanceMinor_count: Int_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`familyMemberId_count` of type `Int!`
-  """
-  familyMemberId_count: Int_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`id_count` of type `Int!`
-  """
-  id_count: Int_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`isMuted_count` of type `Int!`
-  """
-  isMuted_count: Int_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`isoCurrencyCode_count` of type `Int!`
-  """
-  isoCurrencyCode_count: Int_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`mask_count` of type `Int!`
-  """
-  mask_count: Int_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`name_count` of type `Int!`
-  """
-  name_count: Int_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`officialName_count` of type `Int!`
-  """
-  officialName_count: Int_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`plaidAccountId_count` of type `Int!`
-  """
-  plaidAccountId_count: Int_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`plaidItemId_count` of type `Int!`
-  """
-  plaidItemId_count: Int_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`subtype_count` of type `Int!`
-  """
-  subtype_count: Int_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`type_count` of type `Int!`
-  """
-  type_count: Int_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`userId_count` of type `Int!`
-  """
-  userId_count: Int_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`availableBalanceMinor_sum` of type `Int`
-  """
-  availableBalanceMinor_sum: Int_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`currentBalanceMinor_sum` of type `Int`
-  """
-  currentBalanceMinor_sum: Int_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`availableBalanceMinor_avg` of type `Float`
-  """
-  availableBalanceMinor_avg: Float_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`currentBalanceMinor_avg` of type `Float`
-  """
-  currentBalanceMinor_avg: Float_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`availableBalanceMinor_min` of type `Int`
-  """
-  availableBalanceMinor_min: Int_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`createdAt_min` of type `Timestamp`
-  """
-  createdAt_min: Timestamp_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`currentBalanceMinor_min` of type `Int`
-  """
-  currentBalanceMinor_min: Int_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`availableBalanceMinor_max` of type `Int`
-  """
-  availableBalanceMinor_max: Int_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`createdAt_max` of type `Timestamp`
-  """
-  createdAt_max: Timestamp_Filter
-  """
-  ✨ Generated from Field `BankAccount`.`currentBalanceMinor_max` of type `Int`
-  """
-  currentBalanceMinor_max: Int_Filter
-}
-"""
-✨ Generated key input type for table 'BankAccount'. It represents the primary key fields used to uniquely identify a row in the table.
-"""
-input BankAccount_Key {
-  """
-  ✨ Generated from Field `BankAccount`.`id` of type `UUID!`
-  """
-  id: UUID
-  """
-  ✨ `_expr` server value variant of `id` (✨ Generated from Field `BankAccount`.`id` of type `UUID!`)
-  """
-  id_expr: UUID_Expr @fdc_forbiddenInVariables
-}
-"""
-✨ Generated list filter input type for table 'BankAccount'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
-"""
-input BankAccount_ListFilter {
-  """
-  The desired number of objects that match the condition (defaults to at least one).
-  """
-  count: Int_Filter = {gt:0}
-  """
-  Condition of the related objects to filter for.
-  """
-  exist: BankAccount_Filter
-}
-"""
-✨ Generated order input type for table 'BankAccount'. This input defines the sorting order of rows in query results based on one or more fields.
-"""
-input BankAccount_Order {
-  """
-  ✨ Generated from Field `BankAccount`.`id` of type `UUID!`
-  """
-  id: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`familyMemberId` of type `UUID`
-  """
-  familyMemberId: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`plaidItemId` of type `UUID!`
-  """
-  plaidItemId: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`userId` of type `UUID!`
-  """
-  userId: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`familyMember` of type `FamilyMember`
-  """
-  familyMember: FamilyMember_Order
-  """
-  ✨ Generated from Field `BankAccount`.`plaidItem` of type `PlaidItem!`
-  """
-  plaidItem: PlaidItem_Order
-  """
-  ✨ Generated from Field `BankAccount`.`user` of type `User!`
-  """
-  user: User_Order
-  """
-  ✨ Generated from Field `BankAccount`.`availableBalanceMinor` of type `Int`
-  """
-  availableBalanceMinor: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`createdAt` of type `Timestamp!`
-  """
-  createdAt: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`currentBalanceMinor` of type `Int`
-  """
-  currentBalanceMinor: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`isMuted` of type `Boolean`
-  """
-  isMuted: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`isoCurrencyCode` of type `String`
-  """
-  isoCurrencyCode: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`mask` of type `String`
-  """
-  mask: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`name` of type `String!`
-  """
-  name: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`officialName` of type `String`
-  """
-  officialName: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`plaidAccountId` of type `String!`
-  """
-  plaidAccountId: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`subtype` of type `String`
-  """
-  subtype: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`type` of type `String!`
-  """
-  type: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`_count` of type `Int!`
-  """
-  _count: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`availableBalanceMinor_count` of type `Int!`
-  """
-  availableBalanceMinor_count: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`createdAt_count` of type `Int!`
-  """
-  createdAt_count: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`currentBalanceMinor_count` of type `Int!`
-  """
-  currentBalanceMinor_count: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`familyMemberId_count` of type `Int!`
-  """
-  familyMemberId_count: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`id_count` of type `Int!`
-  """
-  id_count: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`isMuted_count` of type `Int!`
-  """
-  isMuted_count: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`isoCurrencyCode_count` of type `Int!`
-  """
-  isoCurrencyCode_count: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`mask_count` of type `Int!`
-  """
-  mask_count: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`name_count` of type `Int!`
-  """
-  name_count: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`officialName_count` of type `Int!`
-  """
-  officialName_count: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`plaidAccountId_count` of type `Int!`
-  """
-  plaidAccountId_count: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`plaidItemId_count` of type `Int!`
-  """
-  plaidItemId_count: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`subtype_count` of type `Int!`
-  """
-  subtype_count: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`type_count` of type `Int!`
-  """
-  type_count: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`userId_count` of type `Int!`
-  """
-  userId_count: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`availableBalanceMinor_sum` of type `Int`
-  """
-  availableBalanceMinor_sum: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`currentBalanceMinor_sum` of type `Int`
-  """
-  currentBalanceMinor_sum: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`availableBalanceMinor_avg` of type `Float`
-  """
-  availableBalanceMinor_avg: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`currentBalanceMinor_avg` of type `Float`
-  """
-  currentBalanceMinor_avg: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`availableBalanceMinor_min` of type `Int`
-  """
-  availableBalanceMinor_min: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`createdAt_min` of type `Timestamp`
-  """
-  createdAt_min: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`currentBalanceMinor_min` of type `Int`
-  """
-  currentBalanceMinor_min: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`availableBalanceMinor_max` of type `Int`
-  """
-  availableBalanceMinor_max: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`createdAt_max` of type `Timestamp`
-  """
-  createdAt_max: OrderDirection
-  """
-  ✨ Generated from Field `BankAccount`.`currentBalanceMinor_max` of type `Int`
-  """
-  currentBalanceMinor_max: OrderDirection
-}
 """
 ✨ Generated data input type for table 'Category'. It includes all necessary fields for creating or upserting rows into table.
 """
@@ -1814,10 +1207,6 @@ input FamilyMember_Data {
   """
   relationship_expr: String_Expr @fdc_forbiddenInVariables
   """
-  ✨ Generated from Field `FamilyMember`.`bankAccounts_on_familyMember` of type `[BankAccount!]!`
-  """
-  bankAccounts_on_familyMember: [BankAccount_Data!]
-  """
   ✨ Generated from Field `FamilyMember`.`transactions_on_familyMember` of type `[Transaction!]!`
   """
   transactions_on_familyMember: [Transaction_Data!]
@@ -1878,10 +1267,6 @@ input FamilyMember_Filter {
   ✨ Generated from Field `FamilyMember`.`relationship` of type `String`
   """
   relationship: String_Filter
-  """
-  ✨ Generated from Field `FamilyMember`.`bankAccounts_on_familyMember` of type `[BankAccount!]!`
-  """
-  bankAccounts_on_familyMember: BankAccount_ListFilter
   """
   ✨ Generated from Field `FamilyMember`.`transactions_on_familyMember` of type `[Transaction!]!`
   """
@@ -2346,409 +1731,6 @@ input Feature_Order {
   ✨ Generated from Field `Feature`.`createdAt_max` of type `Timestamp`
   """
   createdAt_max: OrderDirection
-}
-"""
-✨ Generated data input type for table 'PlaidItem'. It includes all necessary fields for creating or upserting rows into table.
-"""
-input PlaidItem_Data {
-  """
-  ✨ Generated from Field `PlaidItem`.`id` of type `UUID!`
-  """
-  id: UUID
-  """
-  ✨ `_expr` server value variant of `id` (✨ Generated from Field `PlaidItem`.`id` of type `UUID!`)
-  """
-  id_expr: UUID_Expr @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `PlaidItem`.`userId` of type `UUID!`
-  """
-  userId: UUID
-  """
-  ✨ `_expr` server value variant of `userId` (✨ Generated from Field `PlaidItem`.`userId` of type `UUID!`)
-  """
-  userId_expr: UUID_Expr @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `PlaidItem`.`user` of type `User!`
-  """
-  user: User_Key @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `PlaidItem`.`accessTokenEncrypted` of type `String!`
-  """
-  accessTokenEncrypted: String
-  """
-  ✨ `_expr` server value variant of `accessTokenEncrypted` (✨ Generated from Field `PlaidItem`.`accessTokenEncrypted` of type `String!`)
-  """
-  accessTokenEncrypted_expr: String_Expr @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `PlaidItem`.`createdAt` of type `Timestamp!`
-  """
-  createdAt: Timestamp
-  """
-  ✨ `_expr` server value variant of `createdAt` (✨ Generated from Field `PlaidItem`.`createdAt` of type `Timestamp!`)
-  """
-  createdAt_expr: Timestamp_Expr @fdc_forbiddenInVariables
-  """
-  ✨ `_time` server value variant of `createdAt` (✨ Generated from Field `PlaidItem`.`createdAt` of type `Timestamp!`)
-  """
-  createdAt_time: Timestamp_Relative @fdc_forbiddenInVariables
-  """
-  ✨ `_update` server value variant of `createdAt` (✨ Generated from Field `PlaidItem`.`createdAt` of type `Timestamp!`)
-  """
-  createdAt_update: [Timestamp_Update!] @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `PlaidItem`.`institutionId` of type `String`
-  """
-  institutionId: String
-  """
-  ✨ `_expr` server value variant of `institutionId` (✨ Generated from Field `PlaidItem`.`institutionId` of type `String`)
-  """
-  institutionId_expr: String_Expr @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `PlaidItem`.`institutionName` of type `String!`
-  """
-  institutionName: String
-  """
-  ✨ `_expr` server value variant of `institutionName` (✨ Generated from Field `PlaidItem`.`institutionName` of type `String!`)
-  """
-  institutionName_expr: String_Expr @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `PlaidItem`.`lastSyncedAt` of type `Timestamp`
-  """
-  lastSyncedAt: Timestamp
-  """
-  ✨ `_expr` server value variant of `lastSyncedAt` (✨ Generated from Field `PlaidItem`.`lastSyncedAt` of type `Timestamp`)
-  """
-  lastSyncedAt_expr: Timestamp_Expr @fdc_forbiddenInVariables
-  """
-  ✨ `_time` server value variant of `lastSyncedAt` (✨ Generated from Field `PlaidItem`.`lastSyncedAt` of type `Timestamp`)
-  """
-  lastSyncedAt_time: Timestamp_Relative @fdc_forbiddenInVariables
-  """
-  ✨ `_update` server value variant of `lastSyncedAt` (✨ Generated from Field `PlaidItem`.`lastSyncedAt` of type `Timestamp`)
-  """
-  lastSyncedAt_update: [Timestamp_Update!] @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `PlaidItem`.`plaidItemId` of type `String!`
-  """
-  plaidItemId: String
-  """
-  ✨ `_expr` server value variant of `plaidItemId` (✨ Generated from Field `PlaidItem`.`plaidItemId` of type `String!`)
-  """
-  plaidItemId_expr: String_Expr @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `PlaidItem`.`status` of type `String!`
-  """
-  status: String
-  """
-  ✨ `_expr` server value variant of `status` (✨ Generated from Field `PlaidItem`.`status` of type `String!`)
-  """
-  status_expr: String_Expr @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `PlaidItem`.`syncCursor` of type `String`
-  """
-  syncCursor: String
-  """
-  ✨ `_expr` server value variant of `syncCursor` (✨ Generated from Field `PlaidItem`.`syncCursor` of type `String`)
-  """
-  syncCursor_expr: String_Expr @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `PlaidItem`.`bankAccounts_on_plaidItem` of type `[BankAccount!]!`
-  """
-  bankAccounts_on_plaidItem: [BankAccount_Data!]
-}
-"""
-✨ Generated filter input type for table 'PlaidItem'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
-"""
-input PlaidItem_Filter {
-  """
-  Apply multiple filter conditions using `AND` logic.
-  """
-  _and: [PlaidItem_Filter!]
-  """
-  Negate the result of the provided filter condition.
-  """
-  _not: PlaidItem_Filter
-  """
-  Apply multiple filter conditions using `OR` logic.
-  """
-  _or: [PlaidItem_Filter!]
-  """
-  ✨ Generated from Field `PlaidItem`.`id` of type `UUID!`
-  """
-  id: UUID_Filter
-  """
-  ✨ Generated from Field `PlaidItem`.`userId` of type `UUID!`
-  """
-  userId: UUID_Filter
-  """
-  ✨ Generated from Field `PlaidItem`.`user` of type `User!`
-  """
-  user: User_Filter
-  """
-  ✨ Generated from Field `PlaidItem`.`accessTokenEncrypted` of type `String!`
-  """
-  accessTokenEncrypted: String_Filter
-  """
-  ✨ Generated from Field `PlaidItem`.`createdAt` of type `Timestamp!`
-  """
-  createdAt: Timestamp_Filter
-  """
-  ✨ Generated from Field `PlaidItem`.`institutionId` of type `String`
-  """
-  institutionId: String_Filter
-  """
-  ✨ Generated from Field `PlaidItem`.`institutionName` of type `String!`
-  """
-  institutionName: String_Filter
-  """
-  ✨ Generated from Field `PlaidItem`.`lastSyncedAt` of type `Timestamp`
-  """
-  lastSyncedAt: Timestamp_Filter
-  """
-  ✨ Generated from Field `PlaidItem`.`plaidItemId` of type `String!`
-  """
-  plaidItemId: String_Filter
-  """
-  ✨ Generated from Field `PlaidItem`.`status` of type `String!`
-  """
-  status: String_Filter
-  """
-  ✨ Generated from Field `PlaidItem`.`syncCursor` of type `String`
-  """
-  syncCursor: String_Filter
-  """
-  ✨ Generated from Field `PlaidItem`.`bankAccounts_on_plaidItem` of type `[BankAccount!]!`
-  """
-  bankAccounts_on_plaidItem: BankAccount_ListFilter
-}
-"""
-✨ Generated first-row input type for table 'PlaidItem'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
-"""
-input PlaidItem_FirstRow {
-  """
-  Order the result by the specified fields.
-  """
-  orderBy: [PlaidItem_Order!]
-  """
-  Filters rows based on the specified conditions.
-  """
-  where: PlaidItem_Filter
-}
-"""
-✨ Generated having input type for table 'PlaidItem'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
-"""
-input PlaidItem_Having {
-  """
-  Apply multiple Having conditions using `AND` logic.
-  """
-  _and: [PlaidItem_Having!]
-  """
-  Whether to apply DISTINCT to the aggregate function.
-  """
-  _distinct: Boolean
-  """
-  Negate the result of the provided Having condition.
-  """
-  _not: PlaidItem_Having
-  """
-  Apply multiple Having conditions using `OR` logic.
-  """
-  _or: [PlaidItem_Having!]
-  """
-  ✨ Generated from Field `PlaidItem`.`_count` of type `Int!`
-  """
-  _count: Int_Filter
-  """
-  ✨ Generated from Field `PlaidItem`.`accessTokenEncrypted_count` of type `Int!`
-  """
-  accessTokenEncrypted_count: Int_Filter
-  """
-  ✨ Generated from Field `PlaidItem`.`createdAt_count` of type `Int!`
-  """
-  createdAt_count: Int_Filter
-  """
-  ✨ Generated from Field `PlaidItem`.`id_count` of type `Int!`
-  """
-  id_count: Int_Filter
-  """
-  ✨ Generated from Field `PlaidItem`.`institutionId_count` of type `Int!`
-  """
-  institutionId_count: Int_Filter
-  """
-  ✨ Generated from Field `PlaidItem`.`institutionName_count` of type `Int!`
-  """
-  institutionName_count: Int_Filter
-  """
-  ✨ Generated from Field `PlaidItem`.`lastSyncedAt_count` of type `Int!`
-  """
-  lastSyncedAt_count: Int_Filter
-  """
-  ✨ Generated from Field `PlaidItem`.`plaidItemId_count` of type `Int!`
-  """
-  plaidItemId_count: Int_Filter
-  """
-  ✨ Generated from Field `PlaidItem`.`status_count` of type `Int!`
-  """
-  status_count: Int_Filter
-  """
-  ✨ Generated from Field `PlaidItem`.`syncCursor_count` of type `Int!`
-  """
-  syncCursor_count: Int_Filter
-  """
-  ✨ Generated from Field `PlaidItem`.`userId_count` of type `Int!`
-  """
-  userId_count: Int_Filter
-  """
-  ✨ Generated from Field `PlaidItem`.`createdAt_min` of type `Timestamp`
-  """
-  createdAt_min: Timestamp_Filter
-  """
-  ✨ Generated from Field `PlaidItem`.`lastSyncedAt_min` of type `Timestamp`
-  """
-  lastSyncedAt_min: Timestamp_Filter
-  """
-  ✨ Generated from Field `PlaidItem`.`createdAt_max` of type `Timestamp`
-  """
-  createdAt_max: Timestamp_Filter
-  """
-  ✨ Generated from Field `PlaidItem`.`lastSyncedAt_max` of type `Timestamp`
-  """
-  lastSyncedAt_max: Timestamp_Filter
-}
-"""
-✨ Generated key input type for table 'PlaidItem'. It represents the primary key fields used to uniquely identify a row in the table.
-"""
-input PlaidItem_Key {
-  """
-  ✨ Generated from Field `PlaidItem`.`id` of type `UUID!`
-  """
-  id: UUID
-  """
-  ✨ `_expr` server value variant of `id` (✨ Generated from Field `PlaidItem`.`id` of type `UUID!`)
-  """
-  id_expr: UUID_Expr @fdc_forbiddenInVariables
-}
-"""
-✨ Generated list filter input type for table 'PlaidItem'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
-"""
-input PlaidItem_ListFilter {
-  """
-  The desired number of objects that match the condition (defaults to at least one).
-  """
-  count: Int_Filter = {gt:0}
-  """
-  Condition of the related objects to filter for.
-  """
-  exist: PlaidItem_Filter
-}
-"""
-✨ Generated order input type for table 'PlaidItem'. This input defines the sorting order of rows in query results based on one or more fields.
-"""
-input PlaidItem_Order {
-  """
-  ✨ Generated from Field `PlaidItem`.`id` of type `UUID!`
-  """
-  id: OrderDirection
-  """
-  ✨ Generated from Field `PlaidItem`.`userId` of type `UUID!`
-  """
-  userId: OrderDirection
-  """
-  ✨ Generated from Field `PlaidItem`.`user` of type `User!`
-  """
-  user: User_Order
-  """
-  ✨ Generated from Field `PlaidItem`.`accessTokenEncrypted` of type `String!`
-  """
-  accessTokenEncrypted: OrderDirection
-  """
-  ✨ Generated from Field `PlaidItem`.`createdAt` of type `Timestamp!`
-  """
-  createdAt: OrderDirection
-  """
-  ✨ Generated from Field `PlaidItem`.`institutionId` of type `String`
-  """
-  institutionId: OrderDirection
-  """
-  ✨ Generated from Field `PlaidItem`.`institutionName` of type `String!`
-  """
-  institutionName: OrderDirection
-  """
-  ✨ Generated from Field `PlaidItem`.`lastSyncedAt` of type `Timestamp`
-  """
-  lastSyncedAt: OrderDirection
-  """
-  ✨ Generated from Field `PlaidItem`.`plaidItemId` of type `String!`
-  """
-  plaidItemId: OrderDirection
-  """
-  ✨ Generated from Field `PlaidItem`.`status` of type `String!`
-  """
-  status: OrderDirection
-  """
-  ✨ Generated from Field `PlaidItem`.`syncCursor` of type `String`
-  """
-  syncCursor: OrderDirection
-  """
-  ✨ Generated from Field `PlaidItem`.`_count` of type `Int!`
-  """
-  _count: OrderDirection
-  """
-  ✨ Generated from Field `PlaidItem`.`accessTokenEncrypted_count` of type `Int!`
-  """
-  accessTokenEncrypted_count: OrderDirection
-  """
-  ✨ Generated from Field `PlaidItem`.`createdAt_count` of type `Int!`
-  """
-  createdAt_count: OrderDirection
-  """
-  ✨ Generated from Field `PlaidItem`.`id_count` of type `Int!`
-  """
-  id_count: OrderDirection
-  """
-  ✨ Generated from Field `PlaidItem`.`institutionId_count` of type `Int!`
-  """
-  institutionId_count: OrderDirection
-  """
-  ✨ Generated from Field `PlaidItem`.`institutionName_count` of type `Int!`
-  """
-  institutionName_count: OrderDirection
-  """
-  ✨ Generated from Field `PlaidItem`.`lastSyncedAt_count` of type `Int!`
-  """
-  lastSyncedAt_count: OrderDirection
-  """
-  ✨ Generated from Field `PlaidItem`.`plaidItemId_count` of type `Int!`
-  """
-  plaidItemId_count: OrderDirection
-  """
-  ✨ Generated from Field `PlaidItem`.`status_count` of type `Int!`
-  """
-  status_count: OrderDirection
-  """
-  ✨ Generated from Field `PlaidItem`.`syncCursor_count` of type `Int!`
-  """
-  syncCursor_count: OrderDirection
-  """
-  ✨ Generated from Field `PlaidItem`.`userId_count` of type `Int!`
-  """
-  userId_count: OrderDirection
-  """
-  ✨ Generated from Field `PlaidItem`.`createdAt_min` of type `Timestamp`
-  """
-  createdAt_min: OrderDirection
-  """
-  ✨ Generated from Field `PlaidItem`.`lastSyncedAt_min` of type `Timestamp`
-  """
-  lastSyncedAt_min: OrderDirection
-  """
-  ✨ Generated from Field `PlaidItem`.`createdAt_max` of type `Timestamp`
-  """
-  createdAt_max: OrderDirection
-  """
-  ✨ Generated from Field `PlaidItem`.`lastSyncedAt_max` of type `Timestamp`
-  """
-  lastSyncedAt_max: OrderDirection
 }
 """
 ✨ Generated data input type for table 'Theme'. It includes all necessary fields for creating or upserting rows into table.
@@ -3302,14 +2284,6 @@ input Transaction_Data {
   """
   id_expr: UUID_Expr @fdc_forbiddenInVariables
   """
-  ✨ Generated from Field `Transaction`.`bankAccountId` of type `UUID`
-  """
-  bankAccountId: UUID
-  """
-  ✨ `_expr` server value variant of `bankAccountId` (✨ Generated from Field `Transaction`.`bankAccountId` of type `UUID`)
-  """
-  bankAccountId_expr: UUID_Expr @fdc_forbiddenInVariables
-  """
   ✨ Generated from Field `Transaction`.`categoryName` of type `String`
   """
   categoryName: String
@@ -3333,10 +2307,6 @@ input Transaction_Data {
   ✨ `_expr` server value variant of `userId` (✨ Generated from Field `Transaction`.`userId` of type `UUID!`)
   """
   userId_expr: UUID_Expr @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `Transaction`.`bankAccount` of type `BankAccount`
-  """
-  bankAccount: BankAccount_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Transaction`.`category` of type `Category`
   """
@@ -3394,22 +2364,6 @@ input Transaction_Data {
   """
   direction_expr: String_Expr @fdc_forbiddenInVariables
   """
-  ✨ Generated from Field `Transaction`.`isPending` of type `Boolean`
-  """
-  isPending: Boolean
-  """
-  ✨ `_expr` server value variant of `isPending` (✨ Generated from Field `Transaction`.`isPending` of type `Boolean`)
-  """
-  isPending_expr: Boolean_Expr @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `Transaction`.`matchedTransactionId` of type `UUID`
-  """
-  matchedTransactionId: UUID
-  """
-  ✨ `_expr` server value variant of `matchedTransactionId` (✨ Generated from Field `Transaction`.`matchedTransactionId` of type `UUID`)
-  """
-  matchedTransactionId_expr: UUID_Expr @fdc_forbiddenInVariables
-  """
   ✨ Generated from Field `Transaction`.`merchant` of type `String`
   """
   merchant: String
@@ -3441,30 +2395,6 @@ input Transaction_Data {
   ✨ `_update` server value variant of `occurredOn` (✨ Generated from Field `Transaction`.`occurredOn` of type `Date!`)
   """
   occurredOn_update: [Date_Update!] @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `Transaction`.`plaidCategory` of type `String`
-  """
-  plaidCategory: String
-  """
-  ✨ `_expr` server value variant of `plaidCategory` (✨ Generated from Field `Transaction`.`plaidCategory` of type `String`)
-  """
-  plaidCategory_expr: String_Expr @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `Transaction`.`plaidPendingTransactionId` of type `String`
-  """
-  plaidPendingTransactionId: String
-  """
-  ✨ `_expr` server value variant of `plaidPendingTransactionId` (✨ Generated from Field `Transaction`.`plaidPendingTransactionId` of type `String`)
-  """
-  plaidPendingTransactionId_expr: String_Expr @fdc_forbiddenInVariables
-  """
-  ✨ Generated from Field `Transaction`.`plaidTransactionId` of type `String`
-  """
-  plaidTransactionId: String
-  """
-  ✨ `_expr` server value variant of `plaidTransactionId` (✨ Generated from Field `Transaction`.`plaidTransactionId` of type `String`)
-  """
-  plaidTransactionId_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Transaction`.`recurrence` of type `String`
   """
@@ -3511,10 +2441,6 @@ input Transaction_Filter {
   """
   id: UUID_Filter
   """
-  ✨ Generated from Field `Transaction`.`bankAccountId` of type `UUID`
-  """
-  bankAccountId: UUID_Filter
-  """
   ✨ Generated from Field `Transaction`.`categoryName` of type `String`
   """
   categoryName: String_Filter
@@ -3526,10 +2452,6 @@ input Transaction_Filter {
   ✨ Generated from Field `Transaction`.`userId` of type `UUID!`
   """
   userId: UUID_Filter
-  """
-  ✨ Generated from Field `Transaction`.`bankAccount` of type `BankAccount`
-  """
-  bankAccount: BankAccount_Filter
   """
   ✨ Generated from Field `Transaction`.`category` of type `Category`
   """
@@ -3559,14 +2481,6 @@ input Transaction_Filter {
   """
   direction: String_Filter
   """
-  ✨ Generated from Field `Transaction`.`isPending` of type `Boolean`
-  """
-  isPending: Boolean_Filter
-  """
-  ✨ Generated from Field `Transaction`.`matchedTransactionId` of type `UUID`
-  """
-  matchedTransactionId: UUID_Filter
-  """
   ✨ Generated from Field `Transaction`.`merchant` of type `String`
   """
   merchant: String_Filter
@@ -3578,18 +2492,6 @@ input Transaction_Filter {
   ✨ Generated from Field `Transaction`.`occurredOn` of type `Date!`
   """
   occurredOn: Date_Filter
-  """
-  ✨ Generated from Field `Transaction`.`plaidCategory` of type `String`
-  """
-  plaidCategory: String_Filter
-  """
-  ✨ Generated from Field `Transaction`.`plaidPendingTransactionId` of type `String`
-  """
-  plaidPendingTransactionId: String_Filter
-  """
-  ✨ Generated from Field `Transaction`.`plaidTransactionId` of type `String`
-  """
-  plaidTransactionId: String_Filter
   """
   ✨ Generated from Field `Transaction`.`recurrence` of type `String`
   """
@@ -3645,10 +2547,6 @@ input Transaction_Having {
   """
   amountMinor_count: Int_Filter
   """
-  ✨ Generated from Field `Transaction`.`bankAccountId_count` of type `Int!`
-  """
-  bankAccountId_count: Int_Filter
-  """
   ✨ Generated from Field `Transaction`.`categoryName_count` of type `Int!`
   """
   categoryName_count: Int_Filter
@@ -3673,14 +2571,6 @@ input Transaction_Having {
   """
   id_count: Int_Filter
   """
-  ✨ Generated from Field `Transaction`.`isPending_count` of type `Int!`
-  """
-  isPending_count: Int_Filter
-  """
-  ✨ Generated from Field `Transaction`.`matchedTransactionId_count` of type `Int!`
-  """
-  matchedTransactionId_count: Int_Filter
-  """
   ✨ Generated from Field `Transaction`.`merchant_count` of type `Int!`
   """
   merchant_count: Int_Filter
@@ -3692,18 +2582,6 @@ input Transaction_Having {
   ✨ Generated from Field `Transaction`.`occurredOn_count` of type `Int!`
   """
   occurredOn_count: Int_Filter
-  """
-  ✨ Generated from Field `Transaction`.`plaidCategory_count` of type `Int!`
-  """
-  plaidCategory_count: Int_Filter
-  """
-  ✨ Generated from Field `Transaction`.`plaidPendingTransactionId_count` of type `Int!`
-  """
-  plaidPendingTransactionId_count: Int_Filter
-  """
-  ✨ Generated from Field `Transaction`.`plaidTransactionId_count` of type `Int!`
-  """
-  plaidTransactionId_count: Int_Filter
   """
   ✨ Generated from Field `Transaction`.`recurrence_count` of type `Int!`
   """
@@ -3788,10 +2666,6 @@ input Transaction_Order {
   """
   id: OrderDirection
   """
-  ✨ Generated from Field `Transaction`.`bankAccountId` of type `UUID`
-  """
-  bankAccountId: OrderDirection
-  """
   ✨ Generated from Field `Transaction`.`categoryName` of type `String`
   """
   categoryName: OrderDirection
@@ -3803,10 +2677,6 @@ input Transaction_Order {
   ✨ Generated from Field `Transaction`.`userId` of type `UUID!`
   """
   userId: OrderDirection
-  """
-  ✨ Generated from Field `Transaction`.`bankAccount` of type `BankAccount`
-  """
-  bankAccount: BankAccount_Order
   """
   ✨ Generated from Field `Transaction`.`category` of type `Category`
   """
@@ -3836,14 +2706,6 @@ input Transaction_Order {
   """
   direction: OrderDirection
   """
-  ✨ Generated from Field `Transaction`.`isPending` of type `Boolean`
-  """
-  isPending: OrderDirection
-  """
-  ✨ Generated from Field `Transaction`.`matchedTransactionId` of type `UUID`
-  """
-  matchedTransactionId: OrderDirection
-  """
   ✨ Generated from Field `Transaction`.`merchant` of type `String`
   """
   merchant: OrderDirection
@@ -3855,18 +2717,6 @@ input Transaction_Order {
   ✨ Generated from Field `Transaction`.`occurredOn` of type `Date!`
   """
   occurredOn: OrderDirection
-  """
-  ✨ Generated from Field `Transaction`.`plaidCategory` of type `String`
-  """
-  plaidCategory: OrderDirection
-  """
-  ✨ Generated from Field `Transaction`.`plaidPendingTransactionId` of type `String`
-  """
-  plaidPendingTransactionId: OrderDirection
-  """
-  ✨ Generated from Field `Transaction`.`plaidTransactionId` of type `String`
-  """
-  plaidTransactionId: OrderDirection
   """
   ✨ Generated from Field `Transaction`.`recurrence` of type `String`
   """
@@ -3887,10 +2737,6 @@ input Transaction_Order {
   ✨ Generated from Field `Transaction`.`amountMinor_count` of type `Int!`
   """
   amountMinor_count: OrderDirection
-  """
-  ✨ Generated from Field `Transaction`.`bankAccountId_count` of type `Int!`
-  """
-  bankAccountId_count: OrderDirection
   """
   ✨ Generated from Field `Transaction`.`categoryName_count` of type `Int!`
   """
@@ -3916,14 +2762,6 @@ input Transaction_Order {
   """
   id_count: OrderDirection
   """
-  ✨ Generated from Field `Transaction`.`isPending_count` of type `Int!`
-  """
-  isPending_count: OrderDirection
-  """
-  ✨ Generated from Field `Transaction`.`matchedTransactionId_count` of type `Int!`
-  """
-  matchedTransactionId_count: OrderDirection
-  """
   ✨ Generated from Field `Transaction`.`merchant_count` of type `Int!`
   """
   merchant_count: OrderDirection
@@ -3935,18 +2773,6 @@ input Transaction_Order {
   ✨ Generated from Field `Transaction`.`occurredOn_count` of type `Int!`
   """
   occurredOn_count: OrderDirection
-  """
-  ✨ Generated from Field `Transaction`.`plaidCategory_count` of type `Int!`
-  """
-  plaidCategory_count: OrderDirection
-  """
-  ✨ Generated from Field `Transaction`.`plaidPendingTransactionId_count` of type `Int!`
-  """
-  plaidPendingTransactionId_count: OrderDirection
-  """
-  ✨ Generated from Field `Transaction`.`plaidTransactionId_count` of type `Int!`
-  """
-  plaidTransactionId_count: OrderDirection
   """
   ✨ Generated from Field `Transaction`.`recurrence_count` of type `Int!`
   """
@@ -4073,10 +2899,6 @@ input User_Data {
   """
   username_expr: String_Expr @fdc_forbiddenInVariables
   """
-  ✨ Generated from Field `User`.`bankAccounts_on_user` of type `[BankAccount!]!`
-  """
-  bankAccounts_on_user: [BankAccount_Data!]
-  """
   ✨ Generated from Field `User`.`families_on_ownerUser` of type `[Family!]!`
   """
   families_on_ownerUser: [Family_Data!]
@@ -4088,10 +2910,6 @@ input User_Data {
   ✨ Generated from Field `User`.`familyMembers_on_user` of type `[FamilyMember!]!`
   """
   familyMembers_on_user: [FamilyMember_Data!]
-  """
-  ✨ Generated from Field `User`.`plaidItems_on_user` of type `[PlaidItem!]!`
-  """
-  plaidItems_on_user: [PlaidItem_Data!]
   """
   ✨ Generated from Field `User`.`transactions_on_user` of type `[Transaction!]!`
   """
@@ -4154,10 +2972,6 @@ input User_Filter {
   """
   username: String_Filter
   """
-  ✨ Generated from Field `User`.`bankAccounts_on_user` of type `[BankAccount!]!`
-  """
-  bankAccounts_on_user: BankAccount_ListFilter
-  """
   ✨ Generated from Field `User`.`families_on_ownerUser` of type `[Family!]!`
   """
   families_on_ownerUser: Family_ListFilter
@@ -4169,10 +2983,6 @@ input User_Filter {
   ✨ Generated from Field `User`.`familyMembers_on_user` of type `[FamilyMember!]!`
   """
   familyMembers_on_user: FamilyMember_ListFilter
-  """
-  ✨ Generated from Field `User`.`plaidItems_on_user` of type `[PlaidItem!]!`
-  """
-  plaidItems_on_user: PlaidItem_ListFilter
   """
   ✨ Generated from Field `User`.`transactions_on_user` of type `[Transaction!]!`
   """

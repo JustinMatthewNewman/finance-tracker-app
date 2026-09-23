@@ -61,10 +61,11 @@ interface NavLink {
 
 const NAV_LINKS: NavLink[] = [
   { label: "Household", href: "/household", icon: Persons, authRequired: true },
-  // Income / Expenses / Calendar are UI ports from Finance Manager Pro and
-  // currently render mock data (see lib/mockFinanceData.ts) — they are not
-  // yet wired to Data Connect, so their figures will not agree with
-  // Household's. Each page says so on screen.
+  // Income / Expenses / Calendar all read the same Transaction rows the
+  // Household page does, scoped to the selected month, so their figures
+  // agree with it. Income and Expenses are one component pointed at opposite
+  // directions (components/Records/LedgerPage.tsx); Calendar is the view that
+  // looks forward, where projected items matter most.
   { label: "Income", href: "/income", icon: ArrowUp, authRequired: true },
   { label: "Expenses", href: "/expenses", icon: ArrowDown, authRequired: true },
   { label: "Calendar", href: "/calendar", icon: Calendar, authRequired: true },

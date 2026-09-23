@@ -237,20 +237,6 @@ exports.deleteFamilyMember = function deleteFamilyMember(dcOrVars, vars) {
 }
 ;
 
-const restoreFamilyMemberRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
-  dcInstance._useGeneratedSdk();
-  return mutationRef(dcInstance, 'RestoreFamilyMember', inputVars);
-}
-restoreFamilyMemberRef.operationName = 'RestoreFamilyMember';
-exports.restoreFamilyMemberRef = restoreFamilyMemberRef;
-
-exports.restoreFamilyMember = function restoreFamilyMember(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
-  return executeMutation(restoreFamilyMemberRef(dcInstance, inputVars));
-}
-;
-
 const upsertCategoryRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
@@ -321,6 +307,34 @@ exports.updateTransactionClearCategory = function updateTransactionClearCategory
 }
 ;
 
+const markTransactionPostedRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'MarkTransactionPosted', inputVars);
+}
+markTransactionPostedRef.operationName = 'MarkTransactionPosted';
+exports.markTransactionPostedRef = markTransactionPostedRef;
+
+exports.markTransactionPosted = function markTransactionPosted(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(markTransactionPostedRef(dcInstance, inputVars));
+}
+;
+
+const markTransactionProjectedRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'MarkTransactionProjected', inputVars);
+}
+markTransactionProjectedRef.operationName = 'MarkTransactionProjected';
+exports.markTransactionProjectedRef = markTransactionProjectedRef;
+
+exports.markTransactionProjected = function markTransactionProjected(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(markTransactionProjectedRef(dcInstance, inputVars));
+}
+;
+
 const deleteTransactionRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
@@ -332,48 +346,6 @@ exports.deleteTransactionRef = deleteTransactionRef;
 exports.deleteTransaction = function deleteTransaction(dcOrVars, vars) {
   const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
   return executeMutation(deleteTransactionRef(dcInstance, inputVars));
-}
-;
-
-const upsertPlaidItemRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
-  dcInstance._useGeneratedSdk();
-  return mutationRef(dcInstance, 'UpsertPlaidItem', inputVars);
-}
-upsertPlaidItemRef.operationName = 'UpsertPlaidItem';
-exports.upsertPlaidItemRef = upsertPlaidItemRef;
-
-exports.upsertPlaidItem = function upsertPlaidItem(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
-  return executeMutation(upsertPlaidItemRef(dcInstance, inputVars));
-}
-;
-
-const upsertBankAccountRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
-  dcInstance._useGeneratedSdk();
-  return mutationRef(dcInstance, 'UpsertBankAccount', inputVars);
-}
-upsertBankAccountRef.operationName = 'UpsertBankAccount';
-exports.upsertBankAccountRef = upsertBankAccountRef;
-
-exports.upsertBankAccount = function upsertBankAccount(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
-  return executeMutation(upsertBankAccountRef(dcInstance, inputVars));
-}
-;
-
-const syncPlaidTransactionRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
-  dcInstance._useGeneratedSdk();
-  return mutationRef(dcInstance, 'SyncPlaidTransaction', inputVars);
-}
-syncPlaidTransactionRef.operationName = 'SyncPlaidTransaction';
-exports.syncPlaidTransactionRef = syncPlaidTransactionRef;
-
-exports.syncPlaidTransaction = function syncPlaidTransaction(dcOrVars, vars) {
-  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
-  return executeMutation(syncPlaidTransactionRef(dcInstance, inputVars));
 }
 ;
 
@@ -651,21 +623,6 @@ exports.listMyTransactionsByDateRange = function listMyTransactionsByDateRange(d
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(listMyTransactionsByDateRangeRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
-}
-;
-
-const getTransactionRef = (dcOrVars, vars) => {
-  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
-  dcInstance._useGeneratedSdk();
-  return queryRef(dcInstance, 'GetTransaction', inputVars);
-}
-getTransactionRef.operationName = 'GetTransaction';
-exports.getTransactionRef = getTransactionRef;
-
-exports.getTransaction = function getTransaction(dcOrVars, varsOrOptions, options) {
-  
-  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
-  return executeQuery(getTransactionRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 ;
 
