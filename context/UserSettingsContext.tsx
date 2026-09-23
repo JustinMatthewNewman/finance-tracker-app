@@ -7,6 +7,17 @@ import { getMyUser } from "@/src/dataconnect-generated";
 import { DEFAULT_CURRENCY } from "@/lib/money";
 
 type UserSettingsState = {
+  // The account's own row id and the household it belongs to. Not
+  // preferences, but they ride along here because they arrive in the same
+  // GetMyUser response every preference below comes from, and the whole point
+  // of this provider is that that response is fetched once. A FamilyContext
+  // reading `family` would mean a second SERVER_ONLY GetMyUser on every page
+  // load, to learn something already sitting in this one.
+  userId: string | null;
+  // Null means "has not joined or created a household yet", which is the
+  // signal components/Onboarding/OnboardingGate.tsx acts on. It is not an
+  // error and not a loading state — see `initialized` below for those.
+  familyId: string | null;
   colorSchemeId: string | null;
   performanceMode: boolean | null;
   backgroundOpacity: number | null;
@@ -21,10 +32,23 @@ type UserSettingsState = {
 
 type UserSettingsContextType = UserSettingsState & {
   loading: boolean;
+  /**
+   * False until the first fetch has resolved (or failed) at least once.
+   *
+   * Distinct from `!loading`, and the distinction matters: `loading` is false
+   * before the first fetch starts as well as after it finishes, so a consumer
+   * gating on `!loading` sees the initial empty state as a settled answer.
+   * For a preference that is harmless — it renders a default for a frame.
+   * For the onboarding gate it is not: `familyId === null` would read as "no
+   * household" and bounce somebody who has one straight out of the app.
+   */
+  initialized: boolean;
   refetch: () => Promise<void>;
 };
 
 const EMPTY_STATE: UserSettingsState = {
+  userId: null,
+  familyId: null,
   colorSchemeId: null,
   performanceMode: null,
   backgroundOpacity: null,
@@ -50,10 +74,15 @@ export function UserSettingsProvider({ children }: { children: React.ReactNode }
   const { user } = useAuth();
   const [state, setState] = useState<UserSettingsState>(EMPTY_STATE);
   const [loading, setLoading] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
   const refetch = useCallback(async () => {
     if (!user?.uid) {
       setState(EMPTY_STATE);
+      // A signed-out visitor is a settled answer, not a pending one — the
+      // landing page must render rather than wait for a fetch that will
+      // never happen.
+      setInitialized(true);
       return;
     }
     setLoading(true);
@@ -64,6 +93,8 @@ export function UserSettingsProvider({ children }: { children: React.ReactNode }
       const dbUser = result.data.user;
       const settings = dbUser?.userSetting;
       setState({
+        userId: dbUser?.id ?? null,
+        familyId: dbUser?.family?.id ?? null,
         colorSchemeId: settings?.colorScheme?.id ?? null,
         performanceMode: settings?.performanceMode ?? false,
         backgroundOpacity: settings?.backgroundOpacity ?? 100,
@@ -77,6 +108,10 @@ export function UserSettingsProvider({ children }: { children: React.ReactNode }
       });
     } finally {
       setLoading(false);
+      // In `finally`, so a failed read still counts as answered. Otherwise a
+      // network blip leaves every consumer waiting forever on a flag that
+      // will never flip.
+      setInitialized(true);
     }
   }, [user?.uid]);
 
@@ -86,7 +121,7 @@ export function UserSettingsProvider({ children }: { children: React.ReactNode }
   }, [refetch]);
 
   return (
-    <UserSettingsContext.Provider value={{ ...state, loading, refetch }}>
+    <UserSettingsContext.Provider value={{ ...state, loading, initialized, refetch }}>
       {children}
     </UserSettingsContext.Provider>
   );

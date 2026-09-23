@@ -30,9 +30,26 @@ export interface FamilyMemberData {
   externalAccountRef: string | null;
   monthlyIncomeTargetMinor: number | null;
   createdAt: string;
+  /** The account that created this person's record. */
+  ownerUserId: string;
+  ownerUsername: string;
+  /**
+   * Whether the signed-in account may edit this row.
+   *
+   * Reads widened to the household and writes did not (see the visibility
+   * note at the top of queries.gql), so the sidebar now lists people whose
+   * records belong to a housemate. Those are read-only, and the UI has to
+   * know it: a rename button that is always enabled would fail at the
+   * `@check` in RenameFamilyMember, and the person would get an
+   * authorization error for pressing a button the app offered them.
+   */
+  isMine: boolean;
 }
 
-function toFamilyMemberData(rows: ListFamilyMembersData["familyMembers"]): FamilyMemberData[] {
+function toFamilyMemberData(
+  rows: ListFamilyMembersData["familyMembers"],
+  myUserId: string | undefined
+): FamilyMemberData[] {
   return rows.map((row) => ({
     id: row.id,
     name: row.name,
@@ -41,6 +58,13 @@ function toFamilyMemberData(rows: ListFamilyMembersData["familyMembers"]): Famil
     externalAccountRef: row.externalAccountRef ?? null,
     monthlyIncomeTargetMinor: row.monthlyIncomeTargetMinor ?? null,
     createdAt: row.createdAt,
+    ownerUserId: row.user.id,
+    ownerUsername: row.user.username,
+    // Both ids come from a database read, so both have their hyphens
+    // stripped and compare directly. Defaults to false while the caller's
+    // own id is still loading: treating an unknown owner as "mine" would
+    // flash editable controls onto somebody else's row.
+    isMine: !!myUserId && row.user.id === myUserId,
   }));
 }
 
@@ -71,6 +95,11 @@ export function useFamilyMembers() {
   // useListFamilyMembers can return a stale list forever after a
   // create/rename/delete. SERVER_ONLY guarantees the sidebar reflects the
   // latest state.
+  // Read once here rather than inside refetch's body, so the callback's
+  // dependency list can name it: the ownership flags are wrong until the
+  // caller's own id has loaded, and the list has to be rebuilt when it does.
+  const myUserId = myUserQuery.data?.user?.id;
+
   const refetch = useCallback(async () => {
     if (!user?.uid) {
       setFamilyMembers([]);
@@ -89,13 +118,13 @@ export function useFamilyMembers() {
           ),
         {}
       );
-      setFamilyMembers(toFamilyMemberData(rows));
+      setFamilyMembers(toFamilyMemberData(rows, myUserId));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load family members");
     } finally {
       setLoading(false);
     }
-  }, [user?.uid]);
+  }, [user?.uid, myUserId]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -109,7 +138,6 @@ export function useFamilyMembers() {
       color?: string | null;
       monthlyIncomeTargetMinor?: number | null;
     }) => {
-      const myUserId = myUserQuery.data?.user?.id;
       if (!myUserId) throw new Error("User profile not found");
 
       const familyMemberId = crypto.randomUUID();
@@ -132,7 +160,7 @@ export function useFamilyMembers() {
       // never appears selected.
       return { familyMemberId: familyMemberId.replace(/-/g, "") };
     },
-    [myUserQuery.data, createMutation, refetch]
+    [myUserId, createMutation, refetch]
   );
 
   const renameFamilyMember = useCallback(
@@ -187,6 +215,6 @@ export function useFamilyMembers() {
     updateFamilyMember,
     deleteFamilyMember,
     /** The caller's database row id, which transactions must be written with. */
-    myUserId: myUserQuery.data?.user?.id,
+    myUserId,
   };
 }

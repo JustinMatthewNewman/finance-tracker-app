@@ -1,4 +1,4 @@
-import { createUserFromGoogleRef, setUserTypeRef, selectMyColorSchemeRef, clearMyColorSchemeRef, selectMyPerformanceModeRef, selectMyBackgroundOpacityRef, selectMyExternalAccountLinkTemplateRef, selectMyCardStyleRef, selectMySquareCornersRef, selectMyBordersEnabledRef, selectMyCategoryColorsEnabledRef, selectMyCurrencyRef, createFamilyMemberRef, updateFamilyMemberRef, renameFamilyMemberRef, deleteFamilyMemberRef, restoreFamilyMemberRef, upsertCategoryRef, updateCategoryRef, createTransactionRef, updateTransactionRef, updateTransactionClearCategoryRef, deleteTransactionRef, upsertPlaidItemRef, upsertBankAccountRef, syncPlaidTransactionRef, listUsersRef, getMyUserRef, listColorSchemesRef, listUserTypesRef, getUserAccessByGoogleUidRef, listFamilyMembersRef, listCategoriesRef, listTransactionsByFamilyMemberRef, listMyTransactionsRef, listMyTransactionsByDateRangeRef, getTransactionRef, connectorConfig } from '../../esm/index.esm.js';
+import { createUserFromGoogleRef, setUserTypeRef, selectMyColorSchemeRef, clearMyColorSchemeRef, selectMyPerformanceModeRef, selectMyBackgroundOpacityRef, selectMyExternalAccountLinkTemplateRef, selectMyCardStyleRef, selectMySquareCornersRef, selectMyBordersEnabledRef, selectMyCategoryColorsEnabledRef, selectMyCurrencyRef, createFamilyMemberRef, updateFamilyMemberRef, renameFamilyMemberRef, deleteFamilyMemberRef, restoreFamilyMemberRef, upsertCategoryRef, updateCategoryRef, createTransactionRef, updateTransactionRef, updateTransactionClearCategoryRef, deleteTransactionRef, upsertPlaidItemRef, upsertBankAccountRef, syncPlaidTransactionRef, createFamilyRef, requestToJoinFamilyRef, approveJoinRequestRef, denyJoinRequestRef, cancelMyJoinRequestRef, leaveMyFamilyRef, regenerateFamilyInviteCodeRef, createUserSettingForUserRef, listUsersRef, getMyUserRef, listColorSchemesRef, listUserTypesRef, getUserAccessByGoogleUidRef, getUserProvisioningByGoogleUidRef, listFamilyMembersRef, listCategoriesRef, listTransactionsByFamilyMemberRef, listMyTransactionsRef, listMyTransactionsByDateRangeRef, getTransactionRef, getFamilyByInviteCodeRef, getMyFamilyDetailRef, getMyJoinRequestsRef, connectorConfig } from '../../esm/index.esm.js';
 import { validateArgs, CallerSdkTypeEnum } from 'firebase/data-connect';
 import { useDataConnectQuery, useDataConnectMutation, validateReactArgs } from '@tanstack-query-firebase/react/data-connect';
 
@@ -210,6 +210,70 @@ export function useSyncPlaidTransaction(dcOrOptions, options) {
   return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
 }
 
+export function useCreateFamily(dcOrOptions, options) {
+  const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
+  function refFactory(vars) {
+    return createFamilyRef(dcInstance, vars);
+  }
+  return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+export function useRequestToJoinFamily(dcOrOptions, options) {
+  const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
+  function refFactory(vars) {
+    return requestToJoinFamilyRef(dcInstance, vars);
+  }
+  return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+export function useApproveJoinRequest(dcOrOptions, options) {
+  const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
+  function refFactory(vars) {
+    return approveJoinRequestRef(dcInstance, vars);
+  }
+  return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+export function useDenyJoinRequest(dcOrOptions, options) {
+  const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
+  function refFactory(vars) {
+    return denyJoinRequestRef(dcInstance, vars);
+  }
+  return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+export function useCancelMyJoinRequest(dcOrOptions, options) {
+  const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
+  function refFactory(vars) {
+    return cancelMyJoinRequestRef(dcInstance, vars);
+  }
+  return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+export function useLeaveMyFamily(dcOrOptions, options) {
+  const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
+  function refFactory(vars) {
+    return leaveMyFamilyRef(dcInstance, vars);
+  }
+  return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+export function useRegenerateFamilyInviteCode(dcOrOptions, options) {
+  const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
+  function refFactory(vars) {
+    return regenerateFamilyInviteCodeRef(dcInstance, vars);
+  }
+  return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+export function useCreateUserSettingForUser(dcOrOptions, options) {
+  const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
+  function refFactory(vars) {
+    return createUserSettingForUserRef(dcInstance, vars);
+  }
+  return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
 
 export function useListUsers(dcOrOptions, options) {
   const { dc: dcInstance, options: inputOpts } = validateReactArgs(connectorConfig, dcOrOptions, options);
@@ -238,6 +302,12 @@ export function useListUserTypes(dcOrOptions, options) {
 export function useGetUserAccessByGoogleUid(dcOrVars, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateReactArgs(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   const ref = getUserAccessByGoogleUidRef(dcInstance, inputVars);
+  return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+export function useGetUserProvisioningByGoogleUid(dcOrVars, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateReactArgs(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  const ref = getUserProvisioningByGoogleUidRef(dcInstance, inputVars);
   return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
 }
 
@@ -274,5 +344,23 @@ export function useListMyTransactionsByDateRange(dcOrVars, varsOrOptions, option
 export function useGetTransaction(dcOrVars, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateReactArgs(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   const ref = getTransactionRef(dcInstance, inputVars);
+  return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+export function useGetFamilyByInviteCode(dcOrVars, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateReactArgs(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  const ref = getFamilyByInviteCodeRef(dcInstance, inputVars);
+  return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+export function useGetMyFamilyDetail(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts } = validateReactArgs(connectorConfig, dcOrOptions, options);
+  const ref = getMyFamilyDetailRef(dcInstance);
+  return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+export function useGetMyJoinRequests(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts } = validateReactArgs(connectorConfig, dcOrOptions, options);
+  const ref = getMyJoinRequestsRef(dcInstance);
   return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
 }

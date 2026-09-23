@@ -61,6 +61,28 @@ query GetMyUser @auth(level: USER) {
         description
       }
     }
+    # Null until the person finishes onboarding. That null IS the signal the
+    # onboarding gate reads (see components/Onboarding/OnboardingGate.tsx) —
+    # it is not an error state, it is "has not chosen a household yet", and
+    # it rides along on the fetch every page already makes rather than
+    # costing a query of its own.
+    #
+    # inviteCode is included because the Family panel in Settings shows it to
+    # every member so any of them can invite. It is a secret from everyone
+    # outside the household, and this query only ever returns the caller's
+    # own family, so that holds.
+    family {
+      id
+      name
+      inviteCode
+      # "Am I the primary user" is `family.ownerUser.id == user.id`, both of
+      # which are in this one response. Deliberately not a role column on
+      # User — see the Family.ownerUser note in schema.gql.
+      ownerUser {
+        id
+        username
+      }
+    }
   }
 }
 
@@ -116,9 +138,61 @@ query GetUserAccessByGoogleUid($googleUid: String!) @auth(level: NO_ACCESS) {
   }
 }
 
+# The provisioning state of one account, for app/api/auth/sync-user/route.ts.
+#
+# Distinct from GetUserAccessByGoogleUid above, which answers "what may this
+# person do" for feature gating. This one answers "is this account fully set
+# up", and it returns the settings row's id and nothing else from it — the
+# route only needs to know whether it is there.
+#
+# NO_ACCESS for the same reason its neighbour is: it takes a googleUid as a
+# variable, so a browser able to call it could probe other accounts.
+query GetUserProvisioningByGoogleUid($googleUid: String!) @auth(level: NO_ACCESS) {
+  user(first: { where: { googleUid: { eq: $googleUid } } }) {
+    id
+    userSetting: userSetting_on_user {
+      id
+    }
+  }
+}
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Household
 # ─────────────────────────────────────────────────────────────────────────────
+#
+# THE VISIBILITY RULE, WHICH EVERY READ BELOW REPEATS VERBATIM:
+#
+#   _or: [
+#     { user: { googleUid: { eq_expr: "auth.uid" } } }
+#     { user: { family: { users_on_family: { exist: { googleUid: { eq_expr: "auth.uid" } } } } } }
+#   ]
+#
+# It appears wrapped in an `_and` wherever the query also filters on an
+# ordinary column. That is not stylistic: Data Connect rejects a filter that
+# mixes `_or` with sibling field predicates outright —
+#   "cannot mix _and/_or/_not with specific fields [_or] and [isDeleted]"
+# — so the scalar predicates have to become `_and` entries alongside it.
+#
+# "A row is mine, OR its owner is in a household I am also in." Read the
+# second clause from the inside out: find the row's owner, walk to that
+# owner's family, and require that family to have a member whose googleUid is
+# the verified caller's. It is a correlated EXISTS, and it takes no variable
+# at all — there is no family id for a caller to substitute, exactly like the
+# `eq_expr: "auth.uid"` scoping it extends.
+#
+# WHY BOTH CLAUSES, when the second looks like it subsumes the first. It does
+# not, and dropping the first is a real regression rather than a tidy-up: a
+# user who has not finished onboarding has User.family = NULL, the forward
+# filter through a null FK matches nothing, and they would stop being able to
+# see their OWN data. Every account is in that state between signing in and
+# choosing a household.
+#
+# WRITES ARE NOT WIDENED. Reads go to the household; authorship does not. The
+# @check guards in mutations.gql still ask "is this your row", so a row
+# belonging to a housemate is visible and read-only. That asymmetry is
+# deliberate (see the Family type in schema.gql), and it is why every query
+# here also selects the owning `user` — the UI has to know which rows it must
+# not offer to edit.
 
 # The finance page's sidebar. Scoped to the caller and filtered to
 # non-deleted members — DeleteFamilyMember is a soft delete (see the schema),
@@ -129,7 +203,17 @@ query GetUserAccessByGoogleUid($googleUid: String!) @auth(level: NO_ACCESS) {
 # column existed would be silently filtered out by the `ne` form.
 query ListFamilyMembers($limit: Int = 500, $offset: Int = 0) @auth(level: USER) {
   familyMembers(
-    where: { user: { googleUid: { eq_expr: "auth.uid" } }, isDeleted: { eq: false } }
+    where: {
+      _and: [
+          { isDeleted: { eq: false } }
+          {
+            _or: [
+              { user: { googleUid: { eq_expr: "auth.uid" } } }
+              { user: { family: { users_on_family: { exist: { googleUid: { eq_expr: "auth.uid" } } } } } }
+            ]
+          }
+        ]
+    }
     orderBy: [{ createdAt: ASC }]
     limit: $limit
     offset: $offset
@@ -141,6 +225,12 @@ query ListFamilyMembers($limit: Int = 500, $offset: Int = 0) @auth(level: USER) 
     externalAccountRef
     monthlyIncomeTargetMinor
     createdAt
+    # Which account created this row, so the UI can mark what it must not
+    # offer to edit. See "WRITES ARE NOT WIDENED" above.
+    user {
+      id
+      username
+    }
   }
 }
 
@@ -170,8 +260,15 @@ query ListTransactionsByFamilyMember(
 ) @auth(level: USER) {
   transactions(
     where: {
-      familyMemberId: { eq: $familyMemberId }
-      user: { googleUid: { eq_expr: "auth.uid" } }
+      _and: [
+          { familyMemberId: { eq: $familyMemberId } }
+          {
+            _or: [
+              { user: { googleUid: { eq_expr: "auth.uid" } } }
+              { user: { family: { users_on_family: { exist: { googleUid: { eq_expr: "auth.uid" } } } } } }
+            ]
+          }
+        ]
     }
     orderBy: [{ occurredOn: DESC }, { createdAt: DESC }]
     limit: $limit
@@ -198,6 +295,12 @@ query ListTransactionsByFamilyMember(
       name
       kind
       color
+    }
+    # Which account created this row, so the UI can mark what it must not
+    # offer to edit. See "WRITES ARE NOT WIDENED" above.
+    user {
+      id
+      username
     }
   }
 }
@@ -206,7 +309,12 @@ query ListTransactionsByFamilyMember(
 # household-wide totals across all members.
 query ListMyTransactions($limit: Int = 500, $offset: Int = 0) @auth(level: USER) {
   transactions(
-    where: { user: { googleUid: { eq_expr: "auth.uid" } } }
+    where: {
+      _or: [
+        { user: { googleUid: { eq_expr: "auth.uid" } } }
+        { user: { family: { users_on_family: { exist: { googleUid: { eq_expr: "auth.uid" } } } } } }
+      ]
+    }
     orderBy: [{ occurredOn: DESC }, { createdAt: DESC }]
     limit: $limit
     offset: $offset
@@ -232,6 +340,12 @@ query ListMyTransactions($limit: Int = 500, $offset: Int = 0) @auth(level: USER)
       name
       kind
       color
+    }
+    # Which account created this row, so the UI can mark what it must not
+    # offer to edit. See "WRITES ARE NOT WIDENED" above.
+    user {
+      id
+      username
     }
   }
 }
@@ -246,8 +360,15 @@ query ListMyTransactionsByDateRange(
 ) @auth(level: USER) {
   transactions(
     where: {
-      user: { googleUid: { eq_expr: "auth.uid" } }
-      occurredOn: { ge: $startDate, le: $endDate }
+      _and: [
+          { occurredOn: { ge: $startDate, le: $endDate } }
+          {
+            _or: [
+              { user: { googleUid: { eq_expr: "auth.uid" } } }
+              { user: { family: { users_on_family: { exist: { googleUid: { eq_expr: "auth.uid" } } } } } }
+            ]
+          }
+        ]
     }
     orderBy: [{ occurredOn: DESC }, { createdAt: DESC }]
     limit: $limit
@@ -275,11 +396,41 @@ query ListMyTransactionsByDateRange(
       kind
       color
     }
+    # Which account created this row, so the UI can mark what it must not
+    # offer to edit. See "WRITES ARE NOT WIDENED" above.
+    user {
+      id
+      username
+    }
   }
 }
 
+# SECURITY FIX, and worth understanding rather than just copying.
+#
+# This was `transaction(key: { id: $transactionId })` with no where clause at
+# all: a USER-level query that took a row id straight from the caller and
+# returned whatever it pointed at. Any signed-in account could read any
+# transaction in the database given its UUID — amount, merchant, description,
+# the lot. Nothing in the app calls this query, which is exactly why it went
+# unnoticed; being unreferenced by the UI does not make an operation in the
+# connector unreachable, it only makes it unreachable *by accident*.
+#
+# `first: { where: ... }` instead of `key:` is what fixes it — the id becomes
+# one predicate among several rather than a direct address, so the same
+# visibility rule that governs the list queries governs this one, and an id
+# belonging to another household simply returns nothing.
 query GetTransaction($transactionId: UUID!) @auth(level: USER) {
-  transaction(key: { id: $transactionId }) {
+  transaction(first: { where: {
+    _and: [
+        { id: { eq: $transactionId } }
+        {
+          _or: [
+            { user: { googleUid: { eq_expr: "auth.uid" } } }
+            { user: { family: { users_on_family: { exist: { googleUid: { eq_expr: "auth.uid" } } } } } }
+          ]
+        }
+      ]
+  } }) {
     id
     amountMinor
     direction
@@ -301,6 +452,108 @@ query GetTransaction($transactionId: UUID!) @auth(level: USER) {
       name
       kind
       color
+    }
+    # Which account created this row, so the UI can mark what it must not
+    # offer to edit. See "WRITES ARE NOT WIDENED" above.
+    user {
+      id
+      username
+    }
+  }
+}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Families
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Resolves an invite code the person typed during onboarding, so the UI can
+# ask "Join the Newmans?" instead of making them confirm an opaque code.
+#
+# THIS QUERY DISCLOSES A HOUSEHOLD NAME TO ANYONE HOLDING ITS CODE, and that
+# is the intended bargain rather than an oversight: the code is the
+# capability (see Family.inviteCode in schema.gql), so knowing it is already
+# enough to ask to join. What the query deliberately does NOT return is
+# anything about the household's members or their money — resolving a code
+# gets you a name and the right to knock, nothing else.
+#
+# There is no query anywhere that lists families. Codes are unguessable and
+# un-enumerable by design; adding a `families(...)` list here would undo
+# that in one line.
+query GetFamilyByInviteCode($inviteCode: String!) @auth(level: USER) {
+  family(first: { where: { inviteCode: { eq: $inviteCode } } }) {
+    id
+    name
+    ownerUser {
+      username
+    }
+  }
+}
+
+# The Family panel in Settings: who is in the household, and who is asking to
+# be.
+#
+# Scoped by "a family I am a member of", with no family id variable — the
+# same correlated EXISTS the household reads use, for the same reason. A
+# `$familyId` parameter here would be a way to read any household's roster.
+query GetMyFamilyDetail @auth(level: USER) {
+  families(
+    where: { users_on_family: { exist: { googleUid: { eq_expr: "auth.uid" } } } }
+    limit: 1
+  ) {
+    id
+    name
+    inviteCode
+    createdAt
+    ownerUser {
+      id
+      username
+    }
+    members: users_on_family(orderBy: [{ createdAt: ASC }]) {
+      id
+      username
+      email
+      createdAt
+    }
+    # Visible to every member, not only the owner, though only the owner can
+    # act on them (see ApproveJoinRequest). Showing a housemate that somebody
+    # is knocking is not a disclosure worth a second query to prevent — but
+    # the approve/deny buttons are the owner's alone, in the UI and, more to
+    # the point, in the guard.
+    pendingRequests: familyJoinRequests_on_family(
+      where: { status: { eq: "PENDING" } }
+      orderBy: [{ createdAt: ASC }]
+    ) {
+      status
+      createdAt
+      requester {
+        id
+        username
+        email
+      }
+    }
+  }
+}
+
+# Backs the onboarding waiting screen. Returns the caller's own requests in
+# any state, newest first, because "declined" has to be tellable from "still
+# waiting" — a denied request that simply disappeared would leave somebody
+# staring at a spinner forever with no idea they had been turned down.
+query GetMyJoinRequests @auth(level: USER) {
+  familyJoinRequests(
+    where: { requester: { googleUid: { eq_expr: "auth.uid" } } }
+    orderBy: [{ createdAt: DESC }]
+    limit: 10
+  ) {
+    status
+    createdAt
+    decidedAt
+    family {
+      id
+      name
+      ownerUser {
+        username
+      }
     }
   }
 }

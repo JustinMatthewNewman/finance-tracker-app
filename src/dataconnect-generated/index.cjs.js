@@ -377,6 +377,118 @@ exports.syncPlaidTransaction = function syncPlaidTransaction(dcOrVars, vars) {
 }
 ;
 
+const createFamilyRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CreateFamily', inputVars);
+}
+createFamilyRef.operationName = 'CreateFamily';
+exports.createFamilyRef = createFamilyRef;
+
+exports.createFamily = function createFamily(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createFamilyRef(dcInstance, inputVars));
+}
+;
+
+const requestToJoinFamilyRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'RequestToJoinFamily', inputVars);
+}
+requestToJoinFamilyRef.operationName = 'RequestToJoinFamily';
+exports.requestToJoinFamilyRef = requestToJoinFamilyRef;
+
+exports.requestToJoinFamily = function requestToJoinFamily(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(requestToJoinFamilyRef(dcInstance, inputVars));
+}
+;
+
+const approveJoinRequestRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'ApproveJoinRequest', inputVars);
+}
+approveJoinRequestRef.operationName = 'ApproveJoinRequest';
+exports.approveJoinRequestRef = approveJoinRequestRef;
+
+exports.approveJoinRequest = function approveJoinRequest(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(approveJoinRequestRef(dcInstance, inputVars));
+}
+;
+
+const denyJoinRequestRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'DenyJoinRequest', inputVars);
+}
+denyJoinRequestRef.operationName = 'DenyJoinRequest';
+exports.denyJoinRequestRef = denyJoinRequestRef;
+
+exports.denyJoinRequest = function denyJoinRequest(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(denyJoinRequestRef(dcInstance, inputVars));
+}
+;
+
+const cancelMyJoinRequestRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CancelMyJoinRequest', inputVars);
+}
+cancelMyJoinRequestRef.operationName = 'CancelMyJoinRequest';
+exports.cancelMyJoinRequestRef = cancelMyJoinRequestRef;
+
+exports.cancelMyJoinRequest = function cancelMyJoinRequest(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(cancelMyJoinRequestRef(dcInstance, inputVars));
+}
+;
+
+const leaveMyFamilyRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'LeaveMyFamily', inputVars);
+}
+leaveMyFamilyRef.operationName = 'LeaveMyFamily';
+exports.leaveMyFamilyRef = leaveMyFamilyRef;
+
+exports.leaveMyFamily = function leaveMyFamily(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(leaveMyFamilyRef(dcInstance, inputVars));
+}
+;
+
+const regenerateFamilyInviteCodeRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'RegenerateFamilyInviteCode', inputVars);
+}
+regenerateFamilyInviteCodeRef.operationName = 'RegenerateFamilyInviteCode';
+exports.regenerateFamilyInviteCodeRef = regenerateFamilyInviteCodeRef;
+
+exports.regenerateFamilyInviteCode = function regenerateFamilyInviteCode(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(regenerateFamilyInviteCodeRef(dcInstance, inputVars));
+}
+;
+
+const createUserSettingForUserRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CreateUserSettingForUser', inputVars);
+}
+createUserSettingForUserRef.operationName = 'CreateUserSettingForUser';
+exports.createUserSettingForUserRef = createUserSettingForUserRef;
+
+exports.createUserSettingForUser = function createUserSettingForUser(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createUserSettingForUserRef(dcInstance, inputVars));
+}
+;
+
 const listUsersRef = (dc) => {
   const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
   dcInstance._useGeneratedSdk();
@@ -449,6 +561,21 @@ exports.getUserAccessByGoogleUid = function getUserAccessByGoogleUid(dcOrVars, v
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(getUserAccessByGoogleUidRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const getUserProvisioningByGoogleUidRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetUserProvisioningByGoogleUid', inputVars);
+}
+getUserProvisioningByGoogleUidRef.operationName = 'GetUserProvisioningByGoogleUid';
+exports.getUserProvisioningByGoogleUidRef = getUserProvisioningByGoogleUidRef;
+
+exports.getUserProvisioningByGoogleUid = function getUserProvisioningByGoogleUid(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getUserProvisioningByGoogleUidRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 ;
 
@@ -539,5 +666,50 @@ exports.getTransaction = function getTransaction(dcOrVars, varsOrOptions, option
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(getTransactionRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const getFamilyByInviteCodeRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetFamilyByInviteCode', inputVars);
+}
+getFamilyByInviteCodeRef.operationName = 'GetFamilyByInviteCode';
+exports.getFamilyByInviteCodeRef = getFamilyByInviteCodeRef;
+
+exports.getFamilyByInviteCode = function getFamilyByInviteCode(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(getFamilyByInviteCodeRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const getMyFamilyDetailRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetMyFamilyDetail');
+}
+getMyFamilyDetailRef.operationName = 'GetMyFamilyDetail';
+exports.getMyFamilyDetailRef = getMyFamilyDetailRef;
+
+exports.getMyFamilyDetail = function getMyFamilyDetail(dcOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(getMyFamilyDetailRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const getMyJoinRequestsRef = (dc) => {
+  const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'GetMyJoinRequests');
+}
+getMyJoinRequestsRef.operationName = 'GetMyJoinRequests';
+exports.getMyJoinRequestsRef = getMyJoinRequestsRef;
+
+exports.getMyJoinRequests = function getMyJoinRequests(dcOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrOptions, options, undefined,false, false);
+  return executeQuery(getMyJoinRequestsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 ;

@@ -8,9 +8,28 @@ export type Int64String = string;
 export type DateString = string;
 
 
+export interface ApproveJoinRequestData {
+  familyJoinRequest_update?: FamilyJoinRequest_Key | null;
+  user_update?: User_Key | null;
+}
+
+export interface ApproveJoinRequestVariables {
+  familyId: UUIDString;
+  requesterId: UUIDString;
+}
+
 export interface BankAccount_Key {
   id: UUIDString;
   __typename?: 'BankAccount_Key';
+}
+
+export interface CancelMyJoinRequestData {
+  familyJoinRequest_update?: FamilyJoinRequest_Key | null;
+}
+
+export interface CancelMyJoinRequestVariables {
+  familyId: UUIDString;
+  userId: UUIDString;
 }
 
 export interface Category_Key {
@@ -27,6 +46,11 @@ export interface ColorScheme_Key {
   __typename?: 'ColorScheme_Key';
 }
 
+export interface CreateFamilyData {
+  family_insert: Family_Key;
+  user_update?: User_Key | null;
+}
+
 export interface CreateFamilyMemberData {
   familyMember_insert: FamilyMember_Key;
 }
@@ -38,6 +62,13 @@ export interface CreateFamilyMemberVariables {
   relationship?: string | null;
   color?: string | null;
   monthlyIncomeTargetMinor?: number | null;
+}
+
+export interface CreateFamilyVariables {
+  userId: UUIDString;
+  familyId: UUIDString;
+  name: string;
+  inviteCode: string;
 }
 
 export interface CreateTransactionData {
@@ -74,6 +105,14 @@ export interface CreateUserFromGoogleVariables {
   userTypeName?: string;
 }
 
+export interface CreateUserSettingForUserData {
+  userSetting_insert: UserSetting_Key;
+}
+
+export interface CreateUserSettingForUserVariables {
+  userId: UUIDString;
+}
+
 export interface DeleteFamilyMemberData {
   familyMember_update?: FamilyMember_Key | null;
 }
@@ -90,14 +129,91 @@ export interface DeleteTransactionVariables {
   transactionId: UUIDString;
 }
 
+export interface DenyJoinRequestData {
+  familyJoinRequest_update?: FamilyJoinRequest_Key | null;
+}
+
+export interface DenyJoinRequestVariables {
+  familyId: UUIDString;
+  requesterId: UUIDString;
+}
+
+export interface FamilyJoinRequest_Key {
+  familyId: UUIDString;
+  requesterId: UUIDString;
+  __typename?: 'FamilyJoinRequest_Key';
+}
+
 export interface FamilyMember_Key {
   id: UUIDString;
   __typename?: 'FamilyMember_Key';
 }
 
+export interface Family_Key {
+  id: UUIDString;
+  __typename?: 'Family_Key';
+}
+
 export interface Feature_Key {
   name: string;
   __typename?: 'Feature_Key';
+}
+
+export interface GetFamilyByInviteCodeData {
+  family?: {
+    id: UUIDString;
+    name: string;
+    ownerUser: {
+      username: string;
+    };
+  } & Family_Key;
+}
+
+export interface GetFamilyByInviteCodeVariables {
+  inviteCode: string;
+}
+
+export interface GetMyFamilyDetailData {
+  families: ({
+    id: UUIDString;
+    name: string;
+    inviteCode: string;
+    createdAt: TimestampString;
+    ownerUser: {
+      id: UUIDString;
+      username: string;
+    } & User_Key;
+    members: ({
+      id: UUIDString;
+      username: string;
+      email?: string | null;
+      createdAt: TimestampString;
+    } & User_Key)[];
+    pendingRequests: ({
+      status: string;
+      createdAt: TimestampString;
+      requester: {
+        id: UUIDString;
+        username: string;
+        email?: string | null;
+      } & User_Key;
+    })[];
+  } & Family_Key)[];
+}
+
+export interface GetMyJoinRequestsData {
+  familyJoinRequests: ({
+    status: string;
+    createdAt: TimestampString;
+    decidedAt?: TimestampString | null;
+    family: {
+      id: UUIDString;
+      name: string;
+      ownerUser: {
+        username: string;
+      };
+    } & Family_Key;
+  })[];
 }
 
 export interface GetMyUserData {
@@ -130,6 +246,15 @@ export interface GetMyUserData {
         description?: string | null;
       } & Feature_Key)[];
     } & UserType_Key;
+    family?: {
+      id: UUIDString;
+      name: string;
+      inviteCode: string;
+      ownerUser: {
+        id: UUIDString;
+        username: string;
+      } & User_Key;
+    } & Family_Key;
   } & User_Key;
 }
 
@@ -157,6 +282,10 @@ export interface GetTransactionData {
       kind: string;
       color?: string | null;
     } & Category_Key;
+    user: {
+      id: UUIDString;
+      username: string;
+    } & User_Key;
   } & Transaction_Key;
 }
 
@@ -179,6 +308,27 @@ export interface GetUserAccessByGoogleUidData {
 
 export interface GetUserAccessByGoogleUidVariables {
   googleUid: string;
+}
+
+export interface GetUserProvisioningByGoogleUidData {
+  user?: {
+    id: UUIDString;
+    userSetting?: {
+      id: UUIDString;
+    } & UserSetting_Key;
+  } & User_Key;
+}
+
+export interface GetUserProvisioningByGoogleUidVariables {
+  googleUid: string;
+}
+
+export interface LeaveMyFamilyData {
+  user_update?: User_Key | null;
+}
+
+export interface LeaveMyFamilyVariables {
+  userId: UUIDString;
 }
 
 export interface ListCategoriesData {
@@ -230,6 +380,10 @@ export interface ListFamilyMembersData {
     externalAccountRef?: string | null;
     monthlyIncomeTargetMinor?: number | null;
     createdAt: TimestampString;
+    user: {
+      id: UUIDString;
+      username: string;
+    } & User_Key;
   } & FamilyMember_Key)[];
 }
 
@@ -262,6 +416,10 @@ export interface ListMyTransactionsByDateRangeData {
       kind: string;
       color?: string | null;
     } & Category_Key;
+    user: {
+      id: UUIDString;
+      username: string;
+    } & User_Key;
   } & Transaction_Key)[];
 }
 
@@ -296,6 +454,10 @@ export interface ListMyTransactionsData {
       kind: string;
       color?: string | null;
     } & Category_Key;
+    user: {
+      id: UUIDString;
+      username: string;
+    } & User_Key;
   } & Transaction_Key)[];
 }
 
@@ -328,6 +490,10 @@ export interface ListTransactionsByFamilyMemberData {
       kind: string;
       color?: string | null;
     } & Category_Key;
+    user: {
+      id: UUIDString;
+      username: string;
+    } & User_Key;
   } & Transaction_Key)[];
 }
 
@@ -361,6 +527,15 @@ export interface PlaidItem_Key {
   __typename?: 'PlaidItem_Key';
 }
 
+export interface RegenerateFamilyInviteCodeData {
+  family_update?: Family_Key | null;
+}
+
+export interface RegenerateFamilyInviteCodeVariables {
+  familyId: UUIDString;
+  inviteCode: string;
+}
+
 export interface RenameFamilyMemberData {
   familyMember_update?: FamilyMember_Key | null;
 }
@@ -368,6 +543,15 @@ export interface RenameFamilyMemberData {
 export interface RenameFamilyMemberVariables {
   familyMemberId: UUIDString;
   name: string;
+}
+
+export interface RequestToJoinFamilyData {
+  familyJoinRequest_upsert: FamilyJoinRequest_Key;
+}
+
+export interface RequestToJoinFamilyVariables {
+  userId: UUIDString;
+  familyId: UUIDString;
 }
 
 export interface RestoreFamilyMemberData {
@@ -751,6 +935,46 @@ export function syncPlaidTransaction(dc: DataConnect, vars: SyncPlaidTransaction
 /** Generated Node Admin SDK operation action function for the 'SyncPlaidTransaction' Mutation. Allow users to pass in custom DataConnect instances. */
 export function syncPlaidTransaction(vars: SyncPlaidTransactionVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<SyncPlaidTransactionData>>;
 
+/** Generated Node Admin SDK operation action function for the 'CreateFamily' Mutation. Allow users to execute without passing in DataConnect. */
+export function createFamily(dc: DataConnect, vars: CreateFamilyVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateFamilyData>>;
+/** Generated Node Admin SDK operation action function for the 'CreateFamily' Mutation. Allow users to pass in custom DataConnect instances. */
+export function createFamily(vars: CreateFamilyVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateFamilyData>>;
+
+/** Generated Node Admin SDK operation action function for the 'RequestToJoinFamily' Mutation. Allow users to execute without passing in DataConnect. */
+export function requestToJoinFamily(dc: DataConnect, vars: RequestToJoinFamilyVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<RequestToJoinFamilyData>>;
+/** Generated Node Admin SDK operation action function for the 'RequestToJoinFamily' Mutation. Allow users to pass in custom DataConnect instances. */
+export function requestToJoinFamily(vars: RequestToJoinFamilyVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<RequestToJoinFamilyData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ApproveJoinRequest' Mutation. Allow users to execute without passing in DataConnect. */
+export function approveJoinRequest(dc: DataConnect, vars: ApproveJoinRequestVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ApproveJoinRequestData>>;
+/** Generated Node Admin SDK operation action function for the 'ApproveJoinRequest' Mutation. Allow users to pass in custom DataConnect instances. */
+export function approveJoinRequest(vars: ApproveJoinRequestVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ApproveJoinRequestData>>;
+
+/** Generated Node Admin SDK operation action function for the 'DenyJoinRequest' Mutation. Allow users to execute without passing in DataConnect. */
+export function denyJoinRequest(dc: DataConnect, vars: DenyJoinRequestVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DenyJoinRequestData>>;
+/** Generated Node Admin SDK operation action function for the 'DenyJoinRequest' Mutation. Allow users to pass in custom DataConnect instances. */
+export function denyJoinRequest(vars: DenyJoinRequestVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DenyJoinRequestData>>;
+
+/** Generated Node Admin SDK operation action function for the 'CancelMyJoinRequest' Mutation. Allow users to execute without passing in DataConnect. */
+export function cancelMyJoinRequest(dc: DataConnect, vars: CancelMyJoinRequestVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CancelMyJoinRequestData>>;
+/** Generated Node Admin SDK operation action function for the 'CancelMyJoinRequest' Mutation. Allow users to pass in custom DataConnect instances. */
+export function cancelMyJoinRequest(vars: CancelMyJoinRequestVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CancelMyJoinRequestData>>;
+
+/** Generated Node Admin SDK operation action function for the 'LeaveMyFamily' Mutation. Allow users to execute without passing in DataConnect. */
+export function leaveMyFamily(dc: DataConnect, vars: LeaveMyFamilyVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<LeaveMyFamilyData>>;
+/** Generated Node Admin SDK operation action function for the 'LeaveMyFamily' Mutation. Allow users to pass in custom DataConnect instances. */
+export function leaveMyFamily(vars: LeaveMyFamilyVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<LeaveMyFamilyData>>;
+
+/** Generated Node Admin SDK operation action function for the 'RegenerateFamilyInviteCode' Mutation. Allow users to execute without passing in DataConnect. */
+export function regenerateFamilyInviteCode(dc: DataConnect, vars: RegenerateFamilyInviteCodeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<RegenerateFamilyInviteCodeData>>;
+/** Generated Node Admin SDK operation action function for the 'RegenerateFamilyInviteCode' Mutation. Allow users to pass in custom DataConnect instances. */
+export function regenerateFamilyInviteCode(vars: RegenerateFamilyInviteCodeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<RegenerateFamilyInviteCodeData>>;
+
+/** Generated Node Admin SDK operation action function for the 'CreateUserSettingForUser' Mutation. Allow users to execute without passing in DataConnect. */
+export function createUserSettingForUser(dc: DataConnect, vars: CreateUserSettingForUserVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateUserSettingForUserData>>;
+/** Generated Node Admin SDK operation action function for the 'CreateUserSettingForUser' Mutation. Allow users to pass in custom DataConnect instances. */
+export function createUserSettingForUser(vars: CreateUserSettingForUserVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateUserSettingForUserData>>;
+
 /** Generated Node Admin SDK operation action function for the 'ListUsers' Query. Allow users to execute without passing in DataConnect. */
 export function listUsers(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListUsersData>>;
 /** Generated Node Admin SDK operation action function for the 'ListUsers' Query. Allow users to pass in custom DataConnect instances. */
@@ -775,6 +999,11 @@ export function listUserTypes(options?: OperationOptions): Promise<ExecuteOperat
 export function getUserAccessByGoogleUid(dc: DataConnect, vars: GetUserAccessByGoogleUidVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetUserAccessByGoogleUidData>>;
 /** Generated Node Admin SDK operation action function for the 'GetUserAccessByGoogleUid' Query. Allow users to pass in custom DataConnect instances. */
 export function getUserAccessByGoogleUid(vars: GetUserAccessByGoogleUidVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetUserAccessByGoogleUidData>>;
+
+/** Generated Node Admin SDK operation action function for the 'GetUserProvisioningByGoogleUid' Query. Allow users to execute without passing in DataConnect. */
+export function getUserProvisioningByGoogleUid(dc: DataConnect, vars: GetUserProvisioningByGoogleUidVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetUserProvisioningByGoogleUidData>>;
+/** Generated Node Admin SDK operation action function for the 'GetUserProvisioningByGoogleUid' Query. Allow users to pass in custom DataConnect instances. */
+export function getUserProvisioningByGoogleUid(vars: GetUserProvisioningByGoogleUidVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetUserProvisioningByGoogleUidData>>;
 
 /** Generated Node Admin SDK operation action function for the 'ListFamilyMembers' Query. Allow users to execute without passing in DataConnect. */
 export function listFamilyMembers(dc: DataConnect, vars?: ListFamilyMembersVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListFamilyMembersData>>;
@@ -805,4 +1034,19 @@ export function listMyTransactionsByDateRange(vars: ListMyTransactionsByDateRang
 export function getTransaction(dc: DataConnect, vars: GetTransactionVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetTransactionData>>;
 /** Generated Node Admin SDK operation action function for the 'GetTransaction' Query. Allow users to pass in custom DataConnect instances. */
 export function getTransaction(vars: GetTransactionVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetTransactionData>>;
+
+/** Generated Node Admin SDK operation action function for the 'GetFamilyByInviteCode' Query. Allow users to execute without passing in DataConnect. */
+export function getFamilyByInviteCode(dc: DataConnect, vars: GetFamilyByInviteCodeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetFamilyByInviteCodeData>>;
+/** Generated Node Admin SDK operation action function for the 'GetFamilyByInviteCode' Query. Allow users to pass in custom DataConnect instances. */
+export function getFamilyByInviteCode(vars: GetFamilyByInviteCodeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetFamilyByInviteCodeData>>;
+
+/** Generated Node Admin SDK operation action function for the 'GetMyFamilyDetail' Query. Allow users to execute without passing in DataConnect. */
+export function getMyFamilyDetail(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<GetMyFamilyDetailData>>;
+/** Generated Node Admin SDK operation action function for the 'GetMyFamilyDetail' Query. Allow users to pass in custom DataConnect instances. */
+export function getMyFamilyDetail(options?: OperationOptions): Promise<ExecuteOperationResponse<GetMyFamilyDetailData>>;
+
+/** Generated Node Admin SDK operation action function for the 'GetMyJoinRequests' Query. Allow users to execute without passing in DataConnect. */
+export function getMyJoinRequests(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<GetMyJoinRequestsData>>;
+/** Generated Node Admin SDK operation action function for the 'GetMyJoinRequests' Query. Allow users to pass in custom DataConnect instances. */
+export function getMyJoinRequests(options?: OperationOptions): Promise<ExecuteOperationResponse<GetMyJoinRequestsData>>;
 

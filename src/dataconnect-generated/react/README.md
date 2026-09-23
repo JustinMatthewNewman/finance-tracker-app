@@ -22,12 +22,16 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*ListColorSchemes*](#listcolorschemes)
   - [*ListUserTypes*](#listusertypes)
   - [*GetUserAccessByGoogleUid*](#getuseraccessbygoogleuid)
+  - [*GetUserProvisioningByGoogleUid*](#getuserprovisioningbygoogleuid)
   - [*ListFamilyMembers*](#listfamilymembers)
   - [*ListCategories*](#listcategories)
   - [*ListTransactionsByFamilyMember*](#listtransactionsbyfamilymember)
   - [*ListMyTransactions*](#listmytransactions)
   - [*ListMyTransactionsByDateRange*](#listmytransactionsbydaterange)
   - [*GetTransaction*](#gettransaction)
+  - [*GetFamilyByInviteCode*](#getfamilybyinvitecode)
+  - [*GetMyFamilyDetail*](#getmyfamilydetail)
+  - [*GetMyJoinRequests*](#getmyjoinrequests)
 - [**Mutations**](#mutations)
   - [*CreateUserFromGoogle*](#createuserfromgoogle)
   - [*SetUserType*](#setusertype)
@@ -55,6 +59,14 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*UpsertPlaidItem*](#upsertplaiditem)
   - [*UpsertBankAccount*](#upsertbankaccount)
   - [*SyncPlaidTransaction*](#syncplaidtransaction)
+  - [*CreateFamily*](#createfamily)
+  - [*RequestToJoinFamily*](#requesttojoinfamily)
+  - [*ApproveJoinRequest*](#approvejoinrequest)
+  - [*DenyJoinRequest*](#denyjoinrequest)
+  - [*CancelMyJoinRequest*](#cancelmyjoinrequest)
+  - [*LeaveMyFamily*](#leavemyfamily)
+  - [*RegenerateFamilyInviteCode*](#regeneratefamilyinvitecode)
+  - [*CreateUserSettingForUser*](#createusersettingforuser)
 
 # TanStack Query Firebase & TanStack React Query
 This SDK provides [React](https://react.dev/) hooks generated specific to your application, for the operations found in the connector `finance`. These hooks are generated using [TanStack Query Firebase](https://react-query-firebase.invertase.dev/) by our partners at Invertase, a library built on top of [TanStack React Query v5](https://tanstack.com/query/v5/docs/framework/react/overview).
@@ -272,6 +284,15 @@ export interface GetMyUserData {
         description?: string | null;
       } & Feature_Key)[];
     } & UserType_Key;
+    family?: {
+      id: UUIDString;
+      name: string;
+      inviteCode: string;
+      ownerUser: {
+        id: UUIDString;
+        username: string;
+      } & User_Key;
+    } & Family_Key;
   } & User_Key;
 }
 ```
@@ -573,6 +594,93 @@ export default function GetUserAccessByGoogleUidComponent() {
 }
 ```
 
+## GetUserProvisioningByGoogleUid
+You can execute the `GetUserProvisioningByGoogleUid` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useGetUserProvisioningByGoogleUid(dc: DataConnect, vars: GetUserProvisioningByGoogleUidVariables, options?: useDataConnectQueryOptions<GetUserProvisioningByGoogleUidData>): UseDataConnectQueryResult<GetUserProvisioningByGoogleUidData, GetUserProvisioningByGoogleUidVariables>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useGetUserProvisioningByGoogleUid(vars: GetUserProvisioningByGoogleUidVariables, options?: useDataConnectQueryOptions<GetUserProvisioningByGoogleUidData>): UseDataConnectQueryResult<GetUserProvisioningByGoogleUidData, GetUserProvisioningByGoogleUidVariables>;
+```
+
+### Variables
+The `GetUserProvisioningByGoogleUid` Query requires an argument of type `GetUserProvisioningByGoogleUidVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface GetUserProvisioningByGoogleUidVariables {
+  googleUid: string;
+}
+```
+### Return Type
+Recall that calling the `GetUserProvisioningByGoogleUid` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `GetUserProvisioningByGoogleUid` Query is of type `GetUserProvisioningByGoogleUidData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface GetUserProvisioningByGoogleUidData {
+  user?: {
+    id: UUIDString;
+    userSetting?: {
+      id: UUIDString;
+    } & UserSetting_Key;
+  } & User_Key;
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `GetUserProvisioningByGoogleUid`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, GetUserProvisioningByGoogleUidVariables } from '@financeconnect/generated';
+import { useGetUserProvisioningByGoogleUid } from '@financeconnect/generated/react'
+
+export default function GetUserProvisioningByGoogleUidComponent() {
+  // The `useGetUserProvisioningByGoogleUid` Query hook requires an argument of type `GetUserProvisioningByGoogleUidVariables`:
+  const getUserProvisioningByGoogleUidVars: GetUserProvisioningByGoogleUidVariables = {
+    googleUid: ..., 
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useGetUserProvisioningByGoogleUid(getUserProvisioningByGoogleUidVars);
+  // Variables can be defined inline as well.
+  const query = useGetUserProvisioningByGoogleUid({ googleUid: ..., });
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useGetUserProvisioningByGoogleUid(dataConnect, getUserProvisioningByGoogleUidVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useGetUserProvisioningByGoogleUid(getUserProvisioningByGoogleUidVars, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useGetUserProvisioningByGoogleUid(dataConnect, getUserProvisioningByGoogleUidVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.user);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
 ## ListFamilyMembers
 You can execute the `ListFamilyMembers` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
 
@@ -609,6 +717,10 @@ export interface ListFamilyMembersData {
     externalAccountRef?: string | null;
     monthlyIncomeTargetMinor?: number | null;
     createdAt: TimestampString;
+    user: {
+      id: UUIDString;
+      username: string;
+    } & User_Key;
   } & FamilyMember_Key)[];
 }
 ```
@@ -820,6 +932,10 @@ export interface ListTransactionsByFamilyMemberData {
       kind: string;
       color?: string | null;
     } & Category_Key;
+    user: {
+      id: UUIDString;
+      username: string;
+    } & User_Key;
   } & Transaction_Key)[];
 }
 ```
@@ -928,6 +1044,10 @@ export interface ListMyTransactionsData {
       kind: string;
       color?: string | null;
     } & Category_Key;
+    user: {
+      id: UUIDString;
+      username: string;
+    } & User_Key;
   } & Transaction_Key)[];
 }
 ```
@@ -1043,6 +1163,10 @@ export interface ListMyTransactionsByDateRangeData {
       kind: string;
       color?: string | null;
     } & Category_Key;
+    user: {
+      id: UUIDString;
+      username: string;
+    } & User_Key;
   } & Transaction_Key)[];
 }
 ```
@@ -1151,6 +1275,10 @@ export interface GetTransactionData {
       kind: string;
       color?: string | null;
     } & Category_Key;
+    user: {
+      id: UUIDString;
+      username: string;
+    } & User_Key;
   } & Transaction_Key;
 }
 ```
@@ -1201,6 +1329,267 @@ export default function GetTransactionComponent() {
   // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
   if (query.isSuccess) {
     console.log(query.data.transaction);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## GetFamilyByInviteCode
+You can execute the `GetFamilyByInviteCode` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useGetFamilyByInviteCode(dc: DataConnect, vars: GetFamilyByInviteCodeVariables, options?: useDataConnectQueryOptions<GetFamilyByInviteCodeData>): UseDataConnectQueryResult<GetFamilyByInviteCodeData, GetFamilyByInviteCodeVariables>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useGetFamilyByInviteCode(vars: GetFamilyByInviteCodeVariables, options?: useDataConnectQueryOptions<GetFamilyByInviteCodeData>): UseDataConnectQueryResult<GetFamilyByInviteCodeData, GetFamilyByInviteCodeVariables>;
+```
+
+### Variables
+The `GetFamilyByInviteCode` Query requires an argument of type `GetFamilyByInviteCodeVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface GetFamilyByInviteCodeVariables {
+  inviteCode: string;
+}
+```
+### Return Type
+Recall that calling the `GetFamilyByInviteCode` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `GetFamilyByInviteCode` Query is of type `GetFamilyByInviteCodeData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface GetFamilyByInviteCodeData {
+  family?: {
+    id: UUIDString;
+    name: string;
+    ownerUser: {
+      username: string;
+    };
+  } & Family_Key;
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `GetFamilyByInviteCode`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, GetFamilyByInviteCodeVariables } from '@financeconnect/generated';
+import { useGetFamilyByInviteCode } from '@financeconnect/generated/react'
+
+export default function GetFamilyByInviteCodeComponent() {
+  // The `useGetFamilyByInviteCode` Query hook requires an argument of type `GetFamilyByInviteCodeVariables`:
+  const getFamilyByInviteCodeVars: GetFamilyByInviteCodeVariables = {
+    inviteCode: ..., 
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useGetFamilyByInviteCode(getFamilyByInviteCodeVars);
+  // Variables can be defined inline as well.
+  const query = useGetFamilyByInviteCode({ inviteCode: ..., });
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useGetFamilyByInviteCode(dataConnect, getFamilyByInviteCodeVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useGetFamilyByInviteCode(getFamilyByInviteCodeVars, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useGetFamilyByInviteCode(dataConnect, getFamilyByInviteCodeVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.family);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## GetMyFamilyDetail
+You can execute the `GetMyFamilyDetail` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useGetMyFamilyDetail(dc: DataConnect, options?: useDataConnectQueryOptions<GetMyFamilyDetailData>): UseDataConnectQueryResult<GetMyFamilyDetailData, undefined>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useGetMyFamilyDetail(options?: useDataConnectQueryOptions<GetMyFamilyDetailData>): UseDataConnectQueryResult<GetMyFamilyDetailData, undefined>;
+```
+
+### Variables
+The `GetMyFamilyDetail` Query has no variables.
+### Return Type
+Recall that calling the `GetMyFamilyDetail` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `GetMyFamilyDetail` Query is of type `GetMyFamilyDetailData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface GetMyFamilyDetailData {
+  families: ({
+    id: UUIDString;
+    name: string;
+    inviteCode: string;
+    createdAt: TimestampString;
+    ownerUser: {
+      id: UUIDString;
+      username: string;
+    } & User_Key;
+    members: ({
+      id: UUIDString;
+      username: string;
+      email?: string | null;
+      createdAt: TimestampString;
+    } & User_Key)[];
+    pendingRequests: ({
+      status: string;
+      createdAt: TimestampString;
+      requester: {
+        id: UUIDString;
+        username: string;
+        email?: string | null;
+      } & User_Key;
+    })[];
+  } & Family_Key)[];
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `GetMyFamilyDetail`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig } from '@financeconnect/generated';
+import { useGetMyFamilyDetail } from '@financeconnect/generated/react'
+
+export default function GetMyFamilyDetailComponent() {
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useGetMyFamilyDetail();
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useGetMyFamilyDetail(dataConnect);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useGetMyFamilyDetail(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useGetMyFamilyDetail(dataConnect, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.families);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## GetMyJoinRequests
+You can execute the `GetMyJoinRequests` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useGetMyJoinRequests(dc: DataConnect, options?: useDataConnectQueryOptions<GetMyJoinRequestsData>): UseDataConnectQueryResult<GetMyJoinRequestsData, undefined>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useGetMyJoinRequests(options?: useDataConnectQueryOptions<GetMyJoinRequestsData>): UseDataConnectQueryResult<GetMyJoinRequestsData, undefined>;
+```
+
+### Variables
+The `GetMyJoinRequests` Query has no variables.
+### Return Type
+Recall that calling the `GetMyJoinRequests` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `GetMyJoinRequests` Query is of type `GetMyJoinRequestsData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface GetMyJoinRequestsData {
+  familyJoinRequests: ({
+    status: string;
+    createdAt: TimestampString;
+    decidedAt?: TimestampString | null;
+    family: {
+      id: UUIDString;
+      name: string;
+      ownerUser: {
+        username: string;
+      };
+    } & Family_Key;
+  })[];
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `GetMyJoinRequests`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig } from '@financeconnect/generated';
+import { useGetMyJoinRequests } from '@financeconnect/generated/react'
+
+export default function GetMyJoinRequestsComponent() {
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useGetMyJoinRequests();
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useGetMyJoinRequests(dataConnect);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useGetMyJoinRequests(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useGetMyJoinRequests(dataConnect, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.familyJoinRequests);
   }
   return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
 }
@@ -3847,6 +4236,778 @@ export default function SyncPlaidTransactionComponent() {
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
     console.log(mutation.data.transaction_upsert);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## CreateFamily
+You can execute the `CreateFamily` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useCreateFamily(options?: useDataConnectMutationOptions<CreateFamilyData, FirebaseError, CreateFamilyVariables>): UseDataConnectMutationResult<CreateFamilyData, CreateFamilyVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useCreateFamily(dc: DataConnect, options?: useDataConnectMutationOptions<CreateFamilyData, FirebaseError, CreateFamilyVariables>): UseDataConnectMutationResult<CreateFamilyData, CreateFamilyVariables>;
+```
+
+### Variables
+The `CreateFamily` Mutation requires an argument of type `CreateFamilyVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface CreateFamilyVariables {
+  userId: UUIDString;
+  familyId: UUIDString;
+  name: string;
+  inviteCode: string;
+}
+```
+### Return Type
+Recall that calling the `CreateFamily` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `CreateFamily` Mutation is of type `CreateFamilyData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface CreateFamilyData {
+  family_insert: Family_Key;
+  user_update?: User_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `CreateFamily`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, CreateFamilyVariables } from '@financeconnect/generated';
+import { useCreateFamily } from '@financeconnect/generated/react'
+
+export default function CreateFamilyComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useCreateFamily();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useCreateFamily(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useCreateFamily(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useCreateFamily(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useCreateFamily` Mutation requires an argument of type `CreateFamilyVariables`:
+  const createFamilyVars: CreateFamilyVariables = {
+    userId: ..., 
+    familyId: ..., 
+    name: ..., 
+    inviteCode: ..., 
+  };
+  mutation.mutate(createFamilyVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ userId: ..., familyId: ..., name: ..., inviteCode: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(createFamilyVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.family_insert);
+    console.log(mutation.data.user_update);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## RequestToJoinFamily
+You can execute the `RequestToJoinFamily` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useRequestToJoinFamily(options?: useDataConnectMutationOptions<RequestToJoinFamilyData, FirebaseError, RequestToJoinFamilyVariables>): UseDataConnectMutationResult<RequestToJoinFamilyData, RequestToJoinFamilyVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useRequestToJoinFamily(dc: DataConnect, options?: useDataConnectMutationOptions<RequestToJoinFamilyData, FirebaseError, RequestToJoinFamilyVariables>): UseDataConnectMutationResult<RequestToJoinFamilyData, RequestToJoinFamilyVariables>;
+```
+
+### Variables
+The `RequestToJoinFamily` Mutation requires an argument of type `RequestToJoinFamilyVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface RequestToJoinFamilyVariables {
+  userId: UUIDString;
+  familyId: UUIDString;
+}
+```
+### Return Type
+Recall that calling the `RequestToJoinFamily` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `RequestToJoinFamily` Mutation is of type `RequestToJoinFamilyData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface RequestToJoinFamilyData {
+  familyJoinRequest_upsert: FamilyJoinRequest_Key;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `RequestToJoinFamily`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, RequestToJoinFamilyVariables } from '@financeconnect/generated';
+import { useRequestToJoinFamily } from '@financeconnect/generated/react'
+
+export default function RequestToJoinFamilyComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useRequestToJoinFamily();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useRequestToJoinFamily(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useRequestToJoinFamily(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useRequestToJoinFamily(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useRequestToJoinFamily` Mutation requires an argument of type `RequestToJoinFamilyVariables`:
+  const requestToJoinFamilyVars: RequestToJoinFamilyVariables = {
+    userId: ..., 
+    familyId: ..., 
+  };
+  mutation.mutate(requestToJoinFamilyVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ userId: ..., familyId: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(requestToJoinFamilyVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.familyJoinRequest_upsert);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## ApproveJoinRequest
+You can execute the `ApproveJoinRequest` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useApproveJoinRequest(options?: useDataConnectMutationOptions<ApproveJoinRequestData, FirebaseError, ApproveJoinRequestVariables>): UseDataConnectMutationResult<ApproveJoinRequestData, ApproveJoinRequestVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useApproveJoinRequest(dc: DataConnect, options?: useDataConnectMutationOptions<ApproveJoinRequestData, FirebaseError, ApproveJoinRequestVariables>): UseDataConnectMutationResult<ApproveJoinRequestData, ApproveJoinRequestVariables>;
+```
+
+### Variables
+The `ApproveJoinRequest` Mutation requires an argument of type `ApproveJoinRequestVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface ApproveJoinRequestVariables {
+  familyId: UUIDString;
+  requesterId: UUIDString;
+}
+```
+### Return Type
+Recall that calling the `ApproveJoinRequest` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `ApproveJoinRequest` Mutation is of type `ApproveJoinRequestData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface ApproveJoinRequestData {
+  familyJoinRequest_update?: FamilyJoinRequest_Key | null;
+  user_update?: User_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `ApproveJoinRequest`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, ApproveJoinRequestVariables } from '@financeconnect/generated';
+import { useApproveJoinRequest } from '@financeconnect/generated/react'
+
+export default function ApproveJoinRequestComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useApproveJoinRequest();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useApproveJoinRequest(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useApproveJoinRequest(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useApproveJoinRequest(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useApproveJoinRequest` Mutation requires an argument of type `ApproveJoinRequestVariables`:
+  const approveJoinRequestVars: ApproveJoinRequestVariables = {
+    familyId: ..., 
+    requesterId: ..., 
+  };
+  mutation.mutate(approveJoinRequestVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ familyId: ..., requesterId: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(approveJoinRequestVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.familyJoinRequest_update);
+    console.log(mutation.data.user_update);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## DenyJoinRequest
+You can execute the `DenyJoinRequest` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useDenyJoinRequest(options?: useDataConnectMutationOptions<DenyJoinRequestData, FirebaseError, DenyJoinRequestVariables>): UseDataConnectMutationResult<DenyJoinRequestData, DenyJoinRequestVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useDenyJoinRequest(dc: DataConnect, options?: useDataConnectMutationOptions<DenyJoinRequestData, FirebaseError, DenyJoinRequestVariables>): UseDataConnectMutationResult<DenyJoinRequestData, DenyJoinRequestVariables>;
+```
+
+### Variables
+The `DenyJoinRequest` Mutation requires an argument of type `DenyJoinRequestVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface DenyJoinRequestVariables {
+  familyId: UUIDString;
+  requesterId: UUIDString;
+}
+```
+### Return Type
+Recall that calling the `DenyJoinRequest` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `DenyJoinRequest` Mutation is of type `DenyJoinRequestData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface DenyJoinRequestData {
+  familyJoinRequest_update?: FamilyJoinRequest_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `DenyJoinRequest`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, DenyJoinRequestVariables } from '@financeconnect/generated';
+import { useDenyJoinRequest } from '@financeconnect/generated/react'
+
+export default function DenyJoinRequestComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useDenyJoinRequest();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useDenyJoinRequest(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useDenyJoinRequest(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useDenyJoinRequest(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useDenyJoinRequest` Mutation requires an argument of type `DenyJoinRequestVariables`:
+  const denyJoinRequestVars: DenyJoinRequestVariables = {
+    familyId: ..., 
+    requesterId: ..., 
+  };
+  mutation.mutate(denyJoinRequestVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ familyId: ..., requesterId: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(denyJoinRequestVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.familyJoinRequest_update);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## CancelMyJoinRequest
+You can execute the `CancelMyJoinRequest` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useCancelMyJoinRequest(options?: useDataConnectMutationOptions<CancelMyJoinRequestData, FirebaseError, CancelMyJoinRequestVariables>): UseDataConnectMutationResult<CancelMyJoinRequestData, CancelMyJoinRequestVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useCancelMyJoinRequest(dc: DataConnect, options?: useDataConnectMutationOptions<CancelMyJoinRequestData, FirebaseError, CancelMyJoinRequestVariables>): UseDataConnectMutationResult<CancelMyJoinRequestData, CancelMyJoinRequestVariables>;
+```
+
+### Variables
+The `CancelMyJoinRequest` Mutation requires an argument of type `CancelMyJoinRequestVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface CancelMyJoinRequestVariables {
+  familyId: UUIDString;
+  userId: UUIDString;
+}
+```
+### Return Type
+Recall that calling the `CancelMyJoinRequest` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `CancelMyJoinRequest` Mutation is of type `CancelMyJoinRequestData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface CancelMyJoinRequestData {
+  familyJoinRequest_update?: FamilyJoinRequest_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `CancelMyJoinRequest`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, CancelMyJoinRequestVariables } from '@financeconnect/generated';
+import { useCancelMyJoinRequest } from '@financeconnect/generated/react'
+
+export default function CancelMyJoinRequestComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useCancelMyJoinRequest();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useCancelMyJoinRequest(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useCancelMyJoinRequest(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useCancelMyJoinRequest(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useCancelMyJoinRequest` Mutation requires an argument of type `CancelMyJoinRequestVariables`:
+  const cancelMyJoinRequestVars: CancelMyJoinRequestVariables = {
+    familyId: ..., 
+    userId: ..., 
+  };
+  mutation.mutate(cancelMyJoinRequestVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ familyId: ..., userId: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(cancelMyJoinRequestVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.familyJoinRequest_update);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## LeaveMyFamily
+You can execute the `LeaveMyFamily` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useLeaveMyFamily(options?: useDataConnectMutationOptions<LeaveMyFamilyData, FirebaseError, LeaveMyFamilyVariables>): UseDataConnectMutationResult<LeaveMyFamilyData, LeaveMyFamilyVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useLeaveMyFamily(dc: DataConnect, options?: useDataConnectMutationOptions<LeaveMyFamilyData, FirebaseError, LeaveMyFamilyVariables>): UseDataConnectMutationResult<LeaveMyFamilyData, LeaveMyFamilyVariables>;
+```
+
+### Variables
+The `LeaveMyFamily` Mutation requires an argument of type `LeaveMyFamilyVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface LeaveMyFamilyVariables {
+  userId: UUIDString;
+}
+```
+### Return Type
+Recall that calling the `LeaveMyFamily` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `LeaveMyFamily` Mutation is of type `LeaveMyFamilyData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface LeaveMyFamilyData {
+  user_update?: User_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `LeaveMyFamily`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, LeaveMyFamilyVariables } from '@financeconnect/generated';
+import { useLeaveMyFamily } from '@financeconnect/generated/react'
+
+export default function LeaveMyFamilyComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useLeaveMyFamily();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useLeaveMyFamily(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useLeaveMyFamily(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useLeaveMyFamily(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useLeaveMyFamily` Mutation requires an argument of type `LeaveMyFamilyVariables`:
+  const leaveMyFamilyVars: LeaveMyFamilyVariables = {
+    userId: ..., 
+  };
+  mutation.mutate(leaveMyFamilyVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ userId: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(leaveMyFamilyVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.user_update);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## RegenerateFamilyInviteCode
+You can execute the `RegenerateFamilyInviteCode` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useRegenerateFamilyInviteCode(options?: useDataConnectMutationOptions<RegenerateFamilyInviteCodeData, FirebaseError, RegenerateFamilyInviteCodeVariables>): UseDataConnectMutationResult<RegenerateFamilyInviteCodeData, RegenerateFamilyInviteCodeVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useRegenerateFamilyInviteCode(dc: DataConnect, options?: useDataConnectMutationOptions<RegenerateFamilyInviteCodeData, FirebaseError, RegenerateFamilyInviteCodeVariables>): UseDataConnectMutationResult<RegenerateFamilyInviteCodeData, RegenerateFamilyInviteCodeVariables>;
+```
+
+### Variables
+The `RegenerateFamilyInviteCode` Mutation requires an argument of type `RegenerateFamilyInviteCodeVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface RegenerateFamilyInviteCodeVariables {
+  familyId: UUIDString;
+  inviteCode: string;
+}
+```
+### Return Type
+Recall that calling the `RegenerateFamilyInviteCode` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `RegenerateFamilyInviteCode` Mutation is of type `RegenerateFamilyInviteCodeData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface RegenerateFamilyInviteCodeData {
+  family_update?: Family_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `RegenerateFamilyInviteCode`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, RegenerateFamilyInviteCodeVariables } from '@financeconnect/generated';
+import { useRegenerateFamilyInviteCode } from '@financeconnect/generated/react'
+
+export default function RegenerateFamilyInviteCodeComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useRegenerateFamilyInviteCode();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useRegenerateFamilyInviteCode(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useRegenerateFamilyInviteCode(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useRegenerateFamilyInviteCode(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useRegenerateFamilyInviteCode` Mutation requires an argument of type `RegenerateFamilyInviteCodeVariables`:
+  const regenerateFamilyInviteCodeVars: RegenerateFamilyInviteCodeVariables = {
+    familyId: ..., 
+    inviteCode: ..., 
+  };
+  mutation.mutate(regenerateFamilyInviteCodeVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ familyId: ..., inviteCode: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(regenerateFamilyInviteCodeVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.family_update);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## CreateUserSettingForUser
+You can execute the `CreateUserSettingForUser` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useCreateUserSettingForUser(options?: useDataConnectMutationOptions<CreateUserSettingForUserData, FirebaseError, CreateUserSettingForUserVariables>): UseDataConnectMutationResult<CreateUserSettingForUserData, CreateUserSettingForUserVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useCreateUserSettingForUser(dc: DataConnect, options?: useDataConnectMutationOptions<CreateUserSettingForUserData, FirebaseError, CreateUserSettingForUserVariables>): UseDataConnectMutationResult<CreateUserSettingForUserData, CreateUserSettingForUserVariables>;
+```
+
+### Variables
+The `CreateUserSettingForUser` Mutation requires an argument of type `CreateUserSettingForUserVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface CreateUserSettingForUserVariables {
+  userId: UUIDString;
+}
+```
+### Return Type
+Recall that calling the `CreateUserSettingForUser` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `CreateUserSettingForUser` Mutation is of type `CreateUserSettingForUserData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface CreateUserSettingForUserData {
+  userSetting_insert: UserSetting_Key;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `CreateUserSettingForUser`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, CreateUserSettingForUserVariables } from '@financeconnect/generated';
+import { useCreateUserSettingForUser } from '@financeconnect/generated/react'
+
+export default function CreateUserSettingForUserComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useCreateUserSettingForUser();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useCreateUserSettingForUser(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useCreateUserSettingForUser(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useCreateUserSettingForUser(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useCreateUserSettingForUser` Mutation requires an argument of type `CreateUserSettingForUserVariables`:
+  const createUserSettingForUserVars: CreateUserSettingForUserVariables = {
+    userId: ..., 
+  };
+  mutation.mutate(createUserSettingForUserVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ userId: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(createUserSettingForUserVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.userSetting_insert);
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }

@@ -27,6 +27,24 @@ extend type Mutation {
     data: ColorScheme_Data!
   ): ColorScheme_KeyOutput! @fdc_generated(from: "ColorScheme", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `Family` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  family_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Family_Data!
+  ): Family_KeyOutput! @fdc_generated(from: "Family", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `FamilyJoinRequest` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  familyJoinRequest_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: FamilyJoinRequest_Data!
+  ): FamilyJoinRequest_KeyOutput! @fdc_generated(from: "FamilyJoinRequest", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `FamilyMember` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   familyMember_insert(
@@ -134,6 +152,24 @@ extend type Mutation {
     """
     data: [ColorScheme_Data!]!
   ): [ColorScheme_KeyOutput!]! @fdc_generated(from: "ColorScheme", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Family` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  family_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Family_Data!]!
+  ): [Family_KeyOutput!]! @fdc_generated(from: "Family", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `FamilyJoinRequest` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  familyJoinRequest_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [FamilyJoinRequest_Data!]!
+  ): [FamilyJoinRequest_KeyOutput!]! @fdc_generated(from: "FamilyJoinRequest", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `FamilyMember` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -243,6 +279,24 @@ extend type Mutation {
     data: ColorScheme_Data!
   ): ColorScheme_KeyOutput! @fdc_generated(from: "ColorScheme", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `Family` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Family`.
+  """
+  family_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Family_Data!
+  ): Family_KeyOutput! @fdc_generated(from: "Family", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `FamilyJoinRequest` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `FamilyJoinRequest`.
+  """
+  familyJoinRequest_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: FamilyJoinRequest_Data!
+  ): FamilyJoinRequest_KeyOutput! @fdc_generated(from: "FamilyJoinRequest", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `FamilyMember` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `FamilyMember`.
   """
   familyMember_upsert(
@@ -350,6 +404,24 @@ extend type Mutation {
     """
     data: [ColorScheme_Data!]!
   ): [ColorScheme_KeyOutput!]! @fdc_generated(from: "ColorScheme", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Family` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Family`.
+  """
+  family_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Family_Data!]!
+  ): [Family_KeyOutput!]! @fdc_generated(from: "Family", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `FamilyJoinRequest` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `FamilyJoinRequest`.
+  """
+  familyJoinRequest_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [FamilyJoinRequest_Data!]!
+  ): [FamilyJoinRequest_KeyOutput!]! @fdc_generated(from: "FamilyJoinRequest", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `FamilyMember` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `FamilyMember`.
   """
@@ -498,6 +570,49 @@ extend type Mutation {
     """
     data: ColorScheme_Data!
   ): ColorScheme_KeyOutput @fdc_generated(from: "ColorScheme", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Family` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Family` or `null` if not found.
+  """
+  family_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Family_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Family_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Family_Data!
+  ): Family_KeyOutput @fdc_generated(from: "Family", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `FamilyJoinRequest` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `FamilyJoinRequest` or `null` if not found.
+  """
+  familyJoinRequest_update(
+    """
+    The key used to identify the object.
+    """
+    key: FamilyJoinRequest_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: FamilyJoinRequest_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: FamilyJoinRequest_Data!
+  ): FamilyJoinRequest_KeyOutput @fdc_generated(from: "FamilyJoinRequest", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `FamilyMember` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `FamilyMember` or `null` if not found.
   """
@@ -757,6 +872,44 @@ extend type Mutation {
     data: ColorScheme_Data!
   ): Int! @fdc_generated(from: "ColorScheme", purpose: UPDATE_MULTIPLE)
   """
+  ✨ Update `Family` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  family_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Family_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Family_Data!
+  ): Int! @fdc_generated(from: "Family", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `FamilyJoinRequest` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  familyJoinRequest_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: FamilyJoinRequest_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: FamilyJoinRequest_Data!
+  ): Int! @fdc_generated(from: "FamilyJoinRequest", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `FamilyMember` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   familyMember_updateMany(
@@ -980,6 +1133,39 @@ extend type Mutation {
     first: ColorScheme_FirstRow
   ): ColorScheme_KeyOutput @fdc_generated(from: "ColorScheme", purpose: DELETE_SINGLE)
   """
+  ✨ Delete a single `Family` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  family_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Family_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Family_FirstRow
+  ): Family_KeyOutput @fdc_generated(from: "Family", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `FamilyJoinRequest` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  familyJoinRequest_delete(
+    """
+    The key used to identify the object.
+    """
+    key: FamilyJoinRequest_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: FamilyJoinRequest_FirstRow
+  ): FamilyJoinRequest_KeyOutput @fdc_generated(from: "FamilyJoinRequest", purpose: DELETE_SINGLE)
+  """
   ✨ Delete a single `FamilyMember` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   familyMember_delete(
@@ -1177,6 +1363,34 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "ColorScheme", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Family` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  family_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Family_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Family", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `FamilyJoinRequest` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  familyJoinRequest_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: FamilyJoinRequest_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "FamilyJoinRequest", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `FamilyMember` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """

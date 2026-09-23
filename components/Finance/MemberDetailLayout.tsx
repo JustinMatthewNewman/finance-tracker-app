@@ -236,9 +236,14 @@ function MemberDetailLayout({ showBreakdown = false, onToggleBreakdown }: Member
                     </ToggleButton>
                   </ToggleButtonGroup>
 
+                  {/* `selectedMember.isMine` for the same reason the
+                      sidebar's rename is gated: CreateTransaction checks that
+                      the family member belongs to the caller, so adding a
+                      transaction against a housemate's person is refused at
+                      the database. */}
                   <Button
                     size="sm"
-                    isDisabled={!selectedFamilyMemberId || !myUserId}
+                    isDisabled={!selectedFamilyMemberId || !myUserId || !selectedMember?.isMine}
                     onPress={() => {
                       setEditing(null);
                       setIsFormOpen(true);

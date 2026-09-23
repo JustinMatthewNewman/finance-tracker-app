@@ -52,6 +52,39 @@ extend type Query {
     first: ColorScheme_FirstRow
   ): ColorScheme @fdc_generated(from: "ColorScheme", purpose: QUERY_SINGLE)
   """
+  ✨ Look up a single `Family` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  family(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Family_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Family_FirstRow
+  ): Family @fdc_generated(from: "Family", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `FamilyJoinRequest` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  familyJoinRequest(
+    """
+    The key used to identify the object.
+    """
+    key: FamilyJoinRequest_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: FamilyJoinRequest_FirstRow
+  ): FamilyJoinRequest @fdc_generated(from: "FamilyJoinRequest", purpose: QUERY_SINGLE)
+  """
   ✨ Look up a single `FamilyMember` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   familyMember(
@@ -309,6 +342,74 @@ extend type Query {
     """
     having: ColorScheme_Having
   ): [ColorScheme!]! @fdc_generated(from: "ColorScheme", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Family` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  families(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Family_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Family_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Family_Having
+  ): [Family!]! @fdc_generated(from: "Family", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `FamilyJoinRequest` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  familyJoinRequests(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: FamilyJoinRequest_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [FamilyJoinRequest_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: FamilyJoinRequest_Having
+  ): [FamilyJoinRequest!]! @fdc_generated(from: "FamilyJoinRequest", purpose: QUERY_MULTIPLE)
   """
   ✨ List `FamilyMember` objects in the table and return selected fields, optionally filtered by `where` conditions
   """

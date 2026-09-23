@@ -17,6 +17,18 @@ It has the same format as `ColorScheme_Key`, but is only used as mutation return
 """
 scalar ColorScheme_KeyOutput
 """
+✨ `Family_KeyOutput` returns the primary key fields of table type `Family`.
+
+It has the same format as `Family_Key`, but is only used as mutation return value.
+"""
+scalar Family_KeyOutput
+"""
+✨ `FamilyJoinRequest_KeyOutput` returns the primary key fields of table type `FamilyJoinRequest`.
+
+It has the same format as `FamilyJoinRequest_Key`, but is only used as mutation return value.
+"""
+scalar FamilyJoinRequest_KeyOutput
+"""
 ✨ `FamilyMember_KeyOutput` returns the primary key fields of table type `FamilyMember`.
 
 It has the same format as `FamilyMember_Key`, but is only used as mutation return value.
@@ -1142,6 +1154,572 @@ input ColorScheme_Order {
   ✨ Generated from Field `ColorScheme`.`createdAt_max` of type `Timestamp`
   """
   createdAt_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'Family'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input Family_Data {
+  """
+  ✨ Generated from Field `Family`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Family`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Family`.`ownerUserId` of type `UUID!`
+  """
+  ownerUserId: UUID
+  """
+  ✨ `_expr` server value variant of `ownerUserId` (✨ Generated from Field `Family`.`ownerUserId` of type `UUID!`)
+  """
+  ownerUserId_expr: UUID_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Family`.`ownerUser` of type `User!`
+  """
+  ownerUser: User_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Family`.`createdAt` of type `Timestamp!`
+  """
+  createdAt: Timestamp
+  """
+  ✨ `_expr` server value variant of `createdAt` (✨ Generated from Field `Family`.`createdAt` of type `Timestamp!`)
+  """
+  createdAt_expr: Timestamp_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_time` server value variant of `createdAt` (✨ Generated from Field `Family`.`createdAt` of type `Timestamp!`)
+  """
+  createdAt_time: Timestamp_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `createdAt` (✨ Generated from Field `Family`.`createdAt` of type `Timestamp!`)
+  """
+  createdAt_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Family`.`inviteCode` of type `String!`
+  """
+  inviteCode: String
+  """
+  ✨ `_expr` server value variant of `inviteCode` (✨ Generated from Field `Family`.`inviteCode` of type `String!`)
+  """
+  inviteCode_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Family`.`name` of type `String!`
+  """
+  name: String
+  """
+  ✨ `_expr` server value variant of `name` (✨ Generated from Field `Family`.`name` of type `String!`)
+  """
+  name_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Family`.`familyJoinRequests_on_family` of type `[FamilyJoinRequest!]!`
+  """
+  familyJoinRequests_on_family: [FamilyJoinRequest_Data!]
+  """
+  ✨ Generated from Field `Family`.`users_on_family` of type `[User!]!`
+  """
+  users_on_family: [User_Data!]
+}
+"""
+✨ Generated filter input type for table 'Family'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Family_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [Family_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: Family_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [Family_Filter!]
+  """
+  ✨ Generated from Field `Family`.`id` of type `UUID!`
+  """
+  id: UUID_Filter
+  """
+  ✨ Generated from Field `Family`.`ownerUserId` of type `UUID!`
+  """
+  ownerUserId: UUID_Filter
+  """
+  ✨ Generated from Field `Family`.`ownerUser` of type `User!`
+  """
+  ownerUser: User_Filter
+  """
+  ✨ Generated from Field `Family`.`createdAt` of type `Timestamp!`
+  """
+  createdAt: Timestamp_Filter
+  """
+  ✨ Generated from Field `Family`.`inviteCode` of type `String!`
+  """
+  inviteCode: String_Filter
+  """
+  ✨ Generated from Field `Family`.`name` of type `String!`
+  """
+  name: String_Filter
+  """
+  ✨ Generated from Field `Family`.`familyJoinRequests_on_family` of type `[FamilyJoinRequest!]!`
+  """
+  familyJoinRequests_on_family: FamilyJoinRequest_ListFilter
+  """
+  ✨ Generated from Field `Family`.`users_on_family` of type `[User!]!`
+  """
+  users_on_family: User_ListFilter
+  """
+  ✨ Generated from Field `Family`.`users_via_FamilyJoinRequest` of type `[User!]!`
+  """
+  users_via_FamilyJoinRequest: User_ListFilter
+}
+"""
+✨ Generated first-row input type for table 'Family'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input Family_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [Family_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: Family_Filter
+}
+"""
+✨ Generated having input type for table 'Family'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input Family_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [Family_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: Family_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [Family_Having!]
+  """
+  ✨ Generated from Field `Family`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `Family`.`createdAt_count` of type `Int!`
+  """
+  createdAt_count: Int_Filter
+  """
+  ✨ Generated from Field `Family`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `Family`.`inviteCode_count` of type `Int!`
+  """
+  inviteCode_count: Int_Filter
+  """
+  ✨ Generated from Field `Family`.`name_count` of type `Int!`
+  """
+  name_count: Int_Filter
+  """
+  ✨ Generated from Field `Family`.`ownerUserId_count` of type `Int!`
+  """
+  ownerUserId_count: Int_Filter
+  """
+  ✨ Generated from Field `Family`.`createdAt_min` of type `Timestamp`
+  """
+  createdAt_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `Family`.`createdAt_max` of type `Timestamp`
+  """
+  createdAt_max: Timestamp_Filter
+}
+"""
+✨ Generated key input type for table 'Family'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input Family_Key {
+  """
+  ✨ Generated from Field `Family`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `Family`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'Family'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input Family_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: Family_Filter
+}
+"""
+✨ Generated order input type for table 'Family'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input Family_Order {
+  """
+  ✨ Generated from Field `Family`.`id` of type `UUID!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `Family`.`ownerUserId` of type `UUID!`
+  """
+  ownerUserId: OrderDirection
+  """
+  ✨ Generated from Field `Family`.`ownerUser` of type `User!`
+  """
+  ownerUser: User_Order
+  """
+  ✨ Generated from Field `Family`.`createdAt` of type `Timestamp!`
+  """
+  createdAt: OrderDirection
+  """
+  ✨ Generated from Field `Family`.`inviteCode` of type `String!`
+  """
+  inviteCode: OrderDirection
+  """
+  ✨ Generated from Field `Family`.`name` of type `String!`
+  """
+  name: OrderDirection
+  """
+  ✨ Generated from Field `Family`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `Family`.`createdAt_count` of type `Int!`
+  """
+  createdAt_count: OrderDirection
+  """
+  ✨ Generated from Field `Family`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `Family`.`inviteCode_count` of type `Int!`
+  """
+  inviteCode_count: OrderDirection
+  """
+  ✨ Generated from Field `Family`.`name_count` of type `Int!`
+  """
+  name_count: OrderDirection
+  """
+  ✨ Generated from Field `Family`.`ownerUserId_count` of type `Int!`
+  """
+  ownerUserId_count: OrderDirection
+  """
+  ✨ Generated from Field `Family`.`createdAt_min` of type `Timestamp`
+  """
+  createdAt_min: OrderDirection
+  """
+  ✨ Generated from Field `Family`.`createdAt_max` of type `Timestamp`
+  """
+  createdAt_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'FamilyJoinRequest'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input FamilyJoinRequest_Data {
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`familyId` of type `UUID!`
+  """
+  familyId: UUID
+  """
+  ✨ `_expr` server value variant of `familyId` (✨ Generated from Field `FamilyJoinRequest`.`familyId` of type `UUID!`)
+  """
+  familyId_expr: UUID_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`requesterId` of type `UUID!`
+  """
+  requesterId: UUID
+  """
+  ✨ `_expr` server value variant of `requesterId` (✨ Generated from Field `FamilyJoinRequest`.`requesterId` of type `UUID!`)
+  """
+  requesterId_expr: UUID_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`family` of type `Family!`
+  """
+  family: Family_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`requester` of type `User!`
+  """
+  requester: User_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`createdAt` of type `Timestamp!`
+  """
+  createdAt: Timestamp
+  """
+  ✨ `_expr` server value variant of `createdAt` (✨ Generated from Field `FamilyJoinRequest`.`createdAt` of type `Timestamp!`)
+  """
+  createdAt_expr: Timestamp_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_time` server value variant of `createdAt` (✨ Generated from Field `FamilyJoinRequest`.`createdAt` of type `Timestamp!`)
+  """
+  createdAt_time: Timestamp_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `createdAt` (✨ Generated from Field `FamilyJoinRequest`.`createdAt` of type `Timestamp!`)
+  """
+  createdAt_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`decidedAt` of type `Timestamp`
+  """
+  decidedAt: Timestamp
+  """
+  ✨ `_expr` server value variant of `decidedAt` (✨ Generated from Field `FamilyJoinRequest`.`decidedAt` of type `Timestamp`)
+  """
+  decidedAt_expr: Timestamp_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_time` server value variant of `decidedAt` (✨ Generated from Field `FamilyJoinRequest`.`decidedAt` of type `Timestamp`)
+  """
+  decidedAt_time: Timestamp_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `decidedAt` (✨ Generated from Field `FamilyJoinRequest`.`decidedAt` of type `Timestamp`)
+  """
+  decidedAt_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`status` of type `String!`
+  """
+  status: String
+  """
+  ✨ `_expr` server value variant of `status` (✨ Generated from Field `FamilyJoinRequest`.`status` of type `String!`)
+  """
+  status_expr: String_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated filter input type for table 'FamilyJoinRequest'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input FamilyJoinRequest_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [FamilyJoinRequest_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: FamilyJoinRequest_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [FamilyJoinRequest_Filter!]
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`familyId` of type `UUID!`
+  """
+  familyId: UUID_Filter
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`requesterId` of type `UUID!`
+  """
+  requesterId: UUID_Filter
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`family` of type `Family!`
+  """
+  family: Family_Filter
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`requester` of type `User!`
+  """
+  requester: User_Filter
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`createdAt` of type `Timestamp!`
+  """
+  createdAt: Timestamp_Filter
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`decidedAt` of type `Timestamp`
+  """
+  decidedAt: Timestamp_Filter
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`status` of type `String!`
+  """
+  status: String_Filter
+}
+"""
+✨ Generated first-row input type for table 'FamilyJoinRequest'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input FamilyJoinRequest_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [FamilyJoinRequest_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: FamilyJoinRequest_Filter
+}
+"""
+✨ Generated having input type for table 'FamilyJoinRequest'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input FamilyJoinRequest_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [FamilyJoinRequest_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: FamilyJoinRequest_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [FamilyJoinRequest_Having!]
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`createdAt_count` of type `Int!`
+  """
+  createdAt_count: Int_Filter
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`decidedAt_count` of type `Int!`
+  """
+  decidedAt_count: Int_Filter
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`familyId_count` of type `Int!`
+  """
+  familyId_count: Int_Filter
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`requesterId_count` of type `Int!`
+  """
+  requesterId_count: Int_Filter
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`status_count` of type `Int!`
+  """
+  status_count: Int_Filter
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`createdAt_min` of type `Timestamp`
+  """
+  createdAt_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`decidedAt_min` of type `Timestamp`
+  """
+  decidedAt_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`createdAt_max` of type `Timestamp`
+  """
+  createdAt_max: Timestamp_Filter
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`decidedAt_max` of type `Timestamp`
+  """
+  decidedAt_max: Timestamp_Filter
+}
+"""
+✨ Generated key input type for table 'FamilyJoinRequest'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input FamilyJoinRequest_Key {
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`familyId` of type `UUID!`
+  """
+  familyId: UUID
+  """
+  ✨ `_expr` server value variant of `familyId` (✨ Generated from Field `FamilyJoinRequest`.`familyId` of type `UUID!`)
+  """
+  familyId_expr: UUID_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`requesterId` of type `UUID!`
+  """
+  requesterId: UUID
+  """
+  ✨ `_expr` server value variant of `requesterId` (✨ Generated from Field `FamilyJoinRequest`.`requesterId` of type `UUID!`)
+  """
+  requesterId_expr: UUID_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'FamilyJoinRequest'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input FamilyJoinRequest_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: FamilyJoinRequest_Filter
+}
+"""
+✨ Generated order input type for table 'FamilyJoinRequest'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input FamilyJoinRequest_Order {
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`familyId` of type `UUID!`
+  """
+  familyId: OrderDirection
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`requesterId` of type `UUID!`
+  """
+  requesterId: OrderDirection
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`family` of type `Family!`
+  """
+  family: Family_Order
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`requester` of type `User!`
+  """
+  requester: User_Order
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`createdAt` of type `Timestamp!`
+  """
+  createdAt: OrderDirection
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`decidedAt` of type `Timestamp`
+  """
+  decidedAt: OrderDirection
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`status` of type `String!`
+  """
+  status: OrderDirection
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`createdAt_count` of type `Int!`
+  """
+  createdAt_count: OrderDirection
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`decidedAt_count` of type `Int!`
+  """
+  decidedAt_count: OrderDirection
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`familyId_count` of type `Int!`
+  """
+  familyId_count: OrderDirection
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`requesterId_count` of type `Int!`
+  """
+  requesterId_count: OrderDirection
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`status_count` of type `Int!`
+  """
+  status_count: OrderDirection
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`createdAt_min` of type `Timestamp`
+  """
+  createdAt_min: OrderDirection
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`decidedAt_min` of type `Timestamp`
+  """
+  decidedAt_min: OrderDirection
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`createdAt_max` of type `Timestamp`
+  """
+  createdAt_max: OrderDirection
+  """
+  ✨ Generated from Field `FamilyJoinRequest`.`decidedAt_max` of type `Timestamp`
+  """
+  decidedAt_max: OrderDirection
 }
 """
 ✨ Generated data input type for table 'FamilyMember'. It includes all necessary fields for creating or upserting rows into table.
@@ -3431,6 +4009,14 @@ input User_Data {
   """
   id_expr: UUID_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `User`.`familyId` of type `UUID`
+  """
+  familyId: UUID
+  """
+  ✨ `_expr` server value variant of `familyId` (✨ Generated from Field `User`.`familyId` of type `UUID`)
+  """
+  familyId_expr: UUID_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `User`.`userTypeName` of type `String!`
   """
   userTypeName: String
@@ -3438,6 +4024,10 @@ input User_Data {
   ✨ `_expr` server value variant of `userTypeName` (✨ Generated from Field `User`.`userTypeName` of type `String!`)
   """
   userTypeName_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `User`.`family` of type `Family`
+  """
+  family: Family_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `User`.`userType` of type `UserType!`
   """
@@ -3487,6 +4077,14 @@ input User_Data {
   """
   bankAccounts_on_user: [BankAccount_Data!]
   """
+  ✨ Generated from Field `User`.`families_on_ownerUser` of type `[Family!]!`
+  """
+  families_on_ownerUser: [Family_Data!]
+  """
+  ✨ Generated from Field `User`.`familyJoinRequests_on_requester` of type `[FamilyJoinRequest!]!`
+  """
+  familyJoinRequests_on_requester: [FamilyJoinRequest_Data!]
+  """
   ✨ Generated from Field `User`.`familyMembers_on_user` of type `[FamilyMember!]!`
   """
   familyMembers_on_user: [FamilyMember_Data!]
@@ -3524,9 +4122,17 @@ input User_Filter {
   """
   id: UUID_Filter
   """
+  ✨ Generated from Field `User`.`familyId` of type `UUID`
+  """
+  familyId: UUID_Filter
+  """
   ✨ Generated from Field `User`.`userTypeName` of type `String!`
   """
   userTypeName: String_Filter
+  """
+  ✨ Generated from Field `User`.`family` of type `Family`
+  """
+  family: Family_Filter
   """
   ✨ Generated from Field `User`.`userType` of type `UserType!`
   """
@@ -3552,6 +4158,14 @@ input User_Filter {
   """
   bankAccounts_on_user: BankAccount_ListFilter
   """
+  ✨ Generated from Field `User`.`families_on_ownerUser` of type `[Family!]!`
+  """
+  families_on_ownerUser: Family_ListFilter
+  """
+  ✨ Generated from Field `User`.`familyJoinRequests_on_requester` of type `[FamilyJoinRequest!]!`
+  """
+  familyJoinRequests_on_requester: FamilyJoinRequest_ListFilter
+  """
   ✨ Generated from Field `User`.`familyMembers_on_user` of type `[FamilyMember!]!`
   """
   familyMembers_on_user: FamilyMember_ListFilter
@@ -3567,6 +4181,10 @@ input User_Filter {
   ✨ Generated from Field `User`.`userSetting_on_user` of type `UserSetting`
   """
   userSetting_on_user: UserSetting_Filter
+  """
+  ✨ Generated from Field `User`.`families_via_FamilyJoinRequest` of type `[Family!]!`
+  """
+  families_via_FamilyJoinRequest: Family_ListFilter
 }
 """
 ✨ Generated first-row input type for table 'User'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
@@ -3613,6 +4231,10 @@ input User_Having {
   ✨ Generated from Field `User`.`email_count` of type `Int!`
   """
   email_count: Int_Filter
+  """
+  ✨ Generated from Field `User`.`familyId_count` of type `Int!`
+  """
+  familyId_count: Int_Filter
   """
   ✨ Generated from Field `User`.`googleUid_count` of type `Int!`
   """
@@ -3673,9 +4295,17 @@ input User_Order {
   """
   id: OrderDirection
   """
+  ✨ Generated from Field `User`.`familyId` of type `UUID`
+  """
+  familyId: OrderDirection
+  """
   ✨ Generated from Field `User`.`userTypeName` of type `String!`
   """
   userTypeName: OrderDirection
+  """
+  ✨ Generated from Field `User`.`family` of type `Family`
+  """
+  family: Family_Order
   """
   ✨ Generated from Field `User`.`userType` of type `UserType!`
   """
@@ -3708,6 +4338,10 @@ input User_Order {
   ✨ Generated from Field `User`.`email_count` of type `Int!`
   """
   email_count: OrderDirection
+  """
+  ✨ Generated from Field `User`.`familyId_count` of type `Int!`
+  """
+  familyId_count: OrderDirection
   """
   ✨ Generated from Field `User`.`googleUid_count` of type `Int!`
   """
