@@ -198,6 +198,12 @@ export function createUserSettingForUser(dcOrVarsOrOptions, varsOrOptions, optio
   return dcInstance.executeMutation('CreateUserSettingForUser', inputVars, inputOpts);
 }
 
+export function createSelfFamilyMemberForUser(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('CreateSelfFamilyMemberForUser', inputVars, inputOpts);
+}
+
 export function listUsers(dcOrOptions, options) {
   const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
   dcInstance.useGen(true);

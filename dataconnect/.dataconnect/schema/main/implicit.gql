@@ -16,6 +16,10 @@ extend type FamilyJoinRequest {
 }
 extend type FamilyMember {
   """
+  ✨ Implicit foreign key field based on `FamilyMember`.`selfUser`. It must match the value of `User`.`id`. See `@ref` for how to customize it.
+  """
+  selfUserId: UUID @fdc_generated(from: "FamilyMember.selfUser", purpose: IMPLICIT_REF_FIELD)
+  """
   ✨ Implicit foreign key field based on `FamilyMember`.`user`. It must match the value of `User`.`id`. See `@ref` for how to customize it.
   """
   userId: UUID! @fdc_generated(from: "FamilyMember.user", purpose: IMPLICIT_REF_FIELD)

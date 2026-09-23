@@ -120,7 +120,7 @@ export function FamilyMemberListBox({
       <div className="min-h-0 flex-1">
         {familyMembers.length === 0 ? (
           <p className="p-4 text-sm text-foreground/60">
-            No one here yet. Add the first person to start tracking.
+            Setting up your household…
           </p>
         ) : (
           <Tabs
@@ -161,7 +161,18 @@ export function FamilyMemberListBox({
                           />
                         )}
                         <div className="flex min-w-0 flex-1 flex-col">
-                          <Label className="truncate font-medium">{member.name}</Label>
+                          <Label className="truncate font-medium">
+                            {member.name}
+                            {/* The account's own entry. Worth marking: in a
+                                household where several people sign in, every
+                                one of them appears here, and "which of these
+                                is me" is otherwise a guess from the name. */}
+                            {member.isSelf && (
+                              <span className="ml-1.5 text-xs font-normal text-foreground/50">
+                                you
+                              </span>
+                            )}
+                          </Label>
                           <span className="truncate text-sm text-gray-500">
                             {member.relationship ?? "—"}
                           </span>
@@ -220,7 +231,13 @@ export function FamilyMemberListBox({
           </Button>
 
           <Dropdown>
-            <Dropdown.Trigger aria-label="Family member actions" isDisabled={!selectedItem?.isMine}>
+            {/* Disabled for your own entry as well as for a housemate's:
+                DeleteFamilyMember refuses to soft-delete a row with selfUser
+                set, so offering it would fail at the @check. */}
+            <Dropdown.Trigger
+              aria-label="Family member actions"
+              isDisabled={!selectedItem?.isMine || selectedItem.isSelf}
+            >
               <Ellipsis width={16} height={16} />
             </Dropdown.Trigger>
             <Dropdown.Popover>
@@ -238,6 +255,13 @@ export function FamilyMemberListBox({
         {/* Says why the controls above are greyed out. Without it the only
             signal is a disabled button, which reads as broken rather than as
             "this is somebody else's record". */}
+        {selectedItem?.isSelf && (
+          <p className="text-xs text-foreground/60">
+            This is you. You can rename yourself, but you can&apos;t remove
+            yourself from your own household.
+          </p>
+        )}
+
         {selectedItem && !selectedItem.isMine && (
           <p className="text-xs text-foreground/60">
             {selectedItem.name} was added by {selectedItem.ownerUsername}. You can see their

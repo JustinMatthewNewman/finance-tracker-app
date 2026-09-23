@@ -25,6 +25,8 @@
 # rather than leaning on the column default keeps the tier a new account gets
 # visible here instead of buried in the schema.
 mutation CreateUserFromGoogle(
+  $userId: UUID!
+  $selfFamilyMemberId: UUID!
   $googleUid: String!
   $username: String!
   $email: String!
@@ -33,6 +35,11 @@ mutation CreateUserFromGoogle(
 ) @auth(level: NO_ACCESS) @transaction {
   userType_upsert(data: { name: $userTypeName })
   user_insert(data: {
+    # Supplied rather than generated, because two rows below have to point at
+    # it inside this same transaction and Data Connect cannot reference the
+    # result of an earlier field in the same document. The caller generates it
+    # with crypto.randomUUID — see app/api/auth/sync-user/route.ts.
+    id: $userId
     googleUid: $googleUid
     username: $username
     email: $email
@@ -56,6 +63,30 @@ mutation CreateUserFromGoogle(
     # nullable or carries a @default in schema.gql, so the defaults live in
     # exactly one place instead of being restated here and drifting.
     userSetting_on_user: {}
+  })
+  # THE ACCOUNT'S OWN ENTRY IN ITS HOUSEHOLD, created here for exactly the
+  # same reason the settings row is: so that it cannot fail to exist.
+  #
+  # A User is an account and a FamilyMember is a person whose money is
+  # tracked. Nothing connected the two, so a new account arrived at an empty
+  # sidebar and had to add itself before it could record a single
+  # transaction — the one person guaranteed to be in the household was the
+  # one person missing from it.
+  #
+  # `selfUserId` is what marks this row as representing the account rather
+  # than somebody the account merely tracks, and its @unique constraint is
+  # what stops a retried sign-in or a racing backfill producing two of them.
+  # `userId` is the same account because it also OWNS the row — the two
+  # columns mean different things and happen to coincide here alone.
+  #
+  # Not nested inside user_insert above: a nested row cannot set a second
+  # foreign key back to the parent it is being created under.
+  familyMember_insert(data: {
+    id: $selfFamilyMemberId
+    userId: $userId
+    selfUserId: $userId
+    name: $username
+    relationship: "Self"
   })
 }
 
@@ -239,6 +270,19 @@ mutation DeleteFamilyMember($familyMemberId: UUID!) @auth(level: USER) @transact
       id
       user @check(expr: "this != null && this.googleUid == auth.uid", message: "Not authorized to delete this family member") {
         googleUid
+      }
+      # An account cannot remove its own entry from its household.
+      #
+      # That row is created with the User and is what puts the signed-in
+      # person in their own sidebar; deleting it would leave them looking at a
+      # household they are not in, with no way back short of a database edit —
+      # nothing re-creates it, because CreateUserFromGoogle only ever runs
+      # once per account.
+      #
+      # Enforced here rather than only by hiding the button, because the UI is
+      # not the boundary: this mutation takes an id and is callable directly.
+      selfUser @check(expr: "this == null", message: "You can't remove yourself from your own household") {
+        id
       }
     }
   }
@@ -739,4 +783,26 @@ mutation RegenerateFamilyInviteCode($familyId: UUID!, $inviteCode: String!) @aut
 # the table is picked up by both paths without either being edited.
 mutation CreateUserSettingForUser($userId: UUID!) @auth(level: NO_ACCESS) {
   userSetting_insert(data: { userId: $userId })
+}
+
+# Backfills the self entry for an account created before CreateUserFromGoogle
+# made one. NO_ACCESS for the same reason as its neighbour: it takes a
+# $userId, and the route resolves that from a verified token itself.
+#
+# The @unique on selfUser means a duplicate attempt fails on the constraint
+# rather than producing a second self row, so the caller can treat that one
+# error as success — the same race the user and settings inserts already
+# handle.
+mutation CreateSelfFamilyMemberForUser(
+  $userId: UUID!
+  $familyMemberId: UUID!
+  $name: String!
+) @auth(level: NO_ACCESS) {
+  familyMember_insert(data: {
+    id: $familyMemberId
+    userId: $userId
+    selfUserId: $userId
+    name: $name
+    relationship: "Self"
+  })
 }

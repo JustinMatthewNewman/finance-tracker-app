@@ -213,7 +213,32 @@ type UserSetting @table {
 # immutable id and renaming stays a plain update rather than a data migration.
 type FamilyMember @table {
   id: UUID! @default(expr: "uuidV4()")
+  # Who OWNS this record — the account that created it and is the only one
+  # allowed to change it. Not "who this person is": see selfUser below.
   user: User!
+
+  # Set only on the one row that represents the signed-in account itself.
+  #
+  # WHY THIS EXISTS. A User is an account and a FamilyMember is a person whose
+  # money is tracked, and the two were entirely disjoint — so the person doing
+  # the tracking was the one person in the household not represented in it.
+  # A new account landed on an empty sidebar and had to add itself by hand
+  # before it could record anything, which reads as the app being broken
+  # rather than as a step.
+  #
+  # Created with the User, in the same transaction (see CreateUserFromGoogle),
+  # so "every account appears in its own household" is true by construction
+  # rather than by a UI remembering to do it.
+  #
+  # @unique is what makes that an invariant the database enforces: one self
+  # row per account, no duplicates from a retried sign-in or a backfill racing
+  # the insert. Nullable, and null is the normal case — every other member of
+  # the household is somebody who does not sign in. Postgres permits many
+  # NULLs under a unique index, so this constrains only the rows that set it.
+  #
+  # Nullable also makes it ON DELETE SET NULL rather than CASCADE, which is
+  # the harmless direction: it is `user` above that owns the row's lifetime.
+  selfUser: User @unique
   name: String!
   # Free text ("Spouse", "Daughter", "Self") rather than an enum table. There
   # is no application logic that branches on it — it's a label under the name

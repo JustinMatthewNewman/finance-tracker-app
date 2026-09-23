@@ -3,7 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 // Imported dynamically at runtime inside getAdminAuth, not statically here —
 // see the note in lib/firebase-admin.ts.
 import { getAdminAuth } from "@/lib/firebase-admin";
+import { randomUUID } from "node:crypto";
 import {
+  createSelfFamilyMemberForUser,
   createUserFromGoogle,
   createUserSettingForUser,
   getUserProvisioningByGoogleUid,
@@ -47,6 +49,29 @@ async function backfillUserSetting(userId: string): Promise<void> {
 }
 
 /**
+ * Adds the missing self entry for a pre-existing account — the row that puts
+ * the signed-in person into their own household's sidebar.
+ *
+ * Non-fatal for the same reason as the settings backfill: the person is
+ * waiting on a sign-in, and an account without this row still works, it just
+ * opens on an empty roster. Failing the sign-in over it would be strictly
+ * worse. The next sign-in tries again.
+ *
+ * The unique-violation swallow covers two concurrent sign-ins both seeing no
+ * row; `FamilyMember.selfUser` is @unique, so the loser's error means the row
+ * it wanted exists.
+ */
+async function backfillSelfFamilyMember(userId: string, name: string): Promise<void> {
+  try {
+    await createSelfFamilyMemberForUser({ userId, familyMemberId: randomUUID(), name });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (isUniqueViolation(message)) return;
+    console.error("[sync-user] could not backfill the self household entry:", message);
+  }
+}
+
+/**
  * Brings the signed-in account's database rows up to date: the `User` row and
  * the `UserSetting` row that hangs off it.
  *
@@ -57,6 +82,12 @@ async function backfillUserSetting(userId: string): Promise<void> {
  * The uid comes from verifying the ID token, never from the request body — a
  * caller must not be able to create or claim a row for somebody else's
  * account.
+ *
+ * Three rows make an account whole: the `User`, its `UserSetting`, and the
+ * `FamilyMember` that represents the person themselves in their own
+ * household. CreateUserFromGoogle creates all three in one transaction, so a
+ * new account needs nothing else here. The repairs below exist only for
+ * accounts created before each of those was added.
  *
  * WHY THIS HANDLES SETTINGS AT ALL. New accounts get their settings row from
  * the nested insert inside CreateUserFromGoogle, atomically, and need nothing
@@ -97,20 +128,40 @@ export async function POST(req: NextRequest) {
     const existing = await getUserProvisioningByGoogleUid({ googleUid });
 
     if (existing.data.user) {
-      // The account is here. The only thing that can still be missing is the
-      // settings row, and only for accounts predating the nested insert.
+      // The account is here. What can still be missing is one of the two rows
+      // that hang off it, and only for accounts predating each being created
+      // alongside the User. Both repairs are attempted independently — an
+      // account can be missing either, and stopping after the first would
+      // leave the second broken until the sign-in after next.
+      const repairs: string[] = [];
       if (!existing.data.user.userSetting) {
         await backfillUserSetting(existing.data.user.id);
-        return NextResponse.json({ success: true, created: false, repairedSettings: true });
+        repairs.push("settings");
       }
-      return NextResponse.json({ success: true, created: false });
+      if (!existing.data.user.selfMember) {
+        await backfillSelfFamilyMember(
+          existing.data.user.id,
+          // Prefer the name the token carries: it is the current one, and the
+          // stored username may predate a rename at the identity provider.
+          username || existing.data.user.username
+        );
+        repairs.push("selfMember");
+      }
+      return NextResponse.json({ success: true, created: false, repaired: repairs });
     }
 
     try {
-      // Creates the User and its UserSetting in one transaction — see the
-      // nested `userSetting_on_user` in CreateUserFromGoogle. Nothing else is
-      // needed for a brand-new account.
+      // Creates the User, its UserSetting and its self household entry in one
+      // transaction — see CreateUserFromGoogle. Nothing else is needed for a
+      // brand-new account.
+      //
+      // Both ids are generated here rather than by the database because rows
+      // inside that transaction have to reference the User being created, and
+      // Data Connect cannot refer to the result of an earlier field in the
+      // same document.
       await createUserFromGoogle({
+        userId: randomUUID(),
+        selfFamilyMemberId: randomUUID(),
         googleUid,
         username,
         email: email ?? "",

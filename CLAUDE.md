@@ -21,6 +21,15 @@ Next.js 16 App Router · React 19 · TypeScript · Tailwind v4 · HeroUI v3 ·
 
 ## Invariants — do not break these
 
+- **Every account appears in its own household.** `CreateUserFromGoogle`
+  creates three rows in one transaction: the `User`, its `UserSetting`, and a
+  `FamilyMember` with `selfUser` set to that account. `selfUser` is `@unique`,
+  so the "exactly one self entry per account" rule is the database's, not a
+  convention. `DeleteFamilyMember` refuses to remove it, and the sidebar
+  selects it by default. `sync-user` backfills it for older accounts.
+- **`FamilyMember.user` is the OWNER; `FamilyMember.selfUser` is WHO IT IS.**
+  They coincide on the self row and nowhere else. `isMine` gates editing;
+  `isSelf` marks the account's own entry. Don't collapse them.
 - **Projected and actual money live in ONE table.** A row the household
   expects (an upcoming bill, a paycheque due) is a `Transaction` with
   `status: "FORECASTED"`; something that happened is `POSTED`. There is no

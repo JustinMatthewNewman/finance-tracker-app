@@ -162,7 +162,13 @@ query GetUserAccessByGoogleUid($googleUid: String!) @auth(level: NO_ACCESS) {
 query GetUserProvisioningByGoogleUid($googleUid: String!) @auth(level: NO_ACCESS) {
   user(first: { where: { googleUid: { eq: $googleUid } } }) {
     id
+    username
     userSetting: userSetting_on_user {
+      id
+    }
+    # The account's own entry in its household. Absent only for accounts
+    # created before CreateUserFromGoogle made one; sync-user backfills it.
+    selfMember: familyMember_on_selfUser {
       id
     }
   }
@@ -242,6 +248,13 @@ query ListFamilyMembers($limit: Int = 500, $offset: Int = 0) @auth(level: USER) 
     user {
       id
       username
+    }
+    # Non-null on the one row that represents an account itself. The sidebar
+    # selects the caller's own entry by default and labels it; housemates'
+    # self entries carry their id, not the caller's, so comparing against
+    # this is what distinguishes "me" from "another account in my household".
+    selfUser {
+      id
     }
   }
 }

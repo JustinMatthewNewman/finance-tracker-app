@@ -44,6 +44,15 @@ export interface FamilyMemberData {
    * authorization error for pressing a button the app offered them.
    */
   isMine: boolean;
+  /**
+   * Whether this row represents the signed-in account itself, rather than
+   * somebody they merely track.
+   *
+   * Exactly one row in the household can be true for a given viewer. A
+   * housemate's own self entry has `selfUser` set too, but to *their* id —
+   * so this compares against the caller's, not merely against null.
+   */
+  isSelf: boolean;
 }
 
 function toFamilyMemberData(
@@ -65,6 +74,9 @@ function toFamilyMemberData(
     // own id is still loading: treating an unknown owner as "mine" would
     // flash editable controls onto somebody else's row.
     isMine: !!myUserId && row.user.id === myUserId,
+    // Compared against the caller's id rather than merely checked for
+    // presence: a housemate's own self entry also has selfUser set, to theirs.
+    isSelf: !!myUserId && row.selfUser?.id === myUserId,
   }));
 }
 
@@ -216,5 +228,15 @@ export function useFamilyMembers() {
     deleteFamilyMember,
     /** The caller's database row id, which transactions must be written with. */
     myUserId,
+    /**
+     * The caller's own entry in the household — what the sidebar selects by
+     * default.
+     *
+     * Null only while the roster is still loading, or for an account created
+     * before this row existed and whose next sign-in has not backfilled it
+     * yet (see app/api/auth/sync-user/route.ts). Callers must treat null as
+     * "not yet", not as "there isn't one".
+     */
+    selfMemberId: familyMembers.find((m) => m.isSelf)?.id ?? null,
   };
 }
