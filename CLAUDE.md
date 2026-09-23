@@ -30,6 +30,15 @@ Next.js 16 App Router · React 19 · TypeScript · Tailwind v4 · HeroUI v3 ·
 - **`FamilyMember.user` is the OWNER; `FamilyMember.selfUser` is WHO IT IS.**
   They coincide on the self row and nowhere else. `isMine` gates editing;
   `isSelf` marks the account's own entry. Don't collapse them.
+- **A recurring projection is a RULE, expanded — not rows.** One row holds
+  the first occurrence; `recurrenceEndsOn` bounds it (null = indefinitely);
+  `lib/recurrence.ts` expands it over the visible range. Two reads are needed
+  (`ListMyTransactionsByDateRange` + `ListMyRecurringProjections`) because a
+  rule's row sits on its start date, not in the month you're looking at.
+- **Expansion overwrites `occurredOn`.** Correct for display, wrong for
+  writes. Anything editing a transaction must pass it through `ruleRowOf()`
+  first, or it moves the whole series' start onto the clicked occurrence.
+  `occurrenceKey` — not `id` — is the React key; `id` stays the real row.
 - **Projected and actual money live in ONE table.** A row the household
   expects (an upcoming bill, a paycheque due) is a `Transaction` with
   `status: "FORECASTED"`; something that happened is `POSTED`. There is no
@@ -140,3 +149,4 @@ throw, it permits, and that is indistinguishable from success everywhere else.
 - `lib/inviteCode.ts` — invite codes are a capability, not an id: CSPRNG only
 - `lib/familyStatus.ts` — the four join-request states
 - `lib/transactionKind.ts` — projected vs. actual (`source`, `status`)
+- `lib/recurrence.ts` — repeat intervals, end dates, month-clamped expansion

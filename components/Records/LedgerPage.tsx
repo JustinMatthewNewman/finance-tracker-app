@@ -11,7 +11,8 @@ import AmbientBackground from "@/components/AmbientBackground";
 import { RecordsTable, type RecordColumn, type RecordGroup } from "@/components/Records/RecordsTable";
 import { RecordsTableControls, type ColumnOption } from "@/components/Records/RecordsTableControls";
 import { TransactionForm } from "@/components/Finance/TransactionForm";
-import type { Transaction, TransactionInput } from "@/hooks/useTransactions";
+import { ruleRowOf, type Transaction, type TransactionInput } from "@/hooks/useTransactions";
+import { RECURRENCE_LABELS, toRecurrence } from "@/lib/recurrence";
 import { DEFAULT_CURRENCY, formatMoney, isCurrencyCode, type Direction } from "@/lib/money";
 import { currentMonthKey, formatDayHeading, type MonthKey } from "@/lib/monthRange";
 import { normalizeHexColor } from "@/lib/entityColor";
@@ -174,7 +175,20 @@ export function LedgerPage({
       recurrence: {
         key: "recurrence",
         label: "Repeats",
-        render: (r) => (r.recurrence ? <Chip size="sm">{r.recurrence}</Chip> : "—"),
+        render: (r) => {
+          const every = toRecurrence(r.recurrence);
+          if (!every) return "—";
+          return (
+            <span className="flex flex-col">
+              <Chip size="sm">{RECURRENCE_LABELS[every]}</Chip>
+              {r.status === "FORECASTED" && (
+                <span className="mt-0.5 text-xs text-foreground/50">
+                  {r.recurrenceEndsOn ? `until ${r.recurrenceEndsOn}` : "no end date"}
+                </span>
+              )}
+            </span>
+          );
+        },
       },
       recordedBy: { key: "recordedBy", label: "Recorded by", render: (r) => r.ownerUsername },
       actions: {
@@ -183,44 +197,59 @@ export function LedgerPage({
         // Every control here is gated on `isMine`. Household reads are wider
         // than household writes, so these lists include a housemate's rows —
         // and each of these mutations would be refused at its `@check`.
-        render: (r) =>
-          !r.isMine ? (
-            <span className="text-xs text-foreground/40">{r.ownerUsername}&apos;s</span>
-          ) : (
+        render: (r) => {
+          if (!r.isMine) {
+            return <span className="text-xs text-foreground/40">{r.ownerUsername}&apos;s</span>;
+          }
+          // A repeating projection is a rule, not an entry, so the per-entry
+          // actions do not apply to it. "Mark received" in particular has no
+          // meaning: ticking off one fortnight's paycheque would have to tick
+          // off the rule that produces all of them. Recording that a specific
+          // one arrived is adding an actual transaction, which is what the
+          // Add button is for.
+          const isRule = r.status === "FORECASTED" && !!toRecurrence(r.recurrence);
+          const busy = busyId === r.occurrenceKey;
+          return (
             <div className="flex flex-wrap gap-1">
+              {!isRule && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  isDisabled={busy}
+                  onPress={() =>
+                    void runRowAction(r.occurrenceKey, () =>
+                      r.status === "FORECASTED" ? markPosted(r.id) : markProjected(r.id)
+                    )
+                  }
+                >
+                  {r.status === "FORECASTED" ? markLabel : "Undo"}
+                </Button>
+              )}
               <Button
                 size="sm"
                 variant="ghost"
-                isDisabled={busyId === r.id}
-                onPress={() =>
-                  void runRowAction(r.id, () =>
-                    r.status === "FORECASTED" ? markPosted(r.id) : markProjected(r.id)
-                  )
-                }
-              >
-                {r.status === "FORECASTED" ? markLabel : "Undo"}
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                isDisabled={busyId === r.id}
+                isDisabled={busy}
                 onPress={() => {
-                  setEditing(r);
+                  // ruleRowOf, not r: expansion overwrote occurredOn with
+                  // this occurrence's day, and saving that would drag the
+                  // whole series' start date onto whichever one was clicked.
+                  setEditing(ruleRowOf(r));
                   setIsFormOpen(true);
                 }}
               >
-                Edit
+                {isRule ? "Edit series" : "Edit"}
               </Button>
               <Button
                 size="sm"
                 variant="ghost"
-                isDisabled={busyId === r.id}
-                onPress={() => void runRowAction(r.id, () => remove(r.id))}
+                isDisabled={busy}
+                onPress={() => void runRowAction(r.occurrenceKey, () => remove(r.id))}
               >
-                Delete
+                {isRule ? "Delete series" : "Delete"}
               </Button>
             </div>
-          ),
+          );
+        },
       },
     };
     // Driven by ALL_COLUMNS rather than by the Set, so on-screen order is the
@@ -304,7 +333,7 @@ export function LedgerPage({
               grandTotalMinor={totals.expectedMinor}
               currency={currency}
               groupColor={(g) => colorByMember.get(g.id) ?? null}
-              rowKey={(r) => r.id}
+              rowKey={(r) => r.occurrenceKey}
               emptyMessage={loading ? "Loading…" : emptyMessage}
               grandTotalLabel="Expected total"
             />

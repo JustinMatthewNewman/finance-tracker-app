@@ -307,6 +307,7 @@ query ListTransactionsByFamilyMember(
     merchant
     method
     recurrence
+    recurrenceEndsOn
     source
     status
     createdAt
@@ -351,6 +352,7 @@ query ListMyTransactions($limit: Int = 500, $offset: Int = 0) @auth(level: USER)
     merchant
     method
     recurrence
+    recurrenceEndsOn
     source
     status
     createdAt
@@ -405,6 +407,7 @@ query ListMyTransactionsByDateRange(
     merchant
     method
     recurrence
+    recurrenceEndsOn
     source
     status
     createdAt
@@ -520,6 +523,87 @@ query GetMyJoinRequests @auth(level: USER) {
       ownerUser {
         username
       }
+    }
+  }
+}
+
+
+# Recurring projections that could touch a given range, WHEREVER their first
+# occurrence sits.
+#
+# WHY THIS CANNOT JUST BE ListMyTransactionsByDateRange. A recurring
+# projection is a rule, and the row stores only its FIRST occurrence. A
+# fortnightly paycheque set up in September is a row dated in September; ask
+# the range query for December and it returns nothing, and December's calendar
+# shows no paycheques. The rule has to be fetched by whether its SERIES
+# overlaps the range, which is a different question from where its row sits.
+#
+# The two halves of that question:
+#   occurredOn le $rangeEnd    — it has started by the time the range ends
+#   ends is null OR ge $rangeStart — it has not already finished
+#
+# `recurrence: { isNull: false }` restricts this to rules; a one-off
+# projection is already covered by the range query. Callers fetch both and
+# drop duplicates by id, since a rule whose first occurrence happens to fall
+# inside the range comes back from both.
+#
+# Same visibility rule as every other household read — see the top of this
+# file. It takes no family id, only the two range bounds.
+query ListMyRecurringProjections(
+  $rangeStart: Date!
+  $rangeEnd: Date!
+  $limit: Int = 500
+  $offset: Int = 0
+) @auth(level: USER) {
+  transactions(
+    where: {
+      _and: [
+        { status: { eq: "FORECASTED" } }
+        { recurrence: { isNull: false } }
+        { occurredOn: { le: $rangeEnd } }
+        {
+          _or: [
+            { recurrenceEndsOn: { isNull: true } }
+            { recurrenceEndsOn: { ge: $rangeStart } }
+          ]
+        }
+        {
+          _or: [
+            { user: { googleUid: { eq_expr: "auth.uid" } } }
+            { user: { family: { users_on_family: { exist: { googleUid: { eq_expr: "auth.uid" } } } } } }
+          ]
+        }
+      ]
+    }
+    orderBy: [{ occurredOn: ASC }, { createdAt: DESC }]
+    limit: $limit
+    offset: $offset
+  ) {
+    id
+    amountMinor
+    direction
+    occurredOn
+    description
+    merchant
+    method
+    recurrence
+    recurrenceEndsOn
+    source
+    status
+    createdAt
+    familyMember {
+      id
+      name
+    }
+    category {
+      id
+      name
+      kind
+      color
+    }
+    user {
+      id
+      username
     }
   }
 }

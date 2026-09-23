@@ -91,6 +91,7 @@ export interface CreateTransactionVariables {
   merchant?: string | null;
   method?: string | null;
   recurrence?: string | null;
+  recurrenceEndsOn?: DateString | null;
   categoryName?: string | null;
   source?: string | null;
   status?: string | null;
@@ -371,6 +372,44 @@ export interface ListFamilyMembersVariables {
   offset?: number | null;
 }
 
+export interface ListMyRecurringProjectionsData {
+  transactions: ({
+    id: UUIDString;
+    amountMinor: number;
+    direction: string;
+    occurredOn: DateString;
+    description?: string | null;
+    merchant?: string | null;
+    method?: string | null;
+    recurrence?: string | null;
+    recurrenceEndsOn?: DateString | null;
+    source: string;
+    status: string;
+    createdAt: TimestampString;
+    familyMember: {
+      id: UUIDString;
+      name: string;
+    } & FamilyMember_Key;
+    category?: {
+      id: UUIDString;
+      name: string;
+      kind: string;
+      color?: string | null;
+    } & Category_Key;
+    user: {
+      id: UUIDString;
+      username: string;
+    } & User_Key;
+  } & Transaction_Key)[];
+}
+
+export interface ListMyRecurringProjectionsVariables {
+  rangeStart: DateString;
+  rangeEnd: DateString;
+  limit?: number | null;
+  offset?: number | null;
+}
+
 export interface ListMyTransactionsByDateRangeData {
   transactions: ({
     id: UUIDString;
@@ -381,6 +420,7 @@ export interface ListMyTransactionsByDateRangeData {
     merchant?: string | null;
     method?: string | null;
     recurrence?: string | null;
+    recurrenceEndsOn?: DateString | null;
     source: string;
     status: string;
     createdAt: TimestampString;
@@ -418,6 +458,7 @@ export interface ListMyTransactionsData {
     merchant?: string | null;
     method?: string | null;
     recurrence?: string | null;
+    recurrenceEndsOn?: DateString | null;
     source: string;
     status: string;
     createdAt: TimestampString;
@@ -453,6 +494,7 @@ export interface ListTransactionsByFamilyMemberData {
     merchant?: string | null;
     method?: string | null;
     recurrence?: string | null;
+    recurrenceEndsOn?: DateString | null;
     source: string;
     status: string;
     createdAt: TimestampString;
@@ -670,6 +712,7 @@ export interface UpdateTransactionClearCategoryVariables {
   merchant?: string | null;
   method?: string | null;
   recurrence?: string | null;
+  recurrenceEndsOn?: DateString | null;
   source?: string | null;
   status?: string | null;
 }
@@ -687,6 +730,7 @@ export interface UpdateTransactionVariables {
   merchant?: string | null;
   method?: string | null;
   recurrence?: string | null;
+  recurrenceEndsOn?: DateString | null;
   categoryName?: string | null;
   source?: string | null;
   status?: string | null;
@@ -958,4 +1002,9 @@ export function getMyFamilyDetail(options?: OperationOptions): Promise<ExecuteOp
 export function getMyJoinRequests(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<GetMyJoinRequestsData>>;
 /** Generated Node Admin SDK operation action function for the 'GetMyJoinRequests' Query. Allow users to pass in custom DataConnect instances. */
 export function getMyJoinRequests(options?: OperationOptions): Promise<ExecuteOperationResponse<GetMyJoinRequestsData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListMyRecurringProjections' Query. Allow users to execute without passing in DataConnect. */
+export function listMyRecurringProjections(dc: DataConnect, vars: ListMyRecurringProjectionsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListMyRecurringProjectionsData>>;
+/** Generated Node Admin SDK operation action function for the 'ListMyRecurringProjections' Query. Allow users to pass in custom DataConnect instances. */
+export function listMyRecurringProjections(vars: ListMyRecurringProjectionsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListMyRecurringProjectionsData>>;
 

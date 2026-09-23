@@ -7,14 +7,18 @@ import { useUserSettings } from "@/context/UserSettingsContext";
 import { useFamilyMembers, type FamilyMemberData } from "./useFamilyMembers";
 import { useTransactions, toTransaction, type Transaction, type TransactionInput } from "./useTransactions";
 import {
+  listMyRecurringProjections,
   listMyTransactionsByDateRange,
   markTransactionPosted,
   markTransactionProjected,
 } from "@/src/dataconnect-generated";
 import type {
+  ListMyRecurringProjectionsData,
+  ListMyRecurringProjectionsVariables,
   ListMyTransactionsByDateRangeData,
   ListMyTransactionsByDateRangeVariables,
 } from "@/src/dataconnect-generated";
+import { occurrencesInRange } from "@/lib/recurrence";
 import { fetchAllPages } from "@/lib/dataconnectPagination";
 import { monthRange, type MonthKey } from "@/lib/monthRange";
 import type { Minor } from "@/lib/money";
@@ -68,17 +72,67 @@ export function useHouseholdMonth(monthKey: MonthKey) {
     setLoading(true);
     setError(null);
     try {
-      const rows = await fetchAllPages<
-        ListMyTransactionsByDateRangeVariables,
-        ListMyTransactionsByDateRangeData["transactions"][number]
-      >(
-        (vars) =>
-          listMyTransactionsByDateRange(vars, { fetchPolicy: QueryFetchPolicy.SERVER_ONLY }).then(
-            (r) => r.data.transactions
-          ),
-        { startDate: range.startDate, endDate: range.endDate }
+      // TWO READS, because "what is in this month" and "what recurs into this
+      // month" are different questions. A recurring projection stores only its
+      // first occurrence, so a fortnightly paycheque set up in September is a
+      // September row — the range query alone would show December an empty
+      // calendar. See ListMyRecurringProjections in queries.gql.
+      const [rangeRows, ruleRows] = await Promise.all([
+        fetchAllPages<
+          ListMyTransactionsByDateRangeVariables,
+          ListMyTransactionsByDateRangeData["transactions"][number]
+        >(
+          (vars) =>
+            listMyTransactionsByDateRange(vars, { fetchPolicy: QueryFetchPolicy.SERVER_ONLY }).then(
+              (r) => r.data.transactions
+            ),
+          { startDate: range.startDate, endDate: range.endDate }
+        ),
+        fetchAllPages<
+          ListMyRecurringProjectionsVariables,
+          ListMyRecurringProjectionsData["transactions"][number]
+        >(
+          (vars) =>
+            listMyRecurringProjections(vars, { fetchPolicy: QueryFetchPolicy.SERVER_ONLY }).then(
+              (r) => r.data.transactions
+            ),
+          { rangeStart: range.startDate, rangeEnd: range.endDate }
+        ),
+      ]);
+
+      const rules = ruleRows.map((row) => toTransaction(row, myUserId));
+      const ruleIds = new Set(rules.map((r) => r.id));
+
+      // A rule whose first occurrence falls inside the range comes back from
+      // both queries. Drop it from the range half: the expansion below already
+      // produces that day, and keeping both would double the money.
+      const plain = rangeRows
+        .map((row) => toTransaction(row, myUserId))
+        .filter((t) => !ruleIds.has(t.id));
+
+      // One entry per day the rule falls on. `id` stays the rule's real row
+      // id on every one of them, so any mutation called with it addresses a
+      // row that exists; `occurrenceKey` is what distinguishes them on screen.
+      const expanded = rules.flatMap((rule) =>
+        occurrencesInRange(
+          {
+            occurredOn: rule.occurredOn,
+            recurrence: rule.recurrence,
+            recurrenceEndsOn: rule.recurrenceEndsOn,
+          },
+          range.startDate,
+          range.endDate
+        ).map((day) => ({
+          ...rule,
+          occurredOn: day,
+          occurrenceKey: `${rule.id}#${day}`,
+          // What occurredOn was before expansion overwrote it. ruleRowOf()
+          // uses this to hand the edit form the row as stored.
+          seriesStartsOn: rule.occurredOn,
+        }))
       );
-      setTransactions(rows.map((row) => toTransaction(row, myUserId)));
+
+      setTransactions([...plain, ...expanded]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load this month's records");
     } finally {

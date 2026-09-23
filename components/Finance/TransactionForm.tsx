@@ -12,6 +12,7 @@ import {
 } from "@/lib/money";
 import { toDateString } from "@/lib/monthRange";
 import { statusForSource } from "@/lib/transactionKind";
+import { countOccurrences, defaultRecurrenceEnd, isRecurrence } from "@/lib/recurrence";
 import type { TransactionInput } from "@/hooks/useTransactions";
 import type { Transaction } from "@/hooks/useTransactions";
 
@@ -89,6 +90,9 @@ export function TransactionForm({
   const [description, setDescription] = useState(existing?.description ?? "");
   const [method, setMethod] = useState(existing?.method ?? "");
   const [recurrence, setRecurrence] = useState(existing?.recurrence ?? "");
+  // "" means indefinitely. Kept as the raw input value rather than a Date so
+  // the field can be cleared, which is how somebody says "no end".
+  const [recurrenceEndsOn, setRecurrenceEndsOn] = useState(existing?.recurrenceEndsOn ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -112,6 +116,7 @@ export function TransactionForm({
       setDescription(existing?.description ?? "");
       setMethod(existing?.method ?? "");
       setRecurrence(existing?.recurrence ?? "");
+      setRecurrenceEndsOn(existing?.recurrenceEndsOn ?? "");
       setError(null);
     }
   }
@@ -135,6 +140,11 @@ export function TransactionForm({
       return;
     }
 
+    if (showsRepeatWindow && endsBeforeItStarts) {
+      setError("The repeat end date is before the first occurrence.");
+      return;
+    }
+
     setLoading(true);
     try {
       await onSubmit({
@@ -146,6 +156,11 @@ export function TransactionForm({
         description: description.trim() || null,
         method: method.trim() || null,
         recurrence: recurrence || null,
+        // Only meaningful on a repeating projection. Cleared otherwise so a
+        // row cannot carry an end date for a series it is not part of —
+        // switching a repeating projection back to one-off would otherwise
+        // leave a stale bound behind for the next person to puzzle over.
+        recurrenceEndsOn: showsRepeatWindow && recurrenceEndsOn ? recurrenceEndsOn : null,
         source,
         status: statusForSource(source),
       }, memberOptions ? familyMemberId : undefined);
@@ -162,6 +177,28 @@ export function TransactionForm({
   // payroll deduction against an earning one) is still expressible — which is
   // exactly why Transaction.direction is authoritative rather than derived
   // from the category. See the schema note on Category.kind.
+  // Repeating only means something for a projection — see the note on
+  // Transaction.recurrence in schema.gql.
+  const showsRepeatWindow = source === "FORECAST" && isRecurrence(recurrence);
+  const endsBeforeItStarts = !!recurrenceEndsOn && recurrenceEndsOn < occurredOn;
+
+  const occurrenceCount = showsRepeatWindow
+    ? countOccurrences({
+        occurredOn,
+        recurrence,
+        recurrenceEndsOn: recurrenceEndsOn || null,
+      })
+    : null;
+
+  // Says what the setting will actually produce, in entries rather than in
+  // dates — "repeats until 21 Mar" does not tell somebody whether that is
+  // three paycheques or thirty.
+  const repeatSummary = !recurrenceEndsOn
+    ? "Keeps repeating with no end date."
+    : endsBeforeItStarts
+      ? ""
+      : `${occurrenceCount} ${occurrenceCount === 1 ? "entry" : "entries"}, ending ${recurrenceEndsOn}.`;
+
   const suggested = categories.filter((c) => c.kind === direction);
   const others = categories.filter((c) => c.kind !== direction);
 
@@ -344,14 +381,57 @@ export function TransactionForm({
                   </option>
                 ))}
               </select>
-              {/* Says what this does and does not do. There is no recurrence
-                  engine yet (see Transaction.recurrence in schema.gql), and a
-                  label implying future rows will appear on their own would be
-                  a promise the app doesn't keep. */}
               <p className="mt-1 text-xs text-foreground/50">
-                Labels this as recurring. Future occurrences aren&apos;t generated yet.
+                {showsRepeatWindow
+                  ? "This will appear on the calendar on every matching day."
+                  : "Labels this as recurring. Only projections repeat on the calendar."}
               </p>
             </div>
+
+            {/* HOW LONG A PROJECTION KEEPS SHOWING.
+                Only for repeating projections: a one-off has nothing to
+                bound, and something that already happened happened once. */}
+            {showsRepeatWindow && (
+              <div>
+                <label className="text-sm font-semibold block mb-2" htmlFor="txn-repeat-until">
+                  Repeats until
+                </label>
+                <div className="flex flex-wrap items-center gap-2">
+                  <input
+                    id="txn-repeat-until"
+                    type="date"
+                    value={recurrenceEndsOn}
+                    min={occurredOn}
+                    onChange={(e) => setRecurrenceEndsOn(e.target.value)}
+                    className="flex-1 rounded-lg border border-default-200 bg-transparent px-3 py-2"
+                    disabled={loading}
+                  />
+                  {/* Clearing the field is how you say "no end", so there has
+                      to be something to clear it WITH — a date input offers no
+                      affordance of its own, and on several browsers no way to
+                      empty it by typing either. */}
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={recurrenceEndsOn ? "outline" : "secondary"}
+                    isDisabled={loading}
+                    onPress={() =>
+                      setRecurrenceEndsOn(
+                        recurrenceEndsOn ? "" : defaultRecurrenceEnd(occurredOn)
+                      )
+                    }
+                  >
+                    {recurrenceEndsOn ? "No end date" : "Set an end date"}
+                  </Button>
+                </div>
+                <p className="mt-1 text-xs text-foreground/50">{repeatSummary}</p>
+                {endsBeforeItStarts && (
+                  <p className="mt-1 text-xs text-danger">
+                    That&apos;s before the first one, so nothing would show.
+                  </p>
+                )}
+              </div>
+            )}
 
             <div className="flex gap-2 pt-4">
               <Button type="button" variant="outline" className="flex-1" onClick={onClose} isDisabled={loading}>

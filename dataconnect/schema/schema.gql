@@ -354,11 +354,40 @@ type Transaction @table {
   merchant: String
   # How the money moved ("Card", "Cash", "Transfer"). Free text, display only.
   method: String
-  # Set when this row was generated from a recurring rule rather than entered
-  # by hand — "MONTHLY", "WEEKLY", "BIWEEKLY", "YEARLY". Null means one-off.
-  # There is no recurrence engine yet; this records intent so one can be added
-  # without a migration.
+  # How often this repeats — "WEEKLY", "BIWEEKLY", "MONTHLY", "YEARLY". Null
+  # means one-off. Validated in lib/recurrence.ts.
+  #
+  # ON A PROJECTION THIS IS EXECUTED, NOT JUST RECORDED. A projected row that
+  # carries a recurrence is a RULE, not one entry: the app expands it into an
+  # occurrence on every matching day of whatever range is on screen. The row
+  # itself stores the FIRST occurrence in `occurredOn`.
+  #
+  # On a posted row it stays purely descriptive — "this was the monthly rent"
+  # — because something that already happened happened once. Only projections
+  # are expanded.
   recurrence: String
+
+  # How long a recurring projection keeps appearing. Null means indefinitely.
+  #
+  # THIS IS THE ONE COLUMN THAT ANSWERS "how long should this show for", and
+  # it is deliberately a property of the rule rather than a count of rows.
+  #
+  # The alternative was to materialise every occurrence as its own row at
+  # creation time. That is worse in every direction that matters here: it
+  # cannot express "indefinitely" at all (only "for N years", which is a lie
+  # with a number attached), a five-year weekly bill becomes 260 rows, and
+  # changing the end date turns into generating or deleting rows in bulk —
+  # each one a partial-failure mode, and each bulk write a place where the
+  # per-row ownership `@check` no longer applies. Expanding a single rule over
+  # the visible range has none of those properties: one row, one edit, one
+  # thing to delete, and a range nobody has to pre-decide.
+  #
+  # The cost, stated plainly: individual future occurrences are not rows, so
+  # they cannot be edited or ticked off one at a time. That is the right
+  # trade while these are forecasts. When Plaid starts writing actuals, the
+  # job becomes matching a real transaction against an occurrence, and THAT
+  # is when an occurrence needs its own identity.
+  recurrenceEndsOn: Date
 
   # --- Projected vs. actual ---
   #

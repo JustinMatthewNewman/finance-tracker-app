@@ -24,6 +24,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*GetFamilyByInviteCode*](#getfamilybyinvitecode)
   - [*GetMyFamilyDetail*](#getmyfamilydetail)
   - [*GetMyJoinRequests*](#getmyjoinrequests)
+  - [*ListMyRecurringProjections*](#listmyrecurringprojections)
 - [**Mutations**](#mutations)
   - [*CreateUserFromGoogle*](#createuserfromgoogle)
   - [*SetUserType*](#setusertype)
@@ -1081,6 +1082,7 @@ export interface ListTransactionsByFamilyMemberData {
     merchant?: string | null;
     method?: string | null;
     recurrence?: string | null;
+    recurrenceEndsOn?: DateString | null;
     source: string;
     status: string;
     createdAt: TimestampString;
@@ -1221,6 +1223,7 @@ export interface ListMyTransactionsData {
     merchant?: string | null;
     method?: string | null;
     recurrence?: string | null;
+    recurrenceEndsOn?: DateString | null;
     source: string;
     status: string;
     createdAt: TimestampString;
@@ -1365,6 +1368,7 @@ export interface ListMyTransactionsByDateRangeData {
     merchant?: string | null;
     method?: string | null;
     recurrence?: string | null;
+    recurrenceEndsOn?: DateString | null;
     source: string;
     status: string;
     createdAt: TimestampString;
@@ -1783,6 +1787,151 @@ console.log(data.familyJoinRequests);
 executeQuery(ref).then((response) => {
   const data = response.data;
   console.log(data.familyJoinRequests);
+});
+```
+
+## ListMyRecurringProjections
+You can execute the `ListMyRecurringProjections` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+listMyRecurringProjections(vars: ListMyRecurringProjectionsVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyRecurringProjectionsData, ListMyRecurringProjectionsVariables>;
+
+interface ListMyRecurringProjectionsRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListMyRecurringProjectionsVariables): QueryRef<ListMyRecurringProjectionsData, ListMyRecurringProjectionsVariables>;
+}
+export const listMyRecurringProjectionsRef: ListMyRecurringProjectionsRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+listMyRecurringProjections(dc: DataConnect, vars: ListMyRecurringProjectionsVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyRecurringProjectionsData, ListMyRecurringProjectionsVariables>;
+
+interface ListMyRecurringProjectionsRef {
+  ...
+  (dc: DataConnect, vars: ListMyRecurringProjectionsVariables): QueryRef<ListMyRecurringProjectionsData, ListMyRecurringProjectionsVariables>;
+}
+export const listMyRecurringProjectionsRef: ListMyRecurringProjectionsRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the listMyRecurringProjectionsRef:
+```typescript
+const name = listMyRecurringProjectionsRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `ListMyRecurringProjections` query requires an argument of type `ListMyRecurringProjectionsVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface ListMyRecurringProjectionsVariables {
+  rangeStart: DateString;
+  rangeEnd: DateString;
+  limit?: number | null;
+  offset?: number | null;
+}
+```
+### Return Type
+Recall that executing the `ListMyRecurringProjections` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `ListMyRecurringProjectionsData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface ListMyRecurringProjectionsData {
+  transactions: ({
+    id: UUIDString;
+    amountMinor: number;
+    direction: string;
+    occurredOn: DateString;
+    description?: string | null;
+    merchant?: string | null;
+    method?: string | null;
+    recurrence?: string | null;
+    recurrenceEndsOn?: DateString | null;
+    source: string;
+    status: string;
+    createdAt: TimestampString;
+    familyMember: {
+      id: UUIDString;
+      name: string;
+    } & FamilyMember_Key;
+    category?: {
+      id: UUIDString;
+      name: string;
+      kind: string;
+      color?: string | null;
+    } & Category_Key;
+    user: {
+      id: UUIDString;
+      username: string;
+    } & User_Key;
+  } & Transaction_Key)[];
+}
+```
+### Using `ListMyRecurringProjections`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, listMyRecurringProjections, ListMyRecurringProjectionsVariables } from '@financeconnect/generated';
+
+// The `ListMyRecurringProjections` query requires an argument of type `ListMyRecurringProjectionsVariables`:
+const listMyRecurringProjectionsVars: ListMyRecurringProjectionsVariables = {
+  rangeStart: ..., 
+  rangeEnd: ..., 
+  limit: ..., // optional
+  offset: ..., // optional
+};
+
+// Call the `listMyRecurringProjections()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await listMyRecurringProjections(listMyRecurringProjectionsVars);
+// Variables can be defined inline as well.
+const { data } = await listMyRecurringProjections({ rangeStart: ..., rangeEnd: ..., limit: ..., offset: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await listMyRecurringProjections(dataConnect, listMyRecurringProjectionsVars);
+
+console.log(data.transactions);
+
+// Or, you can use the `Promise` API.
+listMyRecurringProjections(listMyRecurringProjectionsVars).then((response) => {
+  const data = response.data;
+  console.log(data.transactions);
+});
+```
+
+### Using `ListMyRecurringProjections`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, listMyRecurringProjectionsRef, ListMyRecurringProjectionsVariables } from '@financeconnect/generated';
+
+// The `ListMyRecurringProjections` query requires an argument of type `ListMyRecurringProjectionsVariables`:
+const listMyRecurringProjectionsVars: ListMyRecurringProjectionsVariables = {
+  rangeStart: ..., 
+  rangeEnd: ..., 
+  limit: ..., // optional
+  offset: ..., // optional
+};
+
+// Call the `listMyRecurringProjectionsRef()` function to get a reference to the query.
+const ref = listMyRecurringProjectionsRef(listMyRecurringProjectionsVars);
+// Variables can be defined inline as well.
+const ref = listMyRecurringProjectionsRef({ rangeStart: ..., rangeEnd: ..., limit: ..., offset: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = listMyRecurringProjectionsRef(dataConnect, listMyRecurringProjectionsVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.transactions);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.transactions);
 });
 ```
 
@@ -3878,6 +4027,7 @@ export interface CreateTransactionVariables {
   merchant?: string | null;
   method?: string | null;
   recurrence?: string | null;
+  recurrenceEndsOn?: DateString | null;
   categoryName?: string | null;
   source?: string | null;
   status?: string | null;
@@ -3910,6 +4060,7 @@ const createTransactionVars: CreateTransactionVariables = {
   merchant: ..., // optional
   method: ..., // optional
   recurrence: ..., // optional
+  recurrenceEndsOn: ..., // optional
   categoryName: ..., // optional
   source: ..., // optional
   status: ..., // optional
@@ -3919,7 +4070,7 @@ const createTransactionVars: CreateTransactionVariables = {
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await createTransaction(createTransactionVars);
 // Variables can be defined inline as well.
-const { data } = await createTransaction({ userId: ..., familyMemberId: ..., amountMinor: ..., direction: ..., occurredOn: ..., createdAt: ..., description: ..., merchant: ..., method: ..., recurrence: ..., categoryName: ..., source: ..., status: ..., });
+const { data } = await createTransaction({ userId: ..., familyMemberId: ..., amountMinor: ..., direction: ..., occurredOn: ..., createdAt: ..., description: ..., merchant: ..., method: ..., recurrence: ..., recurrenceEndsOn: ..., categoryName: ..., source: ..., status: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -3952,6 +4103,7 @@ const createTransactionVars: CreateTransactionVariables = {
   merchant: ..., // optional
   method: ..., // optional
   recurrence: ..., // optional
+  recurrenceEndsOn: ..., // optional
   categoryName: ..., // optional
   source: ..., // optional
   status: ..., // optional
@@ -3960,7 +4112,7 @@ const createTransactionVars: CreateTransactionVariables = {
 // Call the `createTransactionRef()` function to get a reference to the mutation.
 const ref = createTransactionRef(createTransactionVars);
 // Variables can be defined inline as well.
-const ref = createTransactionRef({ userId: ..., familyMemberId: ..., amountMinor: ..., direction: ..., occurredOn: ..., createdAt: ..., description: ..., merchant: ..., method: ..., recurrence: ..., categoryName: ..., source: ..., status: ..., });
+const ref = createTransactionRef({ userId: ..., familyMemberId: ..., amountMinor: ..., direction: ..., occurredOn: ..., createdAt: ..., description: ..., merchant: ..., method: ..., recurrence: ..., recurrenceEndsOn: ..., categoryName: ..., source: ..., status: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -4021,6 +4173,7 @@ export interface UpdateTransactionVariables {
   merchant?: string | null;
   method?: string | null;
   recurrence?: string | null;
+  recurrenceEndsOn?: DateString | null;
   categoryName?: string | null;
   source?: string | null;
   status?: string | null;
@@ -4051,6 +4204,7 @@ const updateTransactionVars: UpdateTransactionVariables = {
   merchant: ..., // optional
   method: ..., // optional
   recurrence: ..., // optional
+  recurrenceEndsOn: ..., // optional
   categoryName: ..., // optional
   source: ..., // optional
   status: ..., // optional
@@ -4060,7 +4214,7 @@ const updateTransactionVars: UpdateTransactionVariables = {
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await updateTransaction(updateTransactionVars);
 // Variables can be defined inline as well.
-const { data } = await updateTransaction({ transactionId: ..., amountMinor: ..., direction: ..., occurredOn: ..., description: ..., merchant: ..., method: ..., recurrence: ..., categoryName: ..., source: ..., status: ..., });
+const { data } = await updateTransaction({ transactionId: ..., amountMinor: ..., direction: ..., occurredOn: ..., description: ..., merchant: ..., method: ..., recurrence: ..., recurrenceEndsOn: ..., categoryName: ..., source: ..., status: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -4091,6 +4245,7 @@ const updateTransactionVars: UpdateTransactionVariables = {
   merchant: ..., // optional
   method: ..., // optional
   recurrence: ..., // optional
+  recurrenceEndsOn: ..., // optional
   categoryName: ..., // optional
   source: ..., // optional
   status: ..., // optional
@@ -4099,7 +4254,7 @@ const updateTransactionVars: UpdateTransactionVariables = {
 // Call the `updateTransactionRef()` function to get a reference to the mutation.
 const ref = updateTransactionRef(updateTransactionVars);
 // Variables can be defined inline as well.
-const ref = updateTransactionRef({ transactionId: ..., amountMinor: ..., direction: ..., occurredOn: ..., description: ..., merchant: ..., method: ..., recurrence: ..., categoryName: ..., source: ..., status: ..., });
+const ref = updateTransactionRef({ transactionId: ..., amountMinor: ..., direction: ..., occurredOn: ..., description: ..., merchant: ..., method: ..., recurrence: ..., recurrenceEndsOn: ..., categoryName: ..., source: ..., status: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -4160,6 +4315,7 @@ export interface UpdateTransactionClearCategoryVariables {
   merchant?: string | null;
   method?: string | null;
   recurrence?: string | null;
+  recurrenceEndsOn?: DateString | null;
   source?: string | null;
   status?: string | null;
 }
@@ -4189,6 +4345,7 @@ const updateTransactionClearCategoryVars: UpdateTransactionClearCategoryVariable
   merchant: ..., // optional
   method: ..., // optional
   recurrence: ..., // optional
+  recurrenceEndsOn: ..., // optional
   source: ..., // optional
   status: ..., // optional
 };
@@ -4197,7 +4354,7 @@ const updateTransactionClearCategoryVars: UpdateTransactionClearCategoryVariable
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await updateTransactionClearCategory(updateTransactionClearCategoryVars);
 // Variables can be defined inline as well.
-const { data } = await updateTransactionClearCategory({ transactionId: ..., amountMinor: ..., direction: ..., occurredOn: ..., description: ..., merchant: ..., method: ..., recurrence: ..., source: ..., status: ..., });
+const { data } = await updateTransactionClearCategory({ transactionId: ..., amountMinor: ..., direction: ..., occurredOn: ..., description: ..., merchant: ..., method: ..., recurrence: ..., recurrenceEndsOn: ..., source: ..., status: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -4228,6 +4385,7 @@ const updateTransactionClearCategoryVars: UpdateTransactionClearCategoryVariable
   merchant: ..., // optional
   method: ..., // optional
   recurrence: ..., // optional
+  recurrenceEndsOn: ..., // optional
   source: ..., // optional
   status: ..., // optional
 };
@@ -4235,7 +4393,7 @@ const updateTransactionClearCategoryVars: UpdateTransactionClearCategoryVariable
 // Call the `updateTransactionClearCategoryRef()` function to get a reference to the mutation.
 const ref = updateTransactionClearCategoryRef(updateTransactionClearCategoryVars);
 // Variables can be defined inline as well.
-const ref = updateTransactionClearCategoryRef({ transactionId: ..., amountMinor: ..., direction: ..., occurredOn: ..., description: ..., merchant: ..., method: ..., recurrence: ..., source: ..., status: ..., });
+const ref = updateTransactionClearCategoryRef({ transactionId: ..., amountMinor: ..., direction: ..., occurredOn: ..., description: ..., merchant: ..., method: ..., recurrence: ..., recurrenceEndsOn: ..., source: ..., status: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);

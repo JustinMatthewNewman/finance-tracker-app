@@ -269,6 +269,41 @@ their local state optimistically — so toggling a setting looked like it saved
 right up until the page was reloaded. `sync-user` backfills the row for
 accounts created before this existed.
 
+### Recurring projections
+
+A projected row carrying a `recurrence` is a **rule**, not an entry: it stores
+its first occurrence in `occurredOn`, and `recurrenceEndsOn` says how long it
+keeps appearing — null meaning indefinitely. `lib/recurrence.ts` expands it
+over whatever range is on screen.
+
+This is expanded rather than materialised into one row per occurrence, and the
+trade is worth stating. Materialising cannot express "indefinitely" at all
+(only "for N years", which is a lie with a number attached), turns a five-year
+weekly bill into 260 rows, and makes changing the end date a bulk generate or
+delete — every one a partial-failure mode, and every bulk write a place where
+the per-row ownership `@check` no longer applies. One rule expanded over a
+range has none of those properties. What it costs is per-occurrence identity;
+see "What was intentionally left out".
+
+Two consequences worth knowing before changing this code:
+
+- **Two reads, not one.** A rule stores only its first occurrence, so a
+  fortnightly paycheque set up in September is a September row and the
+  date-range query alone would show December an empty calendar.
+  `ListMyRecurringProjections` asks the other question — whose *series*
+  overlaps this range — and `useHouseholdMonth` merges both, dropping
+  duplicates by id.
+- **Expansion overwrites `occurredOn`** with the occurrence's own day, because
+  that is what every calendar bucket, date column and sort needs. That means
+  `occurredOn` on an expanded entry is no longer what the row stores, so
+  anything about to *write* it must go through `ruleRowOf()`. Skipping that
+  drags the whole series' start date onto whichever occurrence was clicked.
+
+Monthly and yearly rules clamp to the end of short months: a bill due on the
+31st is due on the 28th in February, not the 3rd of March, and it returns to
+the 31st in March rather than sticking at 28. `lib/recurrence.test.ts` pins
+that down, leap years included.
+
 ### Income, Expenses and Calendar
 
 All three are household-wide views of the same `Transaction` rows for one
@@ -370,8 +405,12 @@ because the tier system is kept, but nothing calls them yet.
 - **`Reports` is dark-launched.** The `Feature` row is seeded and granted to
   nobody. That's the intended way to ship an unfinished feature: no code
   branch, no flag file, just an absent row in `UserTypeFeature`.
-- **Recurrence is recorded, not executed.** `Transaction.recurrence` labels a
-  row as recurring; nothing generates future occurrences yet. The form says so.
+- **Per-occurrence editing of a repeating projection.** A recurring
+  projection is one row expanded over the visible range, so its individual
+  future occurrences are not rows and cannot be edited or ticked off one at a
+  time. Editing or deleting one acts on the whole series, and the buttons say
+  so. That becomes worth changing when Plaid starts writing actuals and the
+  job turns into matching a real transaction against a specific occurrence.
 
 ## Scripts
 

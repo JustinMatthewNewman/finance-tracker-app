@@ -1042,6 +1042,15 @@ extend type Transaction {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Transaction.occurredOn", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Transaction` table where the `recurrenceEndsOn` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  recurrenceEndsOn_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Transaction.recurrenceEndsOn", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Transaction` table where the `recurrence` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   recurrence_count(
@@ -1108,6 +1117,10 @@ extend type Transaction {
   """
   occurredOn_min: Date @fdc_generated(from: "Transaction.occurredOn", purpose: QUERY_MIN)
   """
+  ✨ Minimum of the `recurrenceEndsOn` field in the `Transaction` table.
+  """
+  recurrenceEndsOn_min: Date @fdc_generated(from: "Transaction.recurrenceEndsOn", purpose: QUERY_MIN)
+  """
   ✨ Maximum of the `amountMinor` field in the `Transaction` table.
   """
   amountMinor_max: Int @fdc_generated(from: "Transaction.amountMinor", purpose: QUERY_MAX)
@@ -1119,6 +1132,10 @@ extend type Transaction {
   ✨ Maximum of the `occurredOn` field in the `Transaction` table.
   """
   occurredOn_max: Date @fdc_generated(from: "Transaction.occurredOn", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `recurrenceEndsOn` field in the `Transaction` table.
+  """
+  recurrenceEndsOn_max: Date @fdc_generated(from: "Transaction.recurrenceEndsOn", purpose: QUERY_MAX)
   """
   A generated field that is used for caching results in SDKs.
   """
