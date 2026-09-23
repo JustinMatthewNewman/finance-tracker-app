@@ -1,4 +1,4 @@
-const { createUserFromGoogleRef, setUserTypeRef, selectMyColorSchemeRef, clearMyColorSchemeRef, selectMyPerformanceModeRef, selectMyBackgroundOpacityRef, selectMyExternalAccountLinkTemplateRef, selectMyCardStyleRef, selectMySquareCornersRef, selectMyBordersEnabledRef, selectMyCategoryColorsEnabledRef, selectMyCurrencyRef, createFamilyMemberRef, updateFamilyMemberRef, renameFamilyMemberRef, deleteFamilyMemberRef, upsertCategoryRef, updateCategoryRef, createTransactionRef, updateTransactionRef, updateTransactionClearCategoryRef, markTransactionPostedRef, markTransactionProjectedRef, deleteTransactionRef, createFamilyRef, requestToJoinFamilyRef, approveJoinRequestRef, denyJoinRequestRef, cancelMyJoinRequestRef, leaveMyFamilyRef, regenerateFamilyInviteCodeRef, createUserSettingForUserRef, createSelfFamilyMemberForUserRef, listUsersRef, getMyUserRef, listColorSchemesRef, listUserTypesRef, getUserAccessByGoogleUidRef, getUserProvisioningByGoogleUidRef, listFamilyMembersRef, listCategoriesRef, listTransactionsByFamilyMemberRef, listMyTransactionsRef, listMyTransactionsByDateRangeRef, getFamilyByInviteCodeRef, getMyFamilyDetailRef, getMyJoinRequestsRef, connectorConfig } = require('../index.cjs.js');
+const { createUserFromGoogleRef, setUserTypeRef, selectMyColorSchemeRef, clearMyColorSchemeRef, selectMyPerformanceModeRef, selectMyBackgroundOpacityRef, selectMyExternalAccountLinkTemplateRef, selectMyCardStyleRef, selectMySquareCornersRef, selectMyBordersEnabledRef, selectMyCategoryColorsEnabledRef, selectMyCurrencyRef, createFamilyMemberRef, updateFamilyMemberRef, renameFamilyMemberRef, deleteFamilyMemberRef, upsertCategoryRef, updateCategoryRef, createTransactionRef, updateTransactionRef, updateTransactionClearCategoryRef, markTransactionPostedRef, markTransactionProjectedRef, deleteTransactionRef, createFamilyRef, requestToJoinFamilyRef, approveJoinRequestRef, denyJoinRequestRef, cancelMyJoinRequestRef, leaveMyFamilyRef, regenerateFamilyInviteCodeRef, createUserSettingForUserRef, createSelfFamilyMemberForUserRef, listUsersRef, getMyUserRef, listColorSchemesRef, listUserTypesRef, getUserAccessByGoogleUidRef, getUserProvisioningByGoogleUidRef, listFamilyMembersRef, listCategoriesRef, listTransactionsByFamilyMemberRef, listMyTransactionsRef, listMyTransactionsByDateRangeRef, getFamilyByInviteCodeRef, getMyFamilyDetailRef, getMyJoinRequestsRef, listMyRecurringProjectionsRef, connectorConfig } = require('../index.cjs.js');
 const { validateArgs, CallerSdkTypeEnum } = require('firebase/data-connect');
 const { useDataConnectQuery, useDataConnectMutation, validateReactArgs } = require('@tanstack-query-firebase/react/data-connect');
 
@@ -348,5 +348,11 @@ exports.useGetMyFamilyDetail = function useGetMyFamilyDetail(dcOrOptions, option
 exports.useGetMyJoinRequests = function useGetMyJoinRequests(dcOrOptions, options) {
   const { dc: dcInstance, options: inputOpts } = validateReactArgs(connectorConfig, dcOrOptions, options);
   const ref = getMyJoinRequestsRef(dcInstance);
+  return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+exports.useListMyRecurringProjections = function useListMyRecurringProjections(dcOrVars, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateReactArgs(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  const ref = listMyRecurringProjectionsRef(dcInstance, inputVars);
   return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
 }

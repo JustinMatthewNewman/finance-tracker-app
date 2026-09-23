@@ -684,3 +684,18 @@ exports.getMyJoinRequests = function getMyJoinRequests(dcOrOptions, options) {
   return executeQuery(getMyJoinRequestsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 ;
+
+const listMyRecurringProjectionsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'ListMyRecurringProjections', inputVars);
+}
+listMyRecurringProjectionsRef.operationName = 'ListMyRecurringProjections';
+exports.listMyRecurringProjectionsRef = listMyRecurringProjectionsRef;
+
+exports.listMyRecurringProjections = function listMyRecurringProjections(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listMyRecurringProjectionsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;

@@ -11,7 +11,8 @@ import { useUserSettings } from "@/context/UserSettingsContext";
 import { useHouseholdMonth } from "@/hooks/useHouseholdMonth";
 import AmbientBackground from "@/components/AmbientBackground";
 import { TransactionForm } from "@/components/Finance/TransactionForm";
-import type { Transaction, TransactionInput } from "@/hooks/useTransactions";
+import { ruleRowOf, type Transaction, type TransactionInput } from "@/hooks/useTransactions";
+import { RECURRENCE_LABELS, toRecurrence } from "@/lib/recurrence";
 import { effectiveColor } from "@/lib/entityColor";
 import {
   DEFAULT_CURRENCY,
@@ -49,6 +50,8 @@ const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 interface DayItem {
   id: string;
+  /** Unique per occurrence — a repeating rule renders many times per month. */
+  key: string;
   label: string;
   amountMinor: Minor;
   direction: "INCOME" | "EXPENSE";
@@ -130,6 +133,7 @@ function CalendarPage() {
       const projected = txn.status === "FORECASTED";
       day.items.push({
         id: txn.id,
+        key: txn.occurrenceKey,
         label: txn.description || txn.merchant || txn.category?.name || "Transaction",
         amountMinor: txn.amountMinor,
         direction: txn.direction,
@@ -150,7 +154,9 @@ function CalendarPage() {
       // Net of what has ACTUALLY happened. Projections are shown beside this
       // figure, never folded into it.
       day.netMinor = day.incomeMinor - day.expenseMinor;
-      day.items.sort((a, b) => Number(a.projected) - Number(b.projected) || b.amountMinor - a.amountMinor);
+      day.items.sort(
+        (a, b) => Number(a.projected) - Number(b.projected) || b.amountMinor - a.amountMinor
+      );
     }
     return map;
   }, [transactions]);
@@ -340,7 +346,7 @@ function CalendarPage() {
                       ) : (
                         summary!.items.map((item) => (
                           <div
-                            key={item.id}
+                            key={item.key}
                             className="flex min-w-0 items-center gap-1 text-[10px] leading-tight"
                           >
                             {/* A projected item gets a hollow ring; something
@@ -435,7 +441,7 @@ function CalendarPage() {
                   <div className="flex flex-col gap-1">
                     {selected.items.map((item) => (
                       <div
-                        key={item.id}
+                        key={item.key}
                         className="flex flex-wrap items-center gap-3 rounded-md px-2 py-1.5 text-sm"
                       >
                         <span
@@ -466,6 +472,18 @@ function CalendarPage() {
                         {item.projected && (
                           <Chip size="sm" color="warning">Projected</Chip>
                         )}
+                        {/* Says WHY this is on a day nobody typed it into,
+                            and for how long it will keep turning up — which
+                            is the question a repeating item raises the moment
+                            it appears on a date you did not choose. */}
+                        {toRecurrence(item.txn.recurrence) && item.projected && (
+                          <Chip size="sm">
+                            {RECURRENCE_LABELS[toRecurrence(item.txn.recurrence)!]}
+                            {item.txn.recurrenceEndsOn
+                              ? ` · until ${item.txn.recurrenceEndsOn}`
+                              : " · no end"}
+                          </Chip>
+                        )}
                         <Chip size="sm">{item.direction === "INCOME" ? "In" : "Out"}</Chip>
                         <span
                           className={`shrink-0 tabular-nums ${
@@ -483,43 +501,57 @@ function CalendarPage() {
                             everywhere else: these rows include a housemate's,
                             and each mutation would be refused at its @check. */}
                         {item.isMine ? (
-                          <div className="flex gap-1">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              isDisabled={busyId === item.id}
-                              onPress={() =>
-                                void runRowAction(item.id, () =>
-                                  item.projected ? markPosted(item.id) : markProjected(item.id)
-                                )
-                              }
-                            >
-                              {item.projected
-                                ? item.direction === "INCOME"
-                                  ? "Mark received"
-                                  : "Mark paid"
-                                : "Undo"}
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              isDisabled={busyId === item.id}
-                              onPress={() => {
-                                setEditing(item.txn);
-                                setFormDay(selectedDay);
-                              }}
-                            >
-                              Edit
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              isDisabled={busyId === item.id}
-                              onPress={() => void runRowAction(item.id, () => remove(item.id))}
-                            >
-                              Delete
-                            </Button>
-                          </div>
+                          (() => {
+                            // A repeating projection is a rule rather than an
+                            // entry — see the note in LedgerPage. Marking one
+                            // occurrence received would have to mark the rule
+                            // that generates all of them.
+                            const isRule = item.projected && !!toRecurrence(item.txn.recurrence);
+                            const busy = busyId === item.key;
+                            return (
+                              <div className="flex gap-1">
+                                {!isRule && (
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    isDisabled={busy}
+                                    onPress={() =>
+                                      void runRowAction(item.key, () =>
+                                        item.projected ? markPosted(item.id) : markProjected(item.id)
+                                      )
+                                    }
+                                  >
+                                    {item.projected
+                                      ? item.direction === "INCOME"
+                                        ? "Mark received"
+                                        : "Mark paid"
+                                      : "Undo"}
+                                  </Button>
+                                )}
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  isDisabled={busy}
+                                  onPress={() => {
+                                    // The rule as stored, not this occurrence
+                                    // — otherwise saving moves the series.
+                                    setEditing(ruleRowOf(item.txn));
+                                    setFormDay(selectedDay);
+                                  }}
+                                >
+                                  {isRule ? "Edit series" : "Edit"}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  isDisabled={busy}
+                                  onPress={() => void runRowAction(item.key, () => remove(item.id))}
+                                >
+                                  {isRule ? "Delete series" : "Delete"}
+                                </Button>
+                              </div>
+                            );
+                          })()
                         ) : (
                           <span className="text-xs text-foreground/40">{item.txn.ownerUsername}&apos;s</span>
                         )}

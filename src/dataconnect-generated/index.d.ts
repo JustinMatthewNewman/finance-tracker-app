@@ -94,6 +94,7 @@ export interface CreateTransactionVariables {
   merchant?: string | null;
   method?: string | null;
   recurrence?: string | null;
+  recurrenceEndsOn?: DateString | null;
   categoryName?: string | null;
   source?: string | null;
   status?: string | null;
@@ -374,6 +375,44 @@ export interface ListFamilyMembersVariables {
   offset?: number | null;
 }
 
+export interface ListMyRecurringProjectionsData {
+  transactions: ({
+    id: UUIDString;
+    amountMinor: number;
+    direction: string;
+    occurredOn: DateString;
+    description?: string | null;
+    merchant?: string | null;
+    method?: string | null;
+    recurrence?: string | null;
+    recurrenceEndsOn?: DateString | null;
+    source: string;
+    status: string;
+    createdAt: TimestampString;
+    familyMember: {
+      id: UUIDString;
+      name: string;
+    } & FamilyMember_Key;
+    category?: {
+      id: UUIDString;
+      name: string;
+      kind: string;
+      color?: string | null;
+    } & Category_Key;
+    user: {
+      id: UUIDString;
+      username: string;
+    } & User_Key;
+  } & Transaction_Key)[];
+}
+
+export interface ListMyRecurringProjectionsVariables {
+  rangeStart: DateString;
+  rangeEnd: DateString;
+  limit?: number | null;
+  offset?: number | null;
+}
+
 export interface ListMyTransactionsByDateRangeData {
   transactions: ({
     id: UUIDString;
@@ -384,6 +423,7 @@ export interface ListMyTransactionsByDateRangeData {
     merchant?: string | null;
     method?: string | null;
     recurrence?: string | null;
+    recurrenceEndsOn?: DateString | null;
     source: string;
     status: string;
     createdAt: TimestampString;
@@ -421,6 +461,7 @@ export interface ListMyTransactionsData {
     merchant?: string | null;
     method?: string | null;
     recurrence?: string | null;
+    recurrenceEndsOn?: DateString | null;
     source: string;
     status: string;
     createdAt: TimestampString;
@@ -456,6 +497,7 @@ export interface ListTransactionsByFamilyMemberData {
     merchant?: string | null;
     method?: string | null;
     recurrence?: string | null;
+    recurrenceEndsOn?: DateString | null;
     source: string;
     status: string;
     createdAt: TimestampString;
@@ -673,6 +715,7 @@ export interface UpdateTransactionClearCategoryVariables {
   merchant?: string | null;
   method?: string | null;
   recurrence?: string | null;
+  recurrenceEndsOn?: DateString | null;
   source?: string | null;
   status?: string | null;
 }
@@ -690,6 +733,7 @@ export interface UpdateTransactionVariables {
   merchant?: string | null;
   method?: string | null;
   recurrence?: string | null;
+  recurrenceEndsOn?: DateString | null;
   categoryName?: string | null;
   source?: string | null;
   status?: string | null;
@@ -1290,4 +1334,16 @@ export const getMyJoinRequestsRef: GetMyJoinRequestsRef;
 
 export function getMyJoinRequests(options?: ExecuteQueryOptions): QueryPromise<GetMyJoinRequestsData, undefined>;
 export function getMyJoinRequests(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<GetMyJoinRequestsData, undefined>;
+
+interface ListMyRecurringProjectionsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListMyRecurringProjectionsVariables): QueryRef<ListMyRecurringProjectionsData, ListMyRecurringProjectionsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListMyRecurringProjectionsVariables): QueryRef<ListMyRecurringProjectionsData, ListMyRecurringProjectionsVariables>;
+  operationName: string;
+}
+export const listMyRecurringProjectionsRef: ListMyRecurringProjectionsRef;
+
+export function listMyRecurringProjections(vars: ListMyRecurringProjectionsVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyRecurringProjectionsData, ListMyRecurringProjectionsVariables>;
+export function listMyRecurringProjections(dc: DataConnect, vars: ListMyRecurringProjectionsVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyRecurringProjectionsData, ListMyRecurringProjectionsVariables>;
 

@@ -372,11 +372,62 @@ await mustPass("alice undoes it", mutate(alice.token, "MarkTransactionProjected"
 bill = await findBill(alice.token);
 bill?.status === "FORECASTED" ? ok("back to FORECASTED") : bad("undo did not stick", JSON.stringify(bill));
 
-console.log("\n\x1b[1m8 · Writes did NOT widen\x1b[0m");
+console.log("\n\x1b[1m8 · Recurring projections reach months they were not created in\x1b[0m");
+// The case the range query alone cannot answer: a rule stores only its FIRST
+// occurrence, so a fortnightly paycheque set up in September is a September
+// row. Asking "what is in December" by date returns nothing; asking "whose
+// series overlaps December" has to return it.
+await mustPass("alice sets up a fortnightly paycheque from 4 Sep, until 31 Dec",
+  mutate(alice.token, "CreateTransaction", {
+    userId: alice.id, familyMemberId: memberId, amountMinor: 300000, direction: "INCOME",
+    occurredOn: "2026-09-04", createdAt: new Date().toISOString(), description: "Paycheque",
+    source: "FORECAST", status: "FORECASTED", recurrence: "BIWEEKLY", recurrenceEndsOn: "2026-12-31",
+  }));
+
+const rulesIn = async (token, rangeStart, rangeEnd) => {
+  const r = await query(token, "ListMyRecurringProjections", { rangeStart, rangeEnd });
+  return (r.data?.transactions ?? []).filter((t) => t.description === "Paycheque");
+};
+
+(await rulesIn(alice.token, "2026-12-01", "2026-12-31")).length === 1
+  ? ok("December finds the September rule")
+  : bad("December did not find the rule — the range query cannot do this alone");
+
+(await rulesIn(alice.token, "2026-09-01", "2026-09-30")).length === 1
+  ? ok("September finds it too")
+  : bad("September did not find the rule");
+
+// Past its end date it must stop being fetched at all, not merely stop being
+// drawn — the expansion is bounded client-side, but the read should be too.
+(await rulesIn(alice.token, "2027-03-01", "2027-03-31")).length === 0
+  ? ok("March 2027 finds nothing, because the series ended in December")
+  : bad("a finished series is still being fetched");
+
+// A rule with no end date is the "indefinitely" case, and must keep being
+// found however far out you look.
+await mustPass("alice sets up an open-ended monthly bill",
+  mutate(alice.token, "CreateTransaction", {
+    userId: alice.id, familyMemberId: memberId, amountMinor: 9900, direction: "EXPENSE",
+    occurredOn: "2026-09-28", createdAt: new Date().toISOString(), description: "Broadband",
+    source: "FORECAST", status: "FORECASTED", recurrence: "MONTHLY",
+  }));
+const farOut = await query(alice.token, "ListMyRecurringProjections", { rangeStart: "2031-06-01", rangeEnd: "2031-06-30" });
+(farOut.data?.transactions ?? []).some((t) => t.description === "Broadband")
+  ? ok("an open-ended rule is still found five years out")
+  : bad("open-ended rule stopped being found", JSON.stringify(farOut.data));
+
+const bobSeesRules = await rulesIn(bob.token, "2026-12-01", "2026-12-31");
+bobSeesRules.length === 1 ? ok("bob (same household) sees the rule") : bad("bob cannot see the rule");
+const carolSeesRules = await rulesIn(carol.token, "2026-12-01", "2026-12-31");
+carolSeesRules.length === 0
+  ? ok("carol (outsider) does not")
+  : bad("LEAK: carol sees another household's recurring projection");
+
+console.log("\n\x1b[1m9 · Writes did NOT widen\x1b[0m");
 await mustFail("bob renames alice's household member (visible to him, not his)",
   mutate(bob.token, "RenameFamilyMember", { familyMemberId: memberId, name: "Renamed By Bob" }));
 
-console.log("\n\x1b[1m9 · Leaving\x1b[0m");
+console.log("\n\x1b[1m10 · Leaving\x1b[0m");
 await mustFail("carol removes alice from her own household",
   mutate(carol.token, "LeaveMyFamily", { userId: alice.id }));
 await mustFail("alice (primary user) leaves",
@@ -387,14 +438,14 @@ const bobAfter = await query(bob.token, "ListMyTransactions");
   ? ok("bob stops seeing alice's transactions the moment he leaves")
   : bad("LEAK: bob still sees them after leaving", JSON.stringify(bobAfter.data));
 
-console.log("\n\x1b[1m10 · Invite codes\x1b[0m");
+console.log("\n\x1b[1m11 · Invite codes\x1b[0m");
 await mustPass("bob resolves the invite code", query(bob.token, "GetFamilyByInviteCode", { inviteCode: CODE }));
 await mustFail("bob rotates alice's invite code",
   mutate(bob.token, "RegenerateFamilyInviteCode", { familyId, inviteCode: code() }));
 await mustPass("alice rotates her own invite code",
   mutate(alice.token, "RegenerateFamilyInviteCode", { familyId, inviteCode: code() }));
 
-console.log("\n\x1b[1m11 · You cannot remove yourself from your own household\x1b[0m");
+console.log("\n\x1b[1m12 · You cannot remove yourself from your own household\x1b[0m");
 // The invariant this protects: the self entry is created once, with the User,
 // and nothing re-creates it. Soft-deleting it would leave somebody staring at
 // a household they are not in, unrecoverable without a database edit.
@@ -416,7 +467,7 @@ mine?.name === "Alice N."
   ? ok("her own entry is in the roster, flagged as hers, under the new name")
   : bad("self entry missing or unflagged in ListFamilyMembers", JSON.stringify(roster.data?.familyMembers));
 
-console.log("\n\x1b[1m12 · sync-user repairs an account missing either row\x1b[0m");
+console.log("\n\x1b[1m13 · sync-user repairs an account missing either row\x1b[0m");
 // The repair path for accounts created before settings and self entries were
 // made alongside the User. It lives in a Next route rather than the
 // connector, so this needs the app running; set APP_URL to include it.

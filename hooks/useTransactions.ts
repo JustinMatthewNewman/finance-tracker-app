@@ -54,6 +54,33 @@ export interface Transaction {
   merchant: string | null;
   method: string | null;
   recurrence: string | null;
+  /** How long a recurring projection keeps appearing; null = indefinitely. */
+  recurrenceEndsOn: string | null;
+  /**
+   * Unique per rendered occurrence, for React keys and per-row UI state.
+   *
+   * Equal to `id` for an ordinary row. A recurring projection is expanded
+   * into one entry per matching day (see lib/recurrence.ts) and every one of
+   * those carries the SAME `id` — the rule's real row — so `id` alone would
+   * collide across a month's worth of paycheques.
+   *
+   * `id` deliberately stays the real row id on every occurrence, so a
+   * mutation called with it always addresses something that exists. Use this
+   * only for rendering.
+   */
+  occurrenceKey: string;
+  /**
+   * For an expanded occurrence, the rule row's OWN first-occurrence date;
+   * null for an ordinary row.
+   *
+   * Expansion overwrites `occurredOn` with the occurrence's day, because
+   * that is what every calendar bucket, date column and sort needs and
+   * getting it wrong there is a whole screen of wrong dates. The cost is
+   * that `occurredOn` is then no longer what the row stores — so anything
+   * about to WRITE the row has to put the real one back. Use ruleRowOf()
+   * rather than doing that by hand.
+   */
+  seriesStartsOn: string | null;
   source: TransactionSource;
   status: TransactionStatus;
   createdAt: string;
@@ -83,6 +110,7 @@ export interface TransactionInput {
   merchant?: string | null;
   method?: string | null;
   recurrence?: string | null;
+  recurrenceEndsOn?: string | null;
   source?: TransactionSource;
   status?: TransactionStatus;
   /** Category name, or null/"" for uncategorized. Created if it doesn't exist. */
@@ -114,6 +142,9 @@ export function toTransaction(row: Row, myUserId?: string | null): Transaction {
     merchant: row.merchant ?? null,
     method: row.method ?? null,
     recurrence: row.recurrence ?? null,
+    recurrenceEndsOn: row.recurrenceEndsOn ?? null,
+    occurrenceKey: row.id,
+    seriesStartsOn: null,
     // Narrowed rather than cast: these are plain text columns, so a value
     // the app does not know about is a real possibility and must land
     // somewhere defined. See lib/transactionKind.ts.
@@ -137,6 +168,21 @@ export function toTransaction(row: Row, myUserId?: string | null): Transaction {
         }
       : null,
   };
+}
+
+/**
+ * The editable row behind a transaction, whichever way it arrived on screen.
+ *
+ * For an ordinary row this is the row. For one of the entries a recurring
+ * projection was expanded into, it is the RULE — with `occurredOn` put back
+ * to the series' own start, because that is what the row actually stores.
+ *
+ * Every edit path goes through this. Opening the form on an occurrence and
+ * saving it without this would rewrite the rule's start date to whichever
+ * occurrence happened to be clicked, quietly moving the whole series.
+ */
+export function ruleRowOf(txn: Transaction): Transaction {
+  return txn.seriesStartsOn ? { ...txn, occurredOn: txn.seriesStartsOn } : txn;
 }
 
 /**
@@ -223,6 +269,7 @@ export function useTransactions(familyMemberId: string | null) {
         merchant: data.merchant || undefined,
         method: data.method || undefined,
         recurrence: data.recurrence || undefined,
+        recurrenceEndsOn: data.recurrenceEndsOn || undefined,
         categoryName: categoryName ?? undefined,
         source: data.source || "MANUAL",
         status: data.status || statusForSource(data.source ?? "MANUAL"),
@@ -248,6 +295,7 @@ export function useTransactions(familyMemberId: string | null) {
           merchant: data.merchant ?? null,
           method: data.method ?? null,
           recurrence: data.recurrence ?? null,
+          recurrenceEndsOn: data.recurrenceEndsOn ?? null,
           categoryName,
           source: data.source || "MANUAL",
           status: data.status || statusForSource(data.source ?? "MANUAL"),
@@ -266,6 +314,7 @@ export function useTransactions(familyMemberId: string | null) {
           merchant: data.merchant ?? null,
           method: data.method ?? null,
           recurrence: data.recurrence ?? null,
+          recurrenceEndsOn: data.recurrenceEndsOn ?? null,
           source: data.source || "MANUAL",
           status: data.status || statusForSource(data.source ?? "MANUAL"),
         } as UpdateTransactionClearCategoryVariables);

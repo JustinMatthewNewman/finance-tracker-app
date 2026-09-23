@@ -349,6 +349,7 @@ mutation CreateTransaction(
   $merchant: String
   $method: String
   $recurrence: String
+  $recurrenceEndsOn: Date
   $categoryName: String
   $source: String = "MANUAL"
   $status: String = "POSTED"
@@ -383,6 +384,7 @@ mutation CreateTransaction(
     merchant: $merchant
     method: $method
     recurrence: $recurrence
+    recurrenceEndsOn: $recurrenceEndsOn
     categoryName: $categoryName
     source: $source
     status: $status
@@ -398,6 +400,7 @@ mutation UpdateTransaction(
   $merchant: String
   $method: String
   $recurrence: String
+  $recurrenceEndsOn: Date
   $categoryName: String
   $source: String = "MANUAL"
   $status: String = "POSTED"
@@ -418,6 +421,7 @@ mutation UpdateTransaction(
     merchant: $merchant
     method: $method
     recurrence: $recurrence
+    recurrenceEndsOn: $recurrenceEndsOn
     categoryName: $categoryName
     source: $source
     status: $status
@@ -436,6 +440,7 @@ mutation UpdateTransactionClearCategory(
   $merchant: String
   $method: String
   $recurrence: String
+  $recurrenceEndsOn: Date
   $source: String = "MANUAL"
   $status: String = "POSTED"
 ) @auth(level: USER) @transaction {
@@ -455,6 +460,7 @@ mutation UpdateTransactionClearCategory(
     merchant: $merchant
     method: $method
     recurrence: $recurrence
+    recurrenceEndsOn: $recurrenceEndsOn
     categoryName: null
     source: $source
     status: $status

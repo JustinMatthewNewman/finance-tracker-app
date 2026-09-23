@@ -2440,6 +2440,22 @@ input Transaction_Data {
   """
   recurrence_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Transaction`.`recurrenceEndsOn` of type `Date`
+  """
+  recurrenceEndsOn: Date
+  """
+  ✨ `_date` server value variant of `recurrenceEndsOn` (✨ Generated from Field `Transaction`.`recurrenceEndsOn` of type `Date`)
+  """
+  recurrenceEndsOn_date: Date_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_expr` server value variant of `recurrenceEndsOn` (✨ Generated from Field `Transaction`.`recurrenceEndsOn` of type `Date`)
+  """
+  recurrenceEndsOn_expr: Date_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `recurrenceEndsOn` (✨ Generated from Field `Transaction`.`recurrenceEndsOn` of type `Date`)
+  """
+  recurrenceEndsOn_update: [Date_Update!] @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Transaction`.`source` of type `String!`
   """
   source: String
@@ -2533,6 +2549,10 @@ input Transaction_Filter {
   """
   recurrence: String_Filter
   """
+  ✨ Generated from Field `Transaction`.`recurrenceEndsOn` of type `Date`
+  """
+  recurrenceEndsOn: Date_Filter
+  """
   ✨ Generated from Field `Transaction`.`source` of type `String!`
   """
   source: String_Filter
@@ -2619,6 +2639,10 @@ input Transaction_Having {
   """
   occurredOn_count: Int_Filter
   """
+  ✨ Generated from Field `Transaction`.`recurrenceEndsOn_count` of type `Int!`
+  """
+  recurrenceEndsOn_count: Int_Filter
+  """
   ✨ Generated from Field `Transaction`.`recurrence_count` of type `Int!`
   """
   recurrence_count: Int_Filter
@@ -2655,6 +2679,10 @@ input Transaction_Having {
   """
   occurredOn_min: Date_Filter
   """
+  ✨ Generated from Field `Transaction`.`recurrenceEndsOn_min` of type `Date`
+  """
+  recurrenceEndsOn_min: Date_Filter
+  """
   ✨ Generated from Field `Transaction`.`amountMinor_max` of type `Int`
   """
   amountMinor_max: Int_Filter
@@ -2666,6 +2694,10 @@ input Transaction_Having {
   ✨ Generated from Field `Transaction`.`occurredOn_max` of type `Date`
   """
   occurredOn_max: Date_Filter
+  """
+  ✨ Generated from Field `Transaction`.`recurrenceEndsOn_max` of type `Date`
+  """
+  recurrenceEndsOn_max: Date_Filter
 }
 """
 ✨ Generated key input type for table 'Transaction'. It represents the primary key fields used to uniquely identify a row in the table.
@@ -2758,6 +2790,10 @@ input Transaction_Order {
   """
   recurrence: OrderDirection
   """
+  ✨ Generated from Field `Transaction`.`recurrenceEndsOn` of type `Date`
+  """
+  recurrenceEndsOn: OrderDirection
+  """
   ✨ Generated from Field `Transaction`.`source` of type `String!`
   """
   source: OrderDirection
@@ -2810,6 +2846,10 @@ input Transaction_Order {
   """
   occurredOn_count: OrderDirection
   """
+  ✨ Generated from Field `Transaction`.`recurrenceEndsOn_count` of type `Int!`
+  """
+  recurrenceEndsOn_count: OrderDirection
+  """
   ✨ Generated from Field `Transaction`.`recurrence_count` of type `Int!`
   """
   recurrence_count: OrderDirection
@@ -2846,6 +2886,10 @@ input Transaction_Order {
   """
   occurredOn_min: OrderDirection
   """
+  ✨ Generated from Field `Transaction`.`recurrenceEndsOn_min` of type `Date`
+  """
+  recurrenceEndsOn_min: OrderDirection
+  """
   ✨ Generated from Field `Transaction`.`amountMinor_max` of type `Int`
   """
   amountMinor_max: OrderDirection
@@ -2857,6 +2901,10 @@ input Transaction_Order {
   ✨ Generated from Field `Transaction`.`occurredOn_max` of type `Date`
   """
   occurredOn_max: OrderDirection
+  """
+  ✨ Generated from Field `Transaction`.`recurrenceEndsOn_max` of type `Date`
+  """
+  recurrenceEndsOn_max: OrderDirection
 }
 """
 ✨ Generated data input type for table 'User'. It includes all necessary fields for creating or upserting rows into table.
