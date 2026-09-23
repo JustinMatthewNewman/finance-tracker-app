@@ -21,11 +21,6 @@ export interface ApproveJoinRequestVariables {
   requesterId: UUIDString;
 }
 
-export interface BankAccount_Key {
-  id: UUIDString;
-  __typename?: 'BankAccount_Key';
-}
-
 export interface CancelMyJoinRequestData {
   familyJoinRequest_update?: FamilyJoinRequest_Key | null;
 }
@@ -92,7 +87,6 @@ export interface CreateTransactionVariables {
   categoryName?: string | null;
   source?: string | null;
   status?: string | null;
-  matchedTransactionId?: UUIDString | null;
 }
 
 export interface CreateUserFromGoogleData {
@@ -261,41 +255,6 @@ export interface GetMyUserData {
   } & User_Key;
 }
 
-export interface GetTransactionData {
-  transaction?: {
-    id: UUIDString;
-    amountMinor: number;
-    direction: string;
-    occurredOn: DateString;
-    description?: string | null;
-    merchant?: string | null;
-    method?: string | null;
-    recurrence?: string | null;
-    source: string;
-    status: string;
-    matchedTransactionId?: UUIDString | null;
-    createdAt: TimestampString;
-    familyMember: {
-      id: UUIDString;
-      name: string;
-    } & FamilyMember_Key;
-    category?: {
-      id: UUIDString;
-      name: string;
-      kind: string;
-      color?: string | null;
-    } & Category_Key;
-    user: {
-      id: UUIDString;
-      username: string;
-    } & User_Key;
-  } & Transaction_Key;
-}
-
-export interface GetTransactionVariables {
-  transactionId: UUIDString;
-}
-
 export interface GetUserAccessByGoogleUidData {
   user?: {
     id: UUIDString;
@@ -407,7 +366,6 @@ export interface ListMyTransactionsByDateRangeData {
     recurrence?: string | null;
     source: string;
     status: string;
-    matchedTransactionId?: UUIDString | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -445,7 +403,6 @@ export interface ListMyTransactionsData {
     recurrence?: string | null;
     source: string;
     status: string;
-    matchedTransactionId?: UUIDString | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -481,7 +438,6 @@ export interface ListTransactionsByFamilyMemberData {
     recurrence?: string | null;
     source: string;
     status: string;
-    matchedTransactionId?: UUIDString | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -525,9 +481,20 @@ export interface ListUsersData {
   } & User_Key)[];
 }
 
-export interface PlaidItem_Key {
-  id: UUIDString;
-  __typename?: 'PlaidItem_Key';
+export interface MarkTransactionPostedData {
+  transaction_update?: Transaction_Key | null;
+}
+
+export interface MarkTransactionPostedVariables {
+  transactionId: UUIDString;
+}
+
+export interface MarkTransactionProjectedData {
+  transaction_update?: Transaction_Key | null;
+}
+
+export interface MarkTransactionProjectedVariables {
+  transactionId: UUIDString;
 }
 
 export interface RegenerateFamilyInviteCodeData {
@@ -555,14 +522,6 @@ export interface RequestToJoinFamilyData {
 export interface RequestToJoinFamilyVariables {
   userId: UUIDString;
   familyId: UUIDString;
-}
-
-export interface RestoreFamilyMemberData {
-  familyMember_update?: FamilyMember_Key | null;
-}
-
-export interface RestoreFamilyMemberVariables {
-  familyMemberId: UUIDString;
 }
 
 export interface SelectMyBackgroundOpacityData {
@@ -647,29 +606,6 @@ export interface SetUserTypeVariables {
   userTypeName: string;
 }
 
-export interface SyncPlaidTransactionData {
-  transaction_upsert: Transaction_Key;
-}
-
-export interface SyncPlaidTransactionVariables {
-  transactionId: UUIDString;
-  userId: UUIDString;
-  familyMemberId: UUIDString;
-  bankAccountId?: UUIDString | null;
-  plaidTransactionId: string;
-  amountMinor: number;
-  direction: string;
-  occurredOn: DateString;
-  createdAt: TimestampString;
-  description?: string | null;
-  merchant?: string | null;
-  method?: string | null;
-  categoryName?: string | null;
-  plaidCategory?: string | null;
-  isPending?: boolean | null;
-  plaidPendingTransactionId?: string | null;
-}
-
 export interface Theme_Key {
   id: UUIDString;
   __typename?: 'Theme_Key';
@@ -719,7 +655,6 @@ export interface UpdateTransactionClearCategoryVariables {
   recurrence?: string | null;
   source?: string | null;
   status?: string | null;
-  matchedTransactionId?: UUIDString | null;
 }
 
 export interface UpdateTransactionData {
@@ -738,27 +673,6 @@ export interface UpdateTransactionVariables {
   categoryName?: string | null;
   source?: string | null;
   status?: string | null;
-  matchedTransactionId?: UUIDString | null;
-}
-
-export interface UpsertBankAccountData {
-  bankAccount_upsert: BankAccount_Key;
-}
-
-export interface UpsertBankAccountVariables {
-  id: UUIDString;
-  userId: UUIDString;
-  plaidItemId: UUIDString;
-  plaidAccountId: string;
-  name: string;
-  officialName?: string | null;
-  mask?: string | null;
-  type: string;
-  subtype?: string | null;
-  currentBalanceMinor?: number | null;
-  availableBalanceMinor?: number | null;
-  isoCurrencyCode?: string | null;
-  familyMemberId?: UUIDString | null;
 }
 
 export interface UpsertCategoryData {
@@ -770,21 +684,6 @@ export interface UpsertCategoryVariables {
   kind?: string;
   parentGroup?: string | null;
   color?: string | null;
-}
-
-export interface UpsertPlaidItemData {
-  plaidItem_upsert: PlaidItem_Key;
-}
-
-export interface UpsertPlaidItemVariables {
-  id: UUIDString;
-  userId: UUIDString;
-  plaidItemId: string;
-  accessTokenEncrypted: string;
-  institutionId?: string | null;
-  institutionName: string;
-  syncCursor?: string | null;
-  status?: string | null;
 }
 
 export interface UserSetting_Key {
@@ -1000,18 +899,6 @@ export const deleteFamilyMemberRef: DeleteFamilyMemberRef;
 export function deleteFamilyMember(vars: DeleteFamilyMemberVariables): MutationPromise<DeleteFamilyMemberData, DeleteFamilyMemberVariables>;
 export function deleteFamilyMember(dc: DataConnect, vars: DeleteFamilyMemberVariables): MutationPromise<DeleteFamilyMemberData, DeleteFamilyMemberVariables>;
 
-interface RestoreFamilyMemberRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: RestoreFamilyMemberVariables): MutationRef<RestoreFamilyMemberData, RestoreFamilyMemberVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: RestoreFamilyMemberVariables): MutationRef<RestoreFamilyMemberData, RestoreFamilyMemberVariables>;
-  operationName: string;
-}
-export const restoreFamilyMemberRef: RestoreFamilyMemberRef;
-
-export function restoreFamilyMember(vars: RestoreFamilyMemberVariables): MutationPromise<RestoreFamilyMemberData, RestoreFamilyMemberVariables>;
-export function restoreFamilyMember(dc: DataConnect, vars: RestoreFamilyMemberVariables): MutationPromise<RestoreFamilyMemberData, RestoreFamilyMemberVariables>;
-
 interface UpsertCategoryRef {
   /* Allow users to create refs without passing in DataConnect */
   (vars: UpsertCategoryVariables): MutationRef<UpsertCategoryData, UpsertCategoryVariables>;
@@ -1072,6 +959,30 @@ export const updateTransactionClearCategoryRef: UpdateTransactionClearCategoryRe
 export function updateTransactionClearCategory(vars: UpdateTransactionClearCategoryVariables): MutationPromise<UpdateTransactionClearCategoryData, UpdateTransactionClearCategoryVariables>;
 export function updateTransactionClearCategory(dc: DataConnect, vars: UpdateTransactionClearCategoryVariables): MutationPromise<UpdateTransactionClearCategoryData, UpdateTransactionClearCategoryVariables>;
 
+interface MarkTransactionPostedRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: MarkTransactionPostedVariables): MutationRef<MarkTransactionPostedData, MarkTransactionPostedVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: MarkTransactionPostedVariables): MutationRef<MarkTransactionPostedData, MarkTransactionPostedVariables>;
+  operationName: string;
+}
+export const markTransactionPostedRef: MarkTransactionPostedRef;
+
+export function markTransactionPosted(vars: MarkTransactionPostedVariables): MutationPromise<MarkTransactionPostedData, MarkTransactionPostedVariables>;
+export function markTransactionPosted(dc: DataConnect, vars: MarkTransactionPostedVariables): MutationPromise<MarkTransactionPostedData, MarkTransactionPostedVariables>;
+
+interface MarkTransactionProjectedRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: MarkTransactionProjectedVariables): MutationRef<MarkTransactionProjectedData, MarkTransactionProjectedVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: MarkTransactionProjectedVariables): MutationRef<MarkTransactionProjectedData, MarkTransactionProjectedVariables>;
+  operationName: string;
+}
+export const markTransactionProjectedRef: MarkTransactionProjectedRef;
+
+export function markTransactionProjected(vars: MarkTransactionProjectedVariables): MutationPromise<MarkTransactionProjectedData, MarkTransactionProjectedVariables>;
+export function markTransactionProjected(dc: DataConnect, vars: MarkTransactionProjectedVariables): MutationPromise<MarkTransactionProjectedData, MarkTransactionProjectedVariables>;
+
 interface DeleteTransactionRef {
   /* Allow users to create refs without passing in DataConnect */
   (vars: DeleteTransactionVariables): MutationRef<DeleteTransactionData, DeleteTransactionVariables>;
@@ -1083,42 +994,6 @@ export const deleteTransactionRef: DeleteTransactionRef;
 
 export function deleteTransaction(vars: DeleteTransactionVariables): MutationPromise<DeleteTransactionData, DeleteTransactionVariables>;
 export function deleteTransaction(dc: DataConnect, vars: DeleteTransactionVariables): MutationPromise<DeleteTransactionData, DeleteTransactionVariables>;
-
-interface UpsertPlaidItemRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: UpsertPlaidItemVariables): MutationRef<UpsertPlaidItemData, UpsertPlaidItemVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: UpsertPlaidItemVariables): MutationRef<UpsertPlaidItemData, UpsertPlaidItemVariables>;
-  operationName: string;
-}
-export const upsertPlaidItemRef: UpsertPlaidItemRef;
-
-export function upsertPlaidItem(vars: UpsertPlaidItemVariables): MutationPromise<UpsertPlaidItemData, UpsertPlaidItemVariables>;
-export function upsertPlaidItem(dc: DataConnect, vars: UpsertPlaidItemVariables): MutationPromise<UpsertPlaidItemData, UpsertPlaidItemVariables>;
-
-interface UpsertBankAccountRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: UpsertBankAccountVariables): MutationRef<UpsertBankAccountData, UpsertBankAccountVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: UpsertBankAccountVariables): MutationRef<UpsertBankAccountData, UpsertBankAccountVariables>;
-  operationName: string;
-}
-export const upsertBankAccountRef: UpsertBankAccountRef;
-
-export function upsertBankAccount(vars: UpsertBankAccountVariables): MutationPromise<UpsertBankAccountData, UpsertBankAccountVariables>;
-export function upsertBankAccount(dc: DataConnect, vars: UpsertBankAccountVariables): MutationPromise<UpsertBankAccountData, UpsertBankAccountVariables>;
-
-interface SyncPlaidTransactionRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: SyncPlaidTransactionVariables): MutationRef<SyncPlaidTransactionData, SyncPlaidTransactionVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: SyncPlaidTransactionVariables): MutationRef<SyncPlaidTransactionData, SyncPlaidTransactionVariables>;
-  operationName: string;
-}
-export const syncPlaidTransactionRef: SyncPlaidTransactionRef;
-
-export function syncPlaidTransaction(vars: SyncPlaidTransactionVariables): MutationPromise<SyncPlaidTransactionData, SyncPlaidTransactionVariables>;
-export function syncPlaidTransaction(dc: DataConnect, vars: SyncPlaidTransactionVariables): MutationPromise<SyncPlaidTransactionData, SyncPlaidTransactionVariables>;
 
 interface CreateFamilyRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -1347,18 +1222,6 @@ export const listMyTransactionsByDateRangeRef: ListMyTransactionsByDateRangeRef;
 
 export function listMyTransactionsByDateRange(vars: ListMyTransactionsByDateRangeVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyTransactionsByDateRangeData, ListMyTransactionsByDateRangeVariables>;
 export function listMyTransactionsByDateRange(dc: DataConnect, vars: ListMyTransactionsByDateRangeVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyTransactionsByDateRangeData, ListMyTransactionsByDateRangeVariables>;
-
-interface GetTransactionRef {
-  /* Allow users to create refs without passing in DataConnect */
-  (vars: GetTransactionVariables): QueryRef<GetTransactionData, GetTransactionVariables>;
-  /* Allow users to pass in custom DataConnect instances */
-  (dc: DataConnect, vars: GetTransactionVariables): QueryRef<GetTransactionData, GetTransactionVariables>;
-  operationName: string;
-}
-export const getTransactionRef: GetTransactionRef;
-
-export function getTransaction(vars: GetTransactionVariables, options?: ExecuteQueryOptions): QueryPromise<GetTransactionData, GetTransactionVariables>;
-export function getTransaction(dc: DataConnect, vars: GetTransactionVariables, options?: ExecuteQueryOptions): QueryPromise<GetTransactionData, GetTransactionVariables>;
 
 interface GetFamilyByInviteCodeRef {
   /* Allow users to create refs without passing in DataConnect */

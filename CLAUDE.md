@@ -2,6 +2,7 @@
 
 Household finance tracker. Sidebar = people in the household; main panel =
 one person's income and expenses for a month, with a category breakdown.
+Income / Expenses / Calendar are household-wide views of the same rows.
 
 Several *accounts* can share a household (a `Family`). They see each other's
 finances; they do not edit each other's. New accounts pick a household through
@@ -20,6 +21,13 @@ Next.js 16 App Router · React 19 · TypeScript · Tailwind v4 · HeroUI v3 ·
 
 ## Invariants — do not break these
 
+- **Projected and actual money live in ONE table.** A row the household
+  expects (an upcoming bill, a paycheque due) is a `Transaction` with
+  `status: "FORECASTED"`; something that happened is `POSTED`. There is no
+  second table, deliberately — see the note on `Transaction.source` in
+  `schema.gql`. Anything totalling real money must branch on `status`, never
+  on `source`: marking a projection as received leaves `source: "FORECAST"`
+  so its provenance survives.
 - **Money is an integer.** Minor units only; every conversion goes through
   `lib/money.ts`. Never `parseFloat(x) * 100`. The per-major divisor comes
   from `Intl` because JPY has no minor unit.
@@ -58,14 +66,16 @@ Next.js 16 App Router · React 19 · TypeScript · Tailwind v4 · HeroUI v3 ·
 - **Call `useFamilyMembers()` once per page** and pass the result down; it
   holds state in `useState`, not context, so two calls drift apart.
 
-## Known gap
+## Deliberately absent
 
-The three Plaid mutations (`UpsertPlaidItem`, `UpsertBankAccount`,
-`SyncPlaidTransaction`) are `USER`-level, take an unchecked `$userId`, and
-upsert on a client-supplied `$id`. Nothing calls them — there is no Plaid
-integration yet — but they are reachable from any browser with a token. Fix
-both halves, or move them to `NO_ACCESS` behind a route handler, *before*
-adding a call site. See the note above them in `mutations.gql`.
+**Plaid.** Removed entirely — tables, columns and mutations — rather than left
+as unreachable scaffolding. When it lands it writes `Transaction` rows with
+`source: "PLAID"` alongside the manual and projected ones, which is what the
+one-table decision above is for. Nothing here anticipates it beyond that.
+
+**An admin UI.** `ListUsers`, `ListUserTypes` and `SetUserType` are kept
+because the tier system they serve is kept (README documents `SetUserType` as
+today's promotion path), but no page calls them yet.
 
 ## Dependencies
 
@@ -108,11 +118,16 @@ throw, it permits, and that is indistinguishable from success everywhere else.
 - `components/Onboarding/` — the join-or-create flow, and the redirect gate
 - `components/Family/` — the household panel in Settings: roster, invite code,
   join queue
+- `components/Records/LedgerPage.tsx` — Income and Expenses are this one
+  component pointed at opposite directions. Don't fork it back into two.
 - `components/Utilities/ListBoxComponent.tsx` — the household sidebar
 - `context/` — one provider per persisted preference, all fed by the single
   `GetMyUser` fetch in `UserSettingsContext`. Keep new ones below it.
+- `hooks/useHouseholdMonth.ts` — one month of the whole household, for
+  Income/Expenses/Calendar. Call once per page; it owns a `useFamilyMembers()`.
 - `hooks/useFamily.ts` — the household, for Settings. Call once per page.
 - `hooks/useOnboarding.ts` — join requests and household creation.
 - `lib/money.ts`, `lib/monthRange.ts`, `lib/entityColor.ts` — domain rules
 - `lib/inviteCode.ts` — invite codes are a capability, not an id: CSPRNG only
 - `lib/familyStatus.ts` — the four join-request states
+- `lib/transactionKind.ts` — projected vs. actual (`source`, `status`)

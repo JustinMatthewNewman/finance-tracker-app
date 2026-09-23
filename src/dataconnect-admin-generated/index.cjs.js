@@ -119,13 +119,6 @@ function deleteFamilyMember(dcOrVarsOrOptions, varsOrOptions, options) {
 }
 exports.deleteFamilyMember = deleteFamilyMember;
 
-function restoreFamilyMember(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('RestoreFamilyMember', inputVars, inputOpts);
-}
-exports.restoreFamilyMember = restoreFamilyMember;
-
 function upsertCategory(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
@@ -161,33 +154,26 @@ function updateTransactionClearCategory(dcOrVarsOrOptions, varsOrOptions, option
 }
 exports.updateTransactionClearCategory = updateTransactionClearCategory;
 
+function markTransactionPosted(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('MarkTransactionPosted', inputVars, inputOpts);
+}
+exports.markTransactionPosted = markTransactionPosted;
+
+function markTransactionProjected(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('MarkTransactionProjected', inputVars, inputOpts);
+}
+exports.markTransactionProjected = markTransactionProjected;
+
 function deleteTransaction(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
   return dcInstance.executeMutation('DeleteTransaction', inputVars, inputOpts);
 }
 exports.deleteTransaction = deleteTransaction;
-
-function upsertPlaidItem(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('UpsertPlaidItem', inputVars, inputOpts);
-}
-exports.upsertPlaidItem = upsertPlaidItem;
-
-function upsertBankAccount(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('UpsertBankAccount', inputVars, inputOpts);
-}
-exports.upsertBankAccount = upsertBankAccount;
-
-function syncPlaidTransaction(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeMutation('SyncPlaidTransaction', inputVars, inputOpts);
-}
-exports.syncPlaidTransaction = syncPlaidTransaction;
 
 function createFamily(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
@@ -321,13 +307,6 @@ function listMyTransactionsByDateRange(dcOrVarsOrOptions, varsOrOptions, options
   return dcInstance.executeQuery('ListMyTransactionsByDateRange', inputVars, inputOpts);
 }
 exports.listMyTransactionsByDateRange = listMyTransactionsByDateRange;
-
-function getTransaction(dcOrVarsOrOptions, varsOrOptions, options) {
-  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
-  dcInstance.useGen(true);
-  return dcInstance.executeQuery('GetTransaction', inputVars, inputOpts);
-}
-exports.getTransaction = getTransaction;
 
 function getFamilyByInviteCode(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);

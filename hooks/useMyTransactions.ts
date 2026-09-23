@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { QueryFetchPolicy } from "firebase/data-connect";
 import { useAuth } from "./useAuth";
+import { useUserSettings } from "@/context/UserSettingsContext";
 import { listMyTransactions } from "@/src/dataconnect-generated";
 import type { ListMyTransactionsData, ListMyTransactionsVariables } from "@/src/dataconnect-generated";
 import { fetchAllPages } from "@/lib/dataconnectPagination";
@@ -22,6 +23,7 @@ import { type Transaction, toTransaction } from "./useTransactions";
  */
 export function useMyTransactions() {
   const { user } = useAuth();
+  const { userId: myUserId } = useUserSettings();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,13 +46,15 @@ export function useMyTransactions() {
           ),
         {}
       );
-      setTransactions(rows.map(toTransaction));
+      // Not `rows.map(toTransaction)` — Array.map passes the index as the
+      // second argument, which would arrive as myUserId.
+      setTransactions(rows.map((row) => toTransaction(row, myUserId)));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load transactions");
     } finally {
       setLoading(false);
     }
-  }, [user?.uid]);
+  }, [user?.uid, myUserId]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect

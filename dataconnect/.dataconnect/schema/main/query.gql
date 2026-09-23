@@ -1,24 +1,5 @@
 extend type Query {
   """
-  ✨ Look up a single `BankAccount` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
-  """
-  bankAccount(
-    """
-    The unique ID of the object.
-    """
-    id: UUID
-
-    """
-    The key used to identify the object.
-    """
-    key: BankAccount_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: BankAccount_FirstRow
-  ): BankAccount @fdc_generated(from: "BankAccount", purpose: QUERY_SINGLE)
-  """
   ✨ Look up a single `Category` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   category(
@@ -117,25 +98,6 @@ extend type Query {
     """
     first: Feature_FirstRow
   ): Feature @fdc_generated(from: "Feature", purpose: QUERY_SINGLE)
-  """
-  ✨ Look up a single `PlaidItem` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
-  """
-  plaidItem(
-    """
-    The unique ID of the object.
-    """
-    id: UUID
-
-    """
-    The key used to identify the object.
-    """
-    key: PlaidItem_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: PlaidItem_FirstRow
-  ): PlaidItem @fdc_generated(from: "PlaidItem", purpose: QUERY_SINGLE)
   """
   ✨ Look up a single `Theme` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
@@ -240,40 +202,6 @@ extend type Query {
     """
     first: UserTypeFeature_FirstRow
   ): UserTypeFeature @fdc_generated(from: "UserTypeFeature", purpose: QUERY_SINGLE)
-  """
-  ✨ List `BankAccount` objects in the table and return selected fields, optionally filtered by `where` conditions
-  """
-  bankAccounts(
-    """
-    Filter condition to narrow down the query results.
-    """
-    where: BankAccount_Filter
-
-    """
-    Order the query results by specific fields.
-    """
-    orderBy: [BankAccount_Order!]
-
-    """
-    Number of rows to skip before starting to return the results.
-    """
-    offset: Int
-
-    """
-    Maximum number of rows to return (defaults to 100 rows).
-    """
-    limit: Int = 100
-
-    """
-    Set to true to return distinct results.
-    """
-    distinct: Boolean = false
-
-    """
-    Filter condition to apply to the groups of aggregate queries.
-    """
-    having: BankAccount_Having
-  ): [BankAccount!]! @fdc_generated(from: "BankAccount", purpose: QUERY_MULTIPLE)
   """
   ✨ List `Category` objects in the table and return selected fields, optionally filtered by `where` conditions
   """
@@ -478,40 +406,6 @@ extend type Query {
     """
     having: Feature_Having
   ): [Feature!]! @fdc_generated(from: "Feature", purpose: QUERY_MULTIPLE)
-  """
-  ✨ List `PlaidItem` objects in the table and return selected fields, optionally filtered by `where` conditions
-  """
-  plaidItems(
-    """
-    Filter condition to narrow down the query results.
-    """
-    where: PlaidItem_Filter
-
-    """
-    Order the query results by specific fields.
-    """
-    orderBy: [PlaidItem_Order!]
-
-    """
-    Number of rows to skip before starting to return the results.
-    """
-    offset: Int
-
-    """
-    Maximum number of rows to return (defaults to 100 rows).
-    """
-    limit: Int = 100
-
-    """
-    Set to true to return distinct results.
-    """
-    distinct: Boolean = false
-
-    """
-    Filter condition to apply to the groups of aggregate queries.
-    """
-    having: PlaidItem_Having
-  ): [PlaidItem!]! @fdc_generated(from: "PlaidItem", purpose: QUERY_MULTIPLE)
   """
   ✨ List `Theme` objects in the table and return selected fields, optionally filtered by `where` conditions
   """

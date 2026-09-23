@@ -271,11 +271,57 @@ await mustFail("carol records a transaction owned by alice", mutate(carol.token,
   occurredOn: "2026-09-02", createdAt: new Date().toISOString(), description: "Smuggled",
 }));
 
-console.log("\n\x1b[1m7 · Writes did NOT widen\x1b[0m");
+console.log("\n\x1b[1m7 · Projected items become actual ones\x1b[0m");
+// The whole projected-vs-actual model, end to end: a row the household
+// EXPECTS, visible to everyone in it, that the owner can later mark as having
+// happened — and that nobody else can.
+const projected = await mustPass("alice records an expected bill", mutate(alice.token, "CreateTransaction", {
+  userId: alice.id, familyMemberId: memberId, amountMinor: 8800, direction: "EXPENSE",
+  occurredOn: "2026-09-28", createdAt: new Date().toISOString(), description: "Electricity",
+  source: "FORECAST", status: "FORECASTED",
+}));
+void projected;
+
+const findBill = async (token) => {
+  const r = await query(token, "ListMyTransactionsByDateRange", { startDate: "2026-09-01", endDate: "2026-09-30" });
+  return (r.data?.transactions ?? []).find((t) => t.description === "Electricity");
+};
+
+let bill = await findBill(alice.token);
+bill?.status === "FORECASTED"
+  ? ok("it reads back as FORECASTED in the month range query")
+  : bad("expected bill did not read back as projected", JSON.stringify(bill));
+
+// bob is still in the household at this point — he leaves in §9 — so the
+// household-visibility half can be checked here without rejoining.
+const bobsView = await findBill(bob.token);
+bobsView ? ok("bob sees alice's projected bill") : bad("bob cannot see the projected bill");
+
+await mustFail("bob marks alice's projected bill as paid",
+  mutate(bob.token, "MarkTransactionPosted", { transactionId: bill.id }));
+await mustFail("carol (outsider) marks it as paid",
+  mutate(carol.token, "MarkTransactionPosted", { transactionId: bill.id }));
+
+await mustPass("alice marks it paid", mutate(alice.token, "MarkTransactionPosted", { transactionId: bill.id }));
+bill = await findBill(alice.token);
+bill?.status === "POSTED"
+  ? ok("status is now POSTED")
+  : bad("marking paid did not stick", JSON.stringify(bill));
+// Provenance survives the transition — this is what lets the app still say
+// "this started life as a projection" after the fact.
+bill?.source === "FORECAST"
+  ? ok("...and source is still FORECAST, so its provenance survived")
+  : bad("source was clobbered by marking it paid", JSON.stringify(bill));
+
+await mustPass("alice undoes it", mutate(alice.token, "MarkTransactionProjected", { transactionId: bill.id }));
+bill = await findBill(alice.token);
+bill?.status === "FORECASTED" ? ok("back to FORECASTED") : bad("undo did not stick", JSON.stringify(bill));
+
+console.log("\n\x1b[1m8 · Writes did NOT widen\x1b[0m");
 await mustFail("bob renames alice's household member (visible to him, not his)",
   mutate(bob.token, "RenameFamilyMember", { familyMemberId: memberId, name: "Renamed By Bob" }));
 
-console.log("\n\x1b[1m8 · Leaving\x1b[0m");
+console.log("\n\x1b[1m9 · Leaving\x1b[0m");
 await mustFail("carol removes alice from her own household",
   mutate(carol.token, "LeaveMyFamily", { userId: alice.id }));
 await mustFail("alice (primary user) leaves",
@@ -286,7 +332,7 @@ const bobAfter = await query(bob.token, "ListMyTransactions");
   ? ok("bob stops seeing alice's transactions the moment he leaves")
   : bad("LEAK: bob still sees them after leaving", JSON.stringify(bobAfter.data));
 
-console.log("\n\x1b[1m9 · Invite codes\x1b[0m");
+console.log("\n\x1b[1m10 · Invite codes\x1b[0m");
 await mustPass("bob resolves the invite code", query(bob.token, "GetFamilyByInviteCode", { inviteCode: CODE }));
 await mustFail("bob rotates alice's invite code",
   mutate(bob.token, "RegenerateFamilyInviteCode", { familyId, inviteCode: code() }));

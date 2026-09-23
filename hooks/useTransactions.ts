@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { QueryFetchPolicy } from "firebase/data-connect";
 import { useAuth } from "./useAuth";
+import { useUserSettings } from "@/context/UserSettingsContext";
 import { useCategories } from "@/context/CategoriesContext";
 import {
   useCreateTransaction,
@@ -22,9 +23,18 @@ import type {
 import { fetchAllPages } from "@/lib/dataconnectPagination";
 import { normalizeHexColor } from "@/lib/entityColor";
 import { type Direction, type Minor, normalizeDirection } from "@/lib/money";
+import {
+  type TransactionSource,
+  type TransactionStatus,
+  statusForSource,
+  toTransactionSource,
+  toTransactionStatus,
+} from "@/lib/transactionKind";
 
-export type TransactionSource = "MANUAL" | "PLAID" | "FORECAST";
-export type TransactionStatus = "POSTED" | "PENDING" | "FORECASTED" | "MATCHED";
+// Re-exported so the many call sites that already import these from here
+// keep working; lib/transactionKind.ts is where they are defined and where
+// the projected-vs-actual rules live.
+export type { TransactionSource, TransactionStatus } from "@/lib/transactionKind";
 
 export interface TransactionCategoryRef {
   id: string;
@@ -46,11 +56,23 @@ export interface Transaction {
   recurrence: string | null;
   source: TransactionSource;
   status: TransactionStatus;
-  matchedTransactionId: string | null;
   createdAt: string;
   familyMemberId: string;
   familyMemberName: string;
   category: TransactionCategoryRef | null;
+  /** The account that recorded this row. */
+  ownerUserId: string;
+  ownerUsername: string;
+  /**
+   * Whether the signed-in account may change this row.
+   *
+   * Household reads are wider than household writes (see the visibility note
+   * at the top of queries.gql), so these lists include rows belonging to a
+   * housemate. Every control that edits, deletes or marks a row as received
+   * has to be gated on this, or it will fail at a `@check` the person never
+   * sees. Defaults to false while the caller's own id is still loading.
+   */
+  isMine: boolean;
 }
 
 export interface TransactionInput {
@@ -63,29 +85,16 @@ export interface TransactionInput {
   recurrence?: string | null;
   source?: TransactionSource;
   status?: TransactionStatus;
-  matchedTransactionId?: string | null;
   /** Category name, or null/"" for uncategorized. Created if it doesn't exist. */
   categoryName?: string | null;
 }
 
-type Row =
-  | ListTransactionsByFamilyMemberData["transactions"][number]
-  | {
-      id: string;
-      amountMinor: number;
-      direction: string;
-      occurredOn: string;
-      description?: string | null;
-      merchant?: string | null;
-      method?: string | null;
-      recurrence?: string | null;
-      source?: string;
-      status?: string;
-      matchedTransactionId?: string | null;
-      createdAt: string;
-      familyMember: { id: string; name: string };
-      category?: { id: string; name: string; kind: string; color?: string | null } | null;
-    };
+// All three transaction list queries — by member, all mine, and by date
+// range — select an identical field set, so one generated row type covers
+// every caller. This used to be a union with a hand-written structural
+// variant beside it, which meant a field added to the queries had to be
+// mirrored here by hand or the shape silently diverged.
+type Row = ListTransactionsByFamilyMemberData["transactions"][number];
 
 /**
  * Normalizes a query row into the shape the UI works with.
@@ -95,7 +104,7 @@ type Row =
  * a second copy of this would be a second place for direction or color
  * validation to drift.
  */
-export function toTransaction(row: Row): Transaction {
+export function toTransaction(row: Row, myUserId?: string | null): Transaction {
   return {
     id: row.id,
     amountMinor: row.amountMinor,
@@ -105,12 +114,19 @@ export function toTransaction(row: Row): Transaction {
     merchant: row.merchant ?? null,
     method: row.method ?? null,
     recurrence: row.recurrence ?? null,
-    source: (row.source as TransactionSource) ?? "MANUAL",
-    status: (row.status as TransactionStatus) ?? "POSTED",
-    matchedTransactionId: row.matchedTransactionId ?? null,
+    // Narrowed rather than cast: these are plain text columns, so a value
+    // the app does not know about is a real possibility and must land
+    // somewhere defined. See lib/transactionKind.ts.
+    source: toTransactionSource(row.source),
+    status: toTransactionStatus(row.status),
     createdAt: row.createdAt,
     familyMemberId: row.familyMember.id,
     familyMemberName: row.familyMember.name,
+    ownerUserId: row.user.id,
+    ownerUsername: row.user.username,
+    // Both ids come from a database read, so both arrive with hyphens
+    // stripped and compare directly.
+    isMine: !!myUserId && row.user.id === myUserId,
     category: row.category
       ? {
           id: row.category.id,
@@ -132,6 +148,7 @@ export function toTransaction(row: Row): Transaction {
  */
 export function useTransactions(familyMemberId: string | null) {
   const { user } = useAuth();
+  const { userId: myUserId } = useUserSettings();
   const { ensureCategoriesExist } = useCategories();
 
   const createMutation = useCreateTransaction();
@@ -164,13 +181,15 @@ export function useTransactions(familyMemberId: string | null) {
           ),
         { familyMemberId }
       );
-      setTransactions(rows.map(toTransaction));
+      // Not `rows.map(toTransaction)` — Array.map passes the index as the
+      // second argument, which would arrive as myUserId.
+      setTransactions(rows.map((row) => toTransaction(row, myUserId)));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load transactions");
     } finally {
       setLoading(false);
     }
-  }, [user?.uid, familyMemberId]);
+  }, [user?.uid, familyMemberId, myUserId]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -206,8 +225,7 @@ export function useTransactions(familyMemberId: string | null) {
         recurrence: data.recurrence || undefined,
         categoryName: categoryName ?? undefined,
         source: data.source || "MANUAL",
-        status: data.status || (data.source === "FORECAST" ? "FORECASTED" : "POSTED"),
-        matchedTransactionId: data.matchedTransactionId || undefined,
+        status: data.status || statusForSource(data.source ?? "MANUAL"),
       } as CreateTransactionVariables);
 
       await refetch();
@@ -232,8 +250,7 @@ export function useTransactions(familyMemberId: string | null) {
           recurrence: data.recurrence ?? null,
           categoryName,
           source: data.source || "MANUAL",
-          status: data.status || (data.source === "FORECAST" ? "FORECASTED" : "POSTED"),
-          matchedTransactionId: data.matchedTransactionId ?? null,
+          status: data.status || statusForSource(data.source ?? "MANUAL"),
         } as UpdateTransactionVariables);
       } else {
         // Separate mutation, not `categoryName: null` on the one above — a
@@ -250,8 +267,7 @@ export function useTransactions(familyMemberId: string | null) {
           method: data.method ?? null,
           recurrence: data.recurrence ?? null,
           source: data.source || "MANUAL",
-          status: data.status || (data.source === "FORECAST" ? "FORECASTED" : "POSTED"),
-          matchedTransactionId: data.matchedTransactionId ?? null,
+          status: data.status || statusForSource(data.source ?? "MANUAL"),
         } as UpdateTransactionClearCategoryVariables);
       }
 

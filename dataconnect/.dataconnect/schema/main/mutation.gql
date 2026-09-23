@@ -1,14 +1,5 @@
 extend type Mutation {
   """
-  ✨ Insert a single `BankAccount` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  bankAccount_insert(
-    """
-    Data object to insert into the table.
-    """
-    data: BankAccount_Data!
-  ): BankAccount_KeyOutput! @fdc_generated(from: "BankAccount", purpose: INSERT_SINGLE)
-  """
   ✨ Insert a single `Category` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   category_insert(
@@ -62,15 +53,6 @@ extend type Mutation {
     """
     data: Feature_Data!
   ): Feature_KeyOutput! @fdc_generated(from: "Feature", purpose: INSERT_SINGLE)
-  """
-  ✨ Insert a single `PlaidItem` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  plaidItem_insert(
-    """
-    Data object to insert into the table.
-    """
-    data: PlaidItem_Data!
-  ): PlaidItem_KeyOutput! @fdc_generated(from: "PlaidItem", purpose: INSERT_SINGLE)
   """
   ✨ Insert a single `Theme` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -126,15 +108,6 @@ extend type Mutation {
     data: UserTypeFeature_Data!
   ): UserTypeFeature_KeyOutput! @fdc_generated(from: "UserTypeFeature", purpose: INSERT_SINGLE)
   """
-  ✨ Insert `BankAccount` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  bankAccount_insertMany(
-    """
-    List of data objects to insert into the table.
-    """
-    data: [BankAccount_Data!]!
-  ): [BankAccount_KeyOutput!]! @fdc_generated(from: "BankAccount", purpose: INSERT_MULTIPLE)
-  """
   ✨ Insert `Category` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   category_insertMany(
@@ -188,15 +161,6 @@ extend type Mutation {
     """
     data: [Feature_Data!]!
   ): [Feature_KeyOutput!]! @fdc_generated(from: "Feature", purpose: INSERT_MULTIPLE)
-  """
-  ✨ Insert `PlaidItem` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
-  """
-  plaidItem_insertMany(
-    """
-    List of data objects to insert into the table.
-    """
-    data: [PlaidItem_Data!]!
-  ): [PlaidItem_KeyOutput!]! @fdc_generated(from: "PlaidItem", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `Theme` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -252,15 +216,6 @@ extend type Mutation {
     data: [UserTypeFeature_Data!]!
   ): [UserTypeFeature_KeyOutput!]! @fdc_generated(from: "UserTypeFeature", purpose: INSERT_MULTIPLE)
   """
-  ✨ Insert or update a single `BankAccount` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `BankAccount`.
-  """
-  bankAccount_upsert(
-    """
-    Data object to insert or update if it already exists.
-    """
-    data: BankAccount_Data!
-  ): BankAccount_KeyOutput! @fdc_generated(from: "BankAccount", purpose: UPSERT_SINGLE)
-  """
   ✨ Insert or update a single `Category` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Category`.
   """
   category_upsert(
@@ -314,15 +269,6 @@ extend type Mutation {
     """
     data: Feature_Data!
   ): Feature_KeyOutput! @fdc_generated(from: "Feature", purpose: UPSERT_SINGLE)
-  """
-  ✨ Insert or update a single `PlaidItem` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `PlaidItem`.
-  """
-  plaidItem_upsert(
-    """
-    Data object to insert or update if it already exists.
-    """
-    data: PlaidItem_Data!
-  ): PlaidItem_KeyOutput! @fdc_generated(from: "PlaidItem", purpose: UPSERT_SINGLE)
   """
   ✨ Insert or update a single `Theme` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Theme`.
   """
@@ -378,15 +324,6 @@ extend type Mutation {
     data: UserTypeFeature_Data!
   ): UserTypeFeature_KeyOutput! @fdc_generated(from: "UserTypeFeature", purpose: UPSERT_SINGLE)
   """
-  ✨ Insert or update `BankAccount` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `BankAccount`.
-  """
-  bankAccount_upsertMany(
-    """
-    List of data objects to insert or update if it already exists.
-    """
-    data: [BankAccount_Data!]!
-  ): [BankAccount_KeyOutput!]! @fdc_generated(from: "BankAccount", purpose: UPSERT_MULTIPLE)
-  """
   ✨ Insert or update `Category` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Category`.
   """
   category_upsertMany(
@@ -441,15 +378,6 @@ extend type Mutation {
     data: [Feature_Data!]!
   ): [Feature_KeyOutput!]! @fdc_generated(from: "Feature", purpose: UPSERT_MULTIPLE)
   """
-  ✨ Insert or update `PlaidItem` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `PlaidItem`.
-  """
-  plaidItem_upsertMany(
-    """
-    List of data objects to insert or update if it already exists.
-    """
-    data: [PlaidItem_Data!]!
-  ): [PlaidItem_KeyOutput!]! @fdc_generated(from: "PlaidItem", purpose: UPSERT_MULTIPLE)
-  """
   ✨ Insert or update `Theme` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Theme`.
   """
   theme_upsertMany(
@@ -503,30 +431,6 @@ extend type Mutation {
     """
     data: [UserTypeFeature_Data!]!
   ): [UserTypeFeature_KeyOutput!]! @fdc_generated(from: "UserTypeFeature", purpose: UPSERT_MULTIPLE)
-  """
-  ✨ Update a single `BankAccount` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `BankAccount` or `null` if not found.
-  """
-  bankAccount_update(
-    """
-    The unique ID of the object.
-    """
-    id: UUID
-
-    """
-    The key used to identify the object.
-    """
-    key: BankAccount_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: BankAccount_FirstRow
-
-    """
-    Data object containing fields to be updated.
-    """
-    data: BankAccount_Data!
-  ): BankAccount_KeyOutput @fdc_generated(from: "BankAccount", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `Category` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Category` or `null` if not found.
   """
@@ -656,30 +560,6 @@ extend type Mutation {
     """
     data: Feature_Data!
   ): Feature_KeyOutput @fdc_generated(from: "Feature", purpose: UPDATE_SINGLE)
-  """
-  ✨ Update a single `PlaidItem` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `PlaidItem` or `null` if not found.
-  """
-  plaidItem_update(
-    """
-    The unique ID of the object.
-    """
-    id: UUID
-
-    """
-    The key used to identify the object.
-    """
-    key: PlaidItem_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: PlaidItem_FirstRow
-
-    """
-    Data object containing fields to be updated.
-    """
-    data: PlaidItem_Data!
-  ): PlaidItem_KeyOutput @fdc_generated(from: "PlaidItem", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `Theme` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Theme` or `null` if not found.
   """
@@ -815,25 +695,6 @@ extend type Mutation {
     data: UserTypeFeature_Data!
   ): UserTypeFeature_KeyOutput @fdc_generated(from: "UserTypeFeature", purpose: UPDATE_SINGLE)
   """
-  ✨ Update `BankAccount` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
-  """
-  bankAccount_updateMany(
-    """
-    Filter condition to specify which rows to update.
-    """
-    where: BankAccount_Filter
-
-    """
-    Set to true to update all rows.
-    """
-    all: Boolean = false
-
-    """
-    Data object containing fields to update.
-    """
-    data: BankAccount_Data!
-  ): Int! @fdc_generated(from: "BankAccount", purpose: UPDATE_MULTIPLE)
-  """
   ✨ Update `Category` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   category_updateMany(
@@ -947,25 +808,6 @@ extend type Mutation {
     """
     data: Feature_Data!
   ): Int! @fdc_generated(from: "Feature", purpose: UPDATE_MULTIPLE)
-  """
-  ✨ Update `PlaidItem` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
-  """
-  plaidItem_updateMany(
-    """
-    Filter condition to specify which rows to update.
-    """
-    where: PlaidItem_Filter
-
-    """
-    Set to true to update all rows.
-    """
-    all: Boolean = false
-
-    """
-    Data object containing fields to update.
-    """
-    data: PlaidItem_Data!
-  ): Int! @fdc_generated(from: "PlaidItem", purpose: UPDATE_MULTIPLE)
   """
   ✨ Update `Theme` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
@@ -1081,25 +923,6 @@ extend type Mutation {
     data: UserTypeFeature_Data!
   ): Int! @fdc_generated(from: "UserTypeFeature", purpose: UPDATE_MULTIPLE)
   """
-  ✨ Delete a single `BankAccount` based on `id`, `key` or `first` and return its key (or `null` if not found).
-  """
-  bankAccount_delete(
-    """
-    The unique ID of the object.
-    """
-    id: UUID
-
-    """
-    The key used to identify the object.
-    """
-    key: BankAccount_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: BankAccount_FirstRow
-  ): BankAccount_KeyOutput @fdc_generated(from: "BankAccount", purpose: DELETE_SINGLE)
-  """
   ✨ Delete a single `Category` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   category_delete(
@@ -1198,25 +1021,6 @@ extend type Mutation {
     """
     first: Feature_FirstRow
   ): Feature_KeyOutput @fdc_generated(from: "Feature", purpose: DELETE_SINGLE)
-  """
-  ✨ Delete a single `PlaidItem` based on `id`, `key` or `first` and return its key (or `null` if not found).
-  """
-  plaidItem_delete(
-    """
-    The unique ID of the object.
-    """
-    id: UUID
-
-    """
-    The key used to identify the object.
-    """
-    key: PlaidItem_Key
-
-    """
-    Fetch the first row based on the filters and ordering.
-    """
-    first: PlaidItem_FirstRow
-  ): PlaidItem_KeyOutput @fdc_generated(from: "PlaidItem", purpose: DELETE_SINGLE)
   """
   ✨ Delete a single `Theme` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
@@ -1322,20 +1126,6 @@ extend type Mutation {
     first: UserTypeFeature_FirstRow
   ): UserTypeFeature_KeyOutput @fdc_generated(from: "UserTypeFeature", purpose: DELETE_SINGLE)
   """
-  ✨ Delete `BankAccount` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
-  """
-  bankAccount_deleteMany(
-    """
-    Filter condition to specify which rows to delete.
-    """
-    where: BankAccount_Filter
-
-    """
-    Set to true to delete all rows.
-    """
-    all: Boolean = false
-  ): Int! @fdc_generated(from: "BankAccount", purpose: DELETE_MULTIPLE)
-  """
   ✨ Delete `Category` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """
   category_deleteMany(
@@ -1419,20 +1209,6 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "Feature", purpose: DELETE_MULTIPLE)
-  """
-  ✨ Delete `PlaidItem` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
-  """
-  plaidItem_deleteMany(
-    """
-    Filter condition to specify which rows to delete.
-    """
-    where: PlaidItem_Filter
-
-    """
-    Set to true to delete all rows.
-    """
-    all: Boolean = false
-  ): Int! @fdc_generated(from: "PlaidItem", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `Theme` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """

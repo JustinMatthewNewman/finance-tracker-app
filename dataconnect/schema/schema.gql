@@ -101,7 +101,7 @@ type User @table {
 # A household group: the set of accounts that can see each other's finances.
 #
 # WHAT A FAMILY DOES AND DOES NOT OWN. It owns no financial data. Every
-# Transaction, FamilyMember, PlaidItem and BankAccount still belongs to the
+# Transaction and FamilyMember still belongs to the
 # User who created it, and every write is still guarded by "is this your
 # row", unchanged. What a family changes is *reads*: a row is visible to you
 # if you own it, OR if its owner is in your family. That asymmetry — shared
@@ -237,7 +237,13 @@ type FamilyMember @table {
   # Soft delete, exactly as the template's WorkLog does it. A hard delete
   # would cascade to every Transaction the person ever had, which is
   # destructive in a way "remove from the sidebar" does not imply. Every
-  # query filters on this; RestoreFamilyMember undoes it.
+  # query filters on this.
+  #
+  # There is no restore mutation. That is not an oversight — this column
+  # earns its keep purely by protecting transaction history from the cascade,
+  # and an unreachable RestoreFamilyMember was deleted rather than left
+  # sitting in the connector. Bringing somebody back is a one-line mutation
+  # plus the UI to reach it, on the day that is wanted.
   isDeleted: Boolean @default(expr: "false")
   createdAt: Timestamp! @default(expr: "request.time")
 }
@@ -294,7 +300,6 @@ type Transaction @table {
   user: User!
   familyMember: FamilyMember!
   category: Category
-  bankAccount: BankAccount
 
   # MONEY IS AN INTEGER. Amounts are minor units of the household's currency
   # (cents for USD), never a float and never a GraphQL Float. Binary floating
@@ -330,62 +335,41 @@ type Transaction @table {
   # without a migration.
   recurrence: String
 
-  # --- Plaid Integration Fields ---
-  # Plaid's unique transaction_id; @unique prevents duplicate rows on sync
-  plaidTransactionId: String @unique
-  # Reference to pending transaction ID if this posted row replaced one
-  plaidPendingTransactionId: String
-  isPending: Boolean @default(expr: "false")
-  # Raw Plaid primary category e.g. "FOOD_AND_DRINK"
-  plaidCategory: String
+  # --- Projected vs. actual ---
+  #
+  # A row is either something that HAPPENED or something the household
+  # EXPECTS to happen — an anticipated paycheque, a bill that is due. Both
+  # live in this table rather than in a separate "projections" one, and that
+  # is the single most important decision in this schema.
+  #
+  # The alternative — a ProjectedTransaction table beside this one — looks
+  # tidier right up until you try to use it. Every total, every calendar day,
+  # every category breakdown and every search would have to read both tables
+  # and union them, and each of those is a place to forget one. Worse, the
+  # eventual job of reconciling a projection against the real transaction
+  # that fulfils it becomes a cross-table migration of a row rather than a
+  # change of one column.
+  #
+  # This also happens to be what a future Plaid import needs: it writes rows
+  # here with source "PLAID", and they are the same shape as everything else
+  # the app already renders. Nothing about that import is built yet, and
+  # nothing here anticipates it beyond leaving the door open.
 
-  # --- Transaction Source & Forecasting Fields ---
-  # "PLAID", "MANUAL", "FORECAST"
+  # "MANUAL" — entered by hand, and it already happened.
+  # "FORECAST" — entered by hand, and it is expected.
+  # Validated in lib/transactionKind.ts, like every other string enum here.
   source: String! @default(value: "MANUAL")
-  # "POSTED", "PENDING", "FORECASTED", "MATCHED"
+  # "POSTED" — real money moved.
+  # "FORECASTED" — expected, hasn't happened yet.
+  #
+  # Deliberately NOT derivable from `source`, even though today the two move
+  # together: marking a projection as received flips `status` to POSTED while
+  # `source` stays FORECAST, which is what preserves "this started life as a
+  # projection" after the fact. Collapsing them into one column would throw
+  # that away the moment it becomes interesting.
   status: String! @default(value: "POSTED")
-  # Optional link connecting a forecasted item to its actual fulfilled transaction
-  matchedTransactionId: UUID
 
   createdAt: Timestamp!
-}
-
-# A connected financial institution connection created via Plaid Link.
-type PlaidItem @table {
-  id: UUID! @default(expr: "uuidV4()")
-  user: User!
-  # Plaid's unique item_id (e.g. "item_abc123")
-  plaidItemId: String! @unique
-  # Encrypted access token used server-side to call Plaid APIs
-  accessTokenEncrypted: String!
-  institutionId: String
-  institutionName: String!
-  # Cursor returned by Plaid's /transactions/sync for incremental syncs
-  syncCursor: String
-  # Connection status: "ACTIVE", "ERROR", "REQUIRES_REAUTH"
-  status: String! @default(value: "ACTIVE")
-  lastSyncedAt: Timestamp
-  createdAt: Timestamp! @default(expr: "request.time")
-}
-
-# A specific bank/credit account under a PlaidItem.
-type BankAccount @table {
-  id: UUID! @default(expr: "uuidV4()")
-  user: User!
-  plaidItem: PlaidItem!
-  familyMember: FamilyMember # Optional assignment to household member
-  # Plaid's account_id (e.g. "acc_xyz789")
-  plaidAccountId: String! @unique
-  name: String! # e.g. "Total Checking"
-  officialName: String # e.g. "CHASE TOTAL CHECKING"
-  mask: String # Last 4 digits e.g. "1234"
-  type: String! # "depository", "credit", "loan", "investment"
-  subtype: String # "checking", "savings", "credit card"
-  currentBalanceMinor: Int
-  availableBalanceMinor: Int
-  isoCurrencyCode: String @default(value: "USD")
-  isMuted: Boolean @default(expr: "false") # Option to ignore sync for this account
-  createdAt: Timestamp! @default(expr: "request.time")
 }
 
 # A named color scheme (e.g. "Ocean", "Forest") a user can pick in Settings.

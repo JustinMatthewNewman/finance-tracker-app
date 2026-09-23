@@ -10,6 +10,18 @@
 # A query that returns another account's data must be NO_ACCESS. There is no
 # third option where the client is trusted to pass the right userId.
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Tier administration — NO UI YET, AND THAT IS DELIBERATE
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# ListUsers, ListUserTypes and SetUserType (in mutations.gql) are the read and
+# write halves of an admin surface that has not been built. They are kept
+# rather than deleted because the tier system they serve is kept — see
+# README's "Making yourself an admin", which documents SetUserType as the
+# promotion path today.
+#
+# If tiers get dropped later, these three go with them.
+
 # Server-side only: the full account list, for administrative tooling.
 query ListUsers @auth(level: NO_ACCESS) {
   users {
@@ -284,7 +296,6 @@ query ListTransactionsByFamilyMember(
     recurrence
     source
     status
-    matchedTransactionId
     createdAt
     familyMember {
       id
@@ -329,7 +340,6 @@ query ListMyTransactions($limit: Int = 500, $offset: Int = 0) @auth(level: USER)
     recurrence
     source
     status
-    matchedTransactionId
     createdAt
     familyMember {
       id
@@ -384,7 +394,6 @@ query ListMyTransactionsByDateRange(
     recurrence
     source
     status
-    matchedTransactionId
     createdAt
     familyMember {
       id
@@ -405,62 +414,6 @@ query ListMyTransactionsByDateRange(
   }
 }
 
-# SECURITY FIX, and worth understanding rather than just copying.
-#
-# This was `transaction(key: { id: $transactionId })` with no where clause at
-# all: a USER-level query that took a row id straight from the caller and
-# returned whatever it pointed at. Any signed-in account could read any
-# transaction in the database given its UUID — amount, merchant, description,
-# the lot. Nothing in the app calls this query, which is exactly why it went
-# unnoticed; being unreferenced by the UI does not make an operation in the
-# connector unreachable, it only makes it unreachable *by accident*.
-#
-# `first: { where: ... }` instead of `key:` is what fixes it — the id becomes
-# one predicate among several rather than a direct address, so the same
-# visibility rule that governs the list queries governs this one, and an id
-# belonging to another household simply returns nothing.
-query GetTransaction($transactionId: UUID!) @auth(level: USER) {
-  transaction(first: { where: {
-    _and: [
-        { id: { eq: $transactionId } }
-        {
-          _or: [
-            { user: { googleUid: { eq_expr: "auth.uid" } } }
-            { user: { family: { users_on_family: { exist: { googleUid: { eq_expr: "auth.uid" } } } } } }
-          ]
-        }
-      ]
-  } }) {
-    id
-    amountMinor
-    direction
-    occurredOn
-    description
-    merchant
-    method
-    recurrence
-    source
-    status
-    matchedTransactionId
-    createdAt
-    familyMember {
-      id
-      name
-    }
-    category {
-      id
-      name
-      kind
-      color
-    }
-    # Which account created this row, so the UI can mark what it must not
-    # offer to edit. See "WRITES ARE NOT WIDENED" above.
-    user {
-      id
-      username
-    }
-  }
-}
 
 
 # ─────────────────────────────────────────────────────────────────────────────
