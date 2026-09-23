@@ -209,6 +209,22 @@ that accepts a row id and has no `@check` is a cross-tenant write: knowing a
 UUID is not authorization. See the two guard patterns documented at the top of
 `dataconnect/finance/mutations.gql`.
 
+**Where the guard reads one row and the write touches another, absence must be
+a denial.** A guard query that matches nothing evaluates none of its nested
+`@check`s, so "no such row" silently becomes "permitted". Most mutations here
+survive that because the write also matches nothing — but `ApproveJoinRequest`
+checks a join request and then updates a *user*, and without a top-level
+`@check(expr: "this != null")` it would pull any account in the database into
+the caller's household. Every family mutation carries one.
+
+**Reads are household-wide; writes are not.** A row is visible if you own it,
+or if its owner belongs to a household you also belong to — a correlated
+`exist` filter taking no variable at all, written out at the top of
+`queries.gql` and repeated by every household read. Authorship is untouched,
+so a transaction belonging to a housemate is visible and read-only, and any
+control the UI offers for it must be gated on `isMine` or it will fail at a
+`@check` the person never sees.
+
 **Feature gates are rendering hints, not security.** `hooks/useFeatures.ts`
 decides what the UI shows; the value round-trips through the browser and is
 trivially spoofed. Every privileged route must re-check server-side via
@@ -217,6 +233,33 @@ trivially spoofed. Every privileged route must re-check server-side via
 **Queries use `SERVER_ONLY`.** Data Connect's generated React query hooks
 default to a cache policy that mutations never invalidate, so a plain
 `refetch()` can return a stale list forever after a write.
+
+**A `User` is never created without its `UserSetting`.** The settings row is a
+nested insert inside `CreateUserFromGoogle`, so the two arrive in one
+transaction. This is worth knowing because the failure it replaced was
+invisible: every preference write is a `userSetting_update(first: {where:
+...})`, an update matching zero rows *reports success*, and the contexts set
+their local state optimistically — so toggling a setting looked like it saved
+right up until the page was reloaded. `sync-user` backfills the row for
+accounts created before this existed.
+
+### Households
+
+A `Family` groups **accounts**, not people — the tracked people are still
+`FamilyMember` rows owned by one account each. Joining one widens what you can
+read and nothing else.
+
+A household is reached by **invite code**, never by browsing: there is no query
+anywhere that lists families. The code is a bearer capability, so
+`lib/inviteCode.ts` generates it from a CSPRNG over a 32-symbol alphabet
+(~50 bits) with the confusable letters removed, and the owner can rotate it if
+it leaks. Resolving a code discloses a household's name and nothing else.
+
+New accounts land in `app/(onboarding)/`, which has no navbar because it is a
+separate route group rather than a condition inside `Navbar`. They either
+create a household (instant — it is theirs) or ask to join one (pending until
+the household's primary user approves them in Settings). The approval guard is
+the most security-sensitive mutation in the app; see the note above.
 
 ### Regenerating the Data Connect SDK
 
@@ -227,6 +270,26 @@ in so the app typechecks without a provisioned backend. After editing
 ```bash
 npm run dataconnect:generate
 ```
+
+### Verifying the authorization boundary
+
+```bash
+npm run emulators       # terminal 1
+npm run verify:guards   # terminal 2
+```
+
+Mints three real identities against the Auth emulator and drives the connector
+over HTTP as each of them, trying to read and write across household
+boundaries — approving requests that do not exist, admitting accounts that
+never asked, renaming a housemate's records, reading a transaction by id from
+outside the household.
+
+Run it after any change to `schema.gql`, `mutations.gql` or `queries.gql`.
+Nothing in `npm test` can reach these: `@auth` levels, `@check` expressions and
+the visibility filter all execute inside Data Connect, and a mocked connector
+would only confirm that the mock agrees with itself. The failure mode is the
+reason it exists — a weakened guard does not raise, it permits, and a filter
+that is too wide does not error, it returns somebody else's money.
 
 ---
 
@@ -257,5 +320,6 @@ npm run dataconnect:generate
 | `npm run seed` | Load reference data into the emulator (idempotent) |
 | `npm run make-env` | Build `.env.local` from the Firebase config + service account key |
 | `npm run dataconnect:generate` | Regenerate the Data Connect SDKs |
+| `npm run verify:guards` | Drive the connector as three identities and try to break the household boundary |
 | `npm run lint` | ESLint |
 | `npm test` | Vitest |

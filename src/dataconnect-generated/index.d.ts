@@ -11,9 +11,28 @@ export type DateString = string;
 
 
 
+export interface ApproveJoinRequestData {
+  familyJoinRequest_update?: FamilyJoinRequest_Key | null;
+  user_update?: User_Key | null;
+}
+
+export interface ApproveJoinRequestVariables {
+  familyId: UUIDString;
+  requesterId: UUIDString;
+}
+
 export interface BankAccount_Key {
   id: UUIDString;
   __typename?: 'BankAccount_Key';
+}
+
+export interface CancelMyJoinRequestData {
+  familyJoinRequest_update?: FamilyJoinRequest_Key | null;
+}
+
+export interface CancelMyJoinRequestVariables {
+  familyId: UUIDString;
+  userId: UUIDString;
 }
 
 export interface Category_Key {
@@ -30,6 +49,11 @@ export interface ColorScheme_Key {
   __typename?: 'ColorScheme_Key';
 }
 
+export interface CreateFamilyData {
+  family_insert: Family_Key;
+  user_update?: User_Key | null;
+}
+
 export interface CreateFamilyMemberData {
   familyMember_insert: FamilyMember_Key;
 }
@@ -41,6 +65,13 @@ export interface CreateFamilyMemberVariables {
   relationship?: string | null;
   color?: string | null;
   monthlyIncomeTargetMinor?: number | null;
+}
+
+export interface CreateFamilyVariables {
+  userId: UUIDString;
+  familyId: UUIDString;
+  name: string;
+  inviteCode: string;
 }
 
 export interface CreateTransactionData {
@@ -77,6 +108,14 @@ export interface CreateUserFromGoogleVariables {
   userTypeName?: string;
 }
 
+export interface CreateUserSettingForUserData {
+  userSetting_insert: UserSetting_Key;
+}
+
+export interface CreateUserSettingForUserVariables {
+  userId: UUIDString;
+}
+
 export interface DeleteFamilyMemberData {
   familyMember_update?: FamilyMember_Key | null;
 }
@@ -93,14 +132,91 @@ export interface DeleteTransactionVariables {
   transactionId: UUIDString;
 }
 
+export interface DenyJoinRequestData {
+  familyJoinRequest_update?: FamilyJoinRequest_Key | null;
+}
+
+export interface DenyJoinRequestVariables {
+  familyId: UUIDString;
+  requesterId: UUIDString;
+}
+
+export interface FamilyJoinRequest_Key {
+  familyId: UUIDString;
+  requesterId: UUIDString;
+  __typename?: 'FamilyJoinRequest_Key';
+}
+
 export interface FamilyMember_Key {
   id: UUIDString;
   __typename?: 'FamilyMember_Key';
 }
 
+export interface Family_Key {
+  id: UUIDString;
+  __typename?: 'Family_Key';
+}
+
 export interface Feature_Key {
   name: string;
   __typename?: 'Feature_Key';
+}
+
+export interface GetFamilyByInviteCodeData {
+  family?: {
+    id: UUIDString;
+    name: string;
+    ownerUser: {
+      username: string;
+    };
+  } & Family_Key;
+}
+
+export interface GetFamilyByInviteCodeVariables {
+  inviteCode: string;
+}
+
+export interface GetMyFamilyDetailData {
+  families: ({
+    id: UUIDString;
+    name: string;
+    inviteCode: string;
+    createdAt: TimestampString;
+    ownerUser: {
+      id: UUIDString;
+      username: string;
+    } & User_Key;
+    members: ({
+      id: UUIDString;
+      username: string;
+      email?: string | null;
+      createdAt: TimestampString;
+    } & User_Key)[];
+    pendingRequests: ({
+      status: string;
+      createdAt: TimestampString;
+      requester: {
+        id: UUIDString;
+        username: string;
+        email?: string | null;
+      } & User_Key;
+    })[];
+  } & Family_Key)[];
+}
+
+export interface GetMyJoinRequestsData {
+  familyJoinRequests: ({
+    status: string;
+    createdAt: TimestampString;
+    decidedAt?: TimestampString | null;
+    family: {
+      id: UUIDString;
+      name: string;
+      ownerUser: {
+        username: string;
+      };
+    } & Family_Key;
+  })[];
 }
 
 export interface GetMyUserData {
@@ -133,6 +249,15 @@ export interface GetMyUserData {
         description?: string | null;
       } & Feature_Key)[];
     } & UserType_Key;
+    family?: {
+      id: UUIDString;
+      name: string;
+      inviteCode: string;
+      ownerUser: {
+        id: UUIDString;
+        username: string;
+      } & User_Key;
+    } & Family_Key;
   } & User_Key;
 }
 
@@ -160,6 +285,10 @@ export interface GetTransactionData {
       kind: string;
       color?: string | null;
     } & Category_Key;
+    user: {
+      id: UUIDString;
+      username: string;
+    } & User_Key;
   } & Transaction_Key;
 }
 
@@ -182,6 +311,27 @@ export interface GetUserAccessByGoogleUidData {
 
 export interface GetUserAccessByGoogleUidVariables {
   googleUid: string;
+}
+
+export interface GetUserProvisioningByGoogleUidData {
+  user?: {
+    id: UUIDString;
+    userSetting?: {
+      id: UUIDString;
+    } & UserSetting_Key;
+  } & User_Key;
+}
+
+export interface GetUserProvisioningByGoogleUidVariables {
+  googleUid: string;
+}
+
+export interface LeaveMyFamilyData {
+  user_update?: User_Key | null;
+}
+
+export interface LeaveMyFamilyVariables {
+  userId: UUIDString;
 }
 
 export interface ListCategoriesData {
@@ -233,6 +383,10 @@ export interface ListFamilyMembersData {
     externalAccountRef?: string | null;
     monthlyIncomeTargetMinor?: number | null;
     createdAt: TimestampString;
+    user: {
+      id: UUIDString;
+      username: string;
+    } & User_Key;
   } & FamilyMember_Key)[];
 }
 
@@ -265,6 +419,10 @@ export interface ListMyTransactionsByDateRangeData {
       kind: string;
       color?: string | null;
     } & Category_Key;
+    user: {
+      id: UUIDString;
+      username: string;
+    } & User_Key;
   } & Transaction_Key)[];
 }
 
@@ -299,6 +457,10 @@ export interface ListMyTransactionsData {
       kind: string;
       color?: string | null;
     } & Category_Key;
+    user: {
+      id: UUIDString;
+      username: string;
+    } & User_Key;
   } & Transaction_Key)[];
 }
 
@@ -331,6 +493,10 @@ export interface ListTransactionsByFamilyMemberData {
       kind: string;
       color?: string | null;
     } & Category_Key;
+    user: {
+      id: UUIDString;
+      username: string;
+    } & User_Key;
   } & Transaction_Key)[];
 }
 
@@ -364,6 +530,15 @@ export interface PlaidItem_Key {
   __typename?: 'PlaidItem_Key';
 }
 
+export interface RegenerateFamilyInviteCodeData {
+  family_update?: Family_Key | null;
+}
+
+export interface RegenerateFamilyInviteCodeVariables {
+  familyId: UUIDString;
+  inviteCode: string;
+}
+
 export interface RenameFamilyMemberData {
   familyMember_update?: FamilyMember_Key | null;
 }
@@ -371,6 +546,15 @@ export interface RenameFamilyMemberData {
 export interface RenameFamilyMemberVariables {
   familyMemberId: UUIDString;
   name: string;
+}
+
+export interface RequestToJoinFamilyData {
+  familyJoinRequest_upsert: FamilyJoinRequest_Key;
+}
+
+export interface RequestToJoinFamilyVariables {
+  userId: UUIDString;
+  familyId: UUIDString;
 }
 
 export interface RestoreFamilyMemberData {
@@ -936,6 +1120,102 @@ export const syncPlaidTransactionRef: SyncPlaidTransactionRef;
 export function syncPlaidTransaction(vars: SyncPlaidTransactionVariables): MutationPromise<SyncPlaidTransactionData, SyncPlaidTransactionVariables>;
 export function syncPlaidTransaction(dc: DataConnect, vars: SyncPlaidTransactionVariables): MutationPromise<SyncPlaidTransactionData, SyncPlaidTransactionVariables>;
 
+interface CreateFamilyRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateFamilyVariables): MutationRef<CreateFamilyData, CreateFamilyVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateFamilyVariables): MutationRef<CreateFamilyData, CreateFamilyVariables>;
+  operationName: string;
+}
+export const createFamilyRef: CreateFamilyRef;
+
+export function createFamily(vars: CreateFamilyVariables): MutationPromise<CreateFamilyData, CreateFamilyVariables>;
+export function createFamily(dc: DataConnect, vars: CreateFamilyVariables): MutationPromise<CreateFamilyData, CreateFamilyVariables>;
+
+interface RequestToJoinFamilyRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: RequestToJoinFamilyVariables): MutationRef<RequestToJoinFamilyData, RequestToJoinFamilyVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: RequestToJoinFamilyVariables): MutationRef<RequestToJoinFamilyData, RequestToJoinFamilyVariables>;
+  operationName: string;
+}
+export const requestToJoinFamilyRef: RequestToJoinFamilyRef;
+
+export function requestToJoinFamily(vars: RequestToJoinFamilyVariables): MutationPromise<RequestToJoinFamilyData, RequestToJoinFamilyVariables>;
+export function requestToJoinFamily(dc: DataConnect, vars: RequestToJoinFamilyVariables): MutationPromise<RequestToJoinFamilyData, RequestToJoinFamilyVariables>;
+
+interface ApproveJoinRequestRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ApproveJoinRequestVariables): MutationRef<ApproveJoinRequestData, ApproveJoinRequestVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ApproveJoinRequestVariables): MutationRef<ApproveJoinRequestData, ApproveJoinRequestVariables>;
+  operationName: string;
+}
+export const approveJoinRequestRef: ApproveJoinRequestRef;
+
+export function approveJoinRequest(vars: ApproveJoinRequestVariables): MutationPromise<ApproveJoinRequestData, ApproveJoinRequestVariables>;
+export function approveJoinRequest(dc: DataConnect, vars: ApproveJoinRequestVariables): MutationPromise<ApproveJoinRequestData, ApproveJoinRequestVariables>;
+
+interface DenyJoinRequestRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DenyJoinRequestVariables): MutationRef<DenyJoinRequestData, DenyJoinRequestVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: DenyJoinRequestVariables): MutationRef<DenyJoinRequestData, DenyJoinRequestVariables>;
+  operationName: string;
+}
+export const denyJoinRequestRef: DenyJoinRequestRef;
+
+export function denyJoinRequest(vars: DenyJoinRequestVariables): MutationPromise<DenyJoinRequestData, DenyJoinRequestVariables>;
+export function denyJoinRequest(dc: DataConnect, vars: DenyJoinRequestVariables): MutationPromise<DenyJoinRequestData, DenyJoinRequestVariables>;
+
+interface CancelMyJoinRequestRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CancelMyJoinRequestVariables): MutationRef<CancelMyJoinRequestData, CancelMyJoinRequestVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CancelMyJoinRequestVariables): MutationRef<CancelMyJoinRequestData, CancelMyJoinRequestVariables>;
+  operationName: string;
+}
+export const cancelMyJoinRequestRef: CancelMyJoinRequestRef;
+
+export function cancelMyJoinRequest(vars: CancelMyJoinRequestVariables): MutationPromise<CancelMyJoinRequestData, CancelMyJoinRequestVariables>;
+export function cancelMyJoinRequest(dc: DataConnect, vars: CancelMyJoinRequestVariables): MutationPromise<CancelMyJoinRequestData, CancelMyJoinRequestVariables>;
+
+interface LeaveMyFamilyRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: LeaveMyFamilyVariables): MutationRef<LeaveMyFamilyData, LeaveMyFamilyVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: LeaveMyFamilyVariables): MutationRef<LeaveMyFamilyData, LeaveMyFamilyVariables>;
+  operationName: string;
+}
+export const leaveMyFamilyRef: LeaveMyFamilyRef;
+
+export function leaveMyFamily(vars: LeaveMyFamilyVariables): MutationPromise<LeaveMyFamilyData, LeaveMyFamilyVariables>;
+export function leaveMyFamily(dc: DataConnect, vars: LeaveMyFamilyVariables): MutationPromise<LeaveMyFamilyData, LeaveMyFamilyVariables>;
+
+interface RegenerateFamilyInviteCodeRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: RegenerateFamilyInviteCodeVariables): MutationRef<RegenerateFamilyInviteCodeData, RegenerateFamilyInviteCodeVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: RegenerateFamilyInviteCodeVariables): MutationRef<RegenerateFamilyInviteCodeData, RegenerateFamilyInviteCodeVariables>;
+  operationName: string;
+}
+export const regenerateFamilyInviteCodeRef: RegenerateFamilyInviteCodeRef;
+
+export function regenerateFamilyInviteCode(vars: RegenerateFamilyInviteCodeVariables): MutationPromise<RegenerateFamilyInviteCodeData, RegenerateFamilyInviteCodeVariables>;
+export function regenerateFamilyInviteCode(dc: DataConnect, vars: RegenerateFamilyInviteCodeVariables): MutationPromise<RegenerateFamilyInviteCodeData, RegenerateFamilyInviteCodeVariables>;
+
+interface CreateUserSettingForUserRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateUserSettingForUserVariables): MutationRef<CreateUserSettingForUserData, CreateUserSettingForUserVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateUserSettingForUserVariables): MutationRef<CreateUserSettingForUserData, CreateUserSettingForUserVariables>;
+  operationName: string;
+}
+export const createUserSettingForUserRef: CreateUserSettingForUserRef;
+
+export function createUserSettingForUser(vars: CreateUserSettingForUserVariables): MutationPromise<CreateUserSettingForUserData, CreateUserSettingForUserVariables>;
+export function createUserSettingForUser(dc: DataConnect, vars: CreateUserSettingForUserVariables): MutationPromise<CreateUserSettingForUserData, CreateUserSettingForUserVariables>;
+
 interface ListUsersRef {
   /* Allow users to create refs without passing in DataConnect */
   (): QueryRef<ListUsersData, undefined>;
@@ -995,6 +1275,18 @@ export const getUserAccessByGoogleUidRef: GetUserAccessByGoogleUidRef;
 
 export function getUserAccessByGoogleUid(vars: GetUserAccessByGoogleUidVariables, options?: ExecuteQueryOptions): QueryPromise<GetUserAccessByGoogleUidData, GetUserAccessByGoogleUidVariables>;
 export function getUserAccessByGoogleUid(dc: DataConnect, vars: GetUserAccessByGoogleUidVariables, options?: ExecuteQueryOptions): QueryPromise<GetUserAccessByGoogleUidData, GetUserAccessByGoogleUidVariables>;
+
+interface GetUserProvisioningByGoogleUidRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetUserProvisioningByGoogleUidVariables): QueryRef<GetUserProvisioningByGoogleUidData, GetUserProvisioningByGoogleUidVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetUserProvisioningByGoogleUidVariables): QueryRef<GetUserProvisioningByGoogleUidData, GetUserProvisioningByGoogleUidVariables>;
+  operationName: string;
+}
+export const getUserProvisioningByGoogleUidRef: GetUserProvisioningByGoogleUidRef;
+
+export function getUserProvisioningByGoogleUid(vars: GetUserProvisioningByGoogleUidVariables, options?: ExecuteQueryOptions): QueryPromise<GetUserProvisioningByGoogleUidData, GetUserProvisioningByGoogleUidVariables>;
+export function getUserProvisioningByGoogleUid(dc: DataConnect, vars: GetUserProvisioningByGoogleUidVariables, options?: ExecuteQueryOptions): QueryPromise<GetUserProvisioningByGoogleUidData, GetUserProvisioningByGoogleUidVariables>;
 
 interface ListFamilyMembersRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -1067,4 +1359,40 @@ export const getTransactionRef: GetTransactionRef;
 
 export function getTransaction(vars: GetTransactionVariables, options?: ExecuteQueryOptions): QueryPromise<GetTransactionData, GetTransactionVariables>;
 export function getTransaction(dc: DataConnect, vars: GetTransactionVariables, options?: ExecuteQueryOptions): QueryPromise<GetTransactionData, GetTransactionVariables>;
+
+interface GetFamilyByInviteCodeRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: GetFamilyByInviteCodeVariables): QueryRef<GetFamilyByInviteCodeData, GetFamilyByInviteCodeVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: GetFamilyByInviteCodeVariables): QueryRef<GetFamilyByInviteCodeData, GetFamilyByInviteCodeVariables>;
+  operationName: string;
+}
+export const getFamilyByInviteCodeRef: GetFamilyByInviteCodeRef;
+
+export function getFamilyByInviteCode(vars: GetFamilyByInviteCodeVariables, options?: ExecuteQueryOptions): QueryPromise<GetFamilyByInviteCodeData, GetFamilyByInviteCodeVariables>;
+export function getFamilyByInviteCode(dc: DataConnect, vars: GetFamilyByInviteCodeVariables, options?: ExecuteQueryOptions): QueryPromise<GetFamilyByInviteCodeData, GetFamilyByInviteCodeVariables>;
+
+interface GetMyFamilyDetailRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<GetMyFamilyDetailData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<GetMyFamilyDetailData, undefined>;
+  operationName: string;
+}
+export const getMyFamilyDetailRef: GetMyFamilyDetailRef;
+
+export function getMyFamilyDetail(options?: ExecuteQueryOptions): QueryPromise<GetMyFamilyDetailData, undefined>;
+export function getMyFamilyDetail(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<GetMyFamilyDetailData, undefined>;
+
+interface GetMyJoinRequestsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (): QueryRef<GetMyJoinRequestsData, undefined>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect): QueryRef<GetMyJoinRequestsData, undefined>;
+  operationName: string;
+}
+export const getMyJoinRequestsRef: GetMyJoinRequestsRef;
+
+export function getMyJoinRequests(options?: ExecuteQueryOptions): QueryPromise<GetMyJoinRequestsData, undefined>;
+export function getMyJoinRequests(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<GetMyJoinRequestsData, undefined>;
 

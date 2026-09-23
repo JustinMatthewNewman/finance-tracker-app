@@ -468,6 +468,250 @@ extend type ColorScheme {
   """
   _id: ID! @fdc_generated(from: "ColorScheme.id", purpose: ENTITY_ID)
 }
+extend type Family {
+  """
+  ✨ List `FamilyJoinRequest` objects in a one-to-many relationship (where `FamilyJoinRequest`.`family` is this object).
+  """
+  familyJoinRequests_on_family(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: FamilyJoinRequest_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [FamilyJoinRequest_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: FamilyJoinRequest_Having
+  ): [FamilyJoinRequest!]! @fdc_generated(from: "FamilyJoinRequest.family", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `User` objects in a one-to-many relationship (where `User`.`family` is this object).
+  """
+  users_on_family(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: User_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [User_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: User_Having
+  ): [User!]! @fdc_generated(from: "User.family", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `User` objects using `FamilyJoinRequest` as the join table (a `FamilyJoinRequest` object exists where its `family` is this and its `requester` is that).
+  """
+  users_via_FamilyJoinRequest(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: FamilyJoinRequest_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [FamilyJoinRequest_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: FamilyJoinRequest_Having
+  ): [User!]! @fdc_generated(from: "FamilyJoinRequest", purpose: QUERY_MULTIPLE_MANY_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Family", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `Family` table.
+  """
+  _count: Int! @fdc_generated(from: "Family.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Family` table where the `createdAt` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  createdAt_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Family.createdAt", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Family` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Family.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Family` table where the `inviteCode` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  inviteCode_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Family.inviteCode", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Family` table where the `name` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  name_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Family.name", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Family` table where the `ownerUserId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  ownerUserId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Family.ownerUserId", purpose: QUERY_COUNT)
+  """
+  ✨ Minimum of the `createdAt` field in the `Family` table.
+  """
+  createdAt_min: Timestamp @fdc_generated(from: "Family.createdAt", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `createdAt` field in the `Family` table.
+  """
+  createdAt_max: Timestamp @fdc_generated(from: "Family.createdAt", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "Family.id", purpose: ENTITY_ID)
+}
+extend type FamilyJoinRequest {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "FamilyJoinRequest", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `FamilyJoinRequest` table.
+  """
+  _count: Int! @fdc_generated(from: "FamilyJoinRequest.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `FamilyJoinRequest` table where the `createdAt` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  createdAt_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "FamilyJoinRequest.createdAt", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `FamilyJoinRequest` table where the `decidedAt` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  decidedAt_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "FamilyJoinRequest.decidedAt", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `FamilyJoinRequest` table where the `familyId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  familyId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "FamilyJoinRequest.familyId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `FamilyJoinRequest` table where the `requesterId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  requesterId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "FamilyJoinRequest.requesterId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `FamilyJoinRequest` table where the `status` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  status_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "FamilyJoinRequest.status", purpose: QUERY_COUNT)
+  """
+  ✨ Minimum of the `createdAt` field in the `FamilyJoinRequest` table.
+  """
+  createdAt_min: Timestamp @fdc_generated(from: "FamilyJoinRequest.createdAt", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `decidedAt` field in the `FamilyJoinRequest` table.
+  """
+  decidedAt_min: Timestamp @fdc_generated(from: "FamilyJoinRequest.decidedAt", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `createdAt` field in the `FamilyJoinRequest` table.
+  """
+  createdAt_max: Timestamp @fdc_generated(from: "FamilyJoinRequest.createdAt", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `decidedAt` field in the `FamilyJoinRequest` table.
+  """
+  decidedAt_max: Timestamp @fdc_generated(from: "FamilyJoinRequest.decidedAt", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "FamilyJoinRequest.familyId,requesterId", purpose: ENTITY_ID)
+}
 extend type FamilyMember {
   """
   ✨ List `BankAccount` objects in a one-to-many relationship (where `BankAccount`.`familyMember` is this object).
@@ -1392,6 +1636,74 @@ extend type User {
     having: BankAccount_Having
   ): [BankAccount!]! @fdc_generated(from: "BankAccount.user", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
+  ✨ List `Family` objects in a one-to-many relationship (where `Family`.`ownerUser` is this object).
+  """
+  families_on_ownerUser(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Family_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Family_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Family_Having
+  ): [Family!]! @fdc_generated(from: "Family.ownerUser", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `FamilyJoinRequest` objects in a one-to-many relationship (where `FamilyJoinRequest`.`requester` is this object).
+  """
+  familyJoinRequests_on_requester(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: FamilyJoinRequest_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [FamilyJoinRequest_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: FamilyJoinRequest_Having
+  ): [FamilyJoinRequest!]! @fdc_generated(from: "FamilyJoinRequest.requester", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
   ✨ List `FamilyMember` objects in a one-to-many relationship (where `FamilyMember`.`user` is this object).
   """
   familyMembers_on_user(
@@ -1498,6 +1810,40 @@ extend type User {
   """
   userSetting_on_user: UserSetting @fdc_generated(from: "UserSetting.user", purpose: QUERY_SINGLE_ONE_TO_ONE)
   """
+  ✨ List `Family` objects using `FamilyJoinRequest` as the join table (a `FamilyJoinRequest` object exists where its `requester` is this and its `family` is that).
+  """
+  families_via_FamilyJoinRequest(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: FamilyJoinRequest_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [FamilyJoinRequest_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: FamilyJoinRequest_Having
+  ): [Family!]! @fdc_generated(from: "FamilyJoinRequest", purpose: QUERY_MULTIPLE_MANY_TO_MANY)
+  """
   Implicit metadata field that cannot be written. It provides extra information about query results.
   """
   _metadata: _Metadata @fdc_generated(from: "User", purpose: METADATA_FIELD)
@@ -1523,6 +1869,15 @@ extend type User {
     """
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "User.email", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `familyId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  familyId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.familyId", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `User` table where the `googleUid` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """

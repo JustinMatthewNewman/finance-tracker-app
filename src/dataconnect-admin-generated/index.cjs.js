@@ -189,6 +189,62 @@ function syncPlaidTransaction(dcOrVarsOrOptions, varsOrOptions, options) {
 }
 exports.syncPlaidTransaction = syncPlaidTransaction;
 
+function createFamily(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('CreateFamily', inputVars, inputOpts);
+}
+exports.createFamily = createFamily;
+
+function requestToJoinFamily(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('RequestToJoinFamily', inputVars, inputOpts);
+}
+exports.requestToJoinFamily = requestToJoinFamily;
+
+function approveJoinRequest(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('ApproveJoinRequest', inputVars, inputOpts);
+}
+exports.approveJoinRequest = approveJoinRequest;
+
+function denyJoinRequest(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('DenyJoinRequest', inputVars, inputOpts);
+}
+exports.denyJoinRequest = denyJoinRequest;
+
+function cancelMyJoinRequest(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('CancelMyJoinRequest', inputVars, inputOpts);
+}
+exports.cancelMyJoinRequest = cancelMyJoinRequest;
+
+function leaveMyFamily(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('LeaveMyFamily', inputVars, inputOpts);
+}
+exports.leaveMyFamily = leaveMyFamily;
+
+function regenerateFamilyInviteCode(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('RegenerateFamilyInviteCode', inputVars, inputOpts);
+}
+exports.regenerateFamilyInviteCode = regenerateFamilyInviteCode;
+
+function createUserSettingForUser(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('CreateUserSettingForUser', inputVars, inputOpts);
+}
+exports.createUserSettingForUser = createUserSettingForUser;
+
 function listUsers(dcOrOptions, options) {
   const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
   dcInstance.useGen(true);
@@ -223,6 +279,13 @@ function getUserAccessByGoogleUid(dcOrVarsOrOptions, varsOrOptions, options) {
   return dcInstance.executeQuery('GetUserAccessByGoogleUid', inputVars, inputOpts);
 }
 exports.getUserAccessByGoogleUid = getUserAccessByGoogleUid;
+
+function getUserProvisioningByGoogleUid(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('GetUserProvisioningByGoogleUid', inputVars, inputOpts);
+}
+exports.getUserProvisioningByGoogleUid = getUserProvisioningByGoogleUid;
 
 function listFamilyMembers(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, false);
@@ -265,4 +328,25 @@ function getTransaction(dcOrVarsOrOptions, varsOrOptions, options) {
   return dcInstance.executeQuery('GetTransaction', inputVars, inputOpts);
 }
 exports.getTransaction = getTransaction;
+
+function getFamilyByInviteCode(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('GetFamilyByInviteCode', inputVars, inputOpts);
+}
+exports.getFamilyByInviteCode = getFamilyByInviteCode;
+
+function getMyFamilyDetail(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('GetMyFamilyDetail', undefined, inputOpts);
+}
+exports.getMyFamilyDetail = getMyFamilyDetail;
+
+function getMyJoinRequests(dcOrOptions, options) {
+  const { dc: dcInstance, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrOptions, options, undefined);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('GetMyJoinRequests', undefined, inputOpts);
+}
+exports.getMyJoinRequests = getMyJoinRequests;
 

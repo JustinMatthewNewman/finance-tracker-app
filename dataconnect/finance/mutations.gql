@@ -38,6 +38,24 @@ mutation CreateUserFromGoogle(
     email: $email
     userTypeName: $userTypeName
     createdAt: $createdAt
+    # THE ACCOUNT'S SETTINGS ROW IS CREATED HERE, NESTED, AND THAT IS THE
+    # WHOLE POINT — a User cannot come into existence without one.
+    #
+    # It used to be created nowhere at all, and the failure was silent in a
+    # way worth remembering. Every preference write is a
+    # `userSetting_update(first: { where: ... })` (see below), and an update
+    # that matches zero rows is not an error — it reports success having
+    # done nothing. The contexts then set their local state optimistically
+    # and never re-read, so a toggle looked like it saved right up until the
+    # page was reloaded. No account had ever persisted a single preference.
+    #
+    # Nesting it inside user_insert, rather than issuing a second insert
+    # after it, is what makes that unrepresentable going forward: there is
+    # no ordering, no second round trip and no partial state to recover
+    # from. The empty object is deliberate — every column on UserSetting is
+    # nullable or carries a @default in schema.gql, so the defaults live in
+    # exactly one place instead of being restated here and drifting.
+    userSetting_on_user: {}
   })
 }
 
@@ -150,7 +168,20 @@ mutation CreateFamilyMember(
   $relationship: String
   $color: String
   $monthlyIncomeTargetMinor: Int
-) @auth(level: USER) {
+) @auth(level: USER) @transaction {
+  # $userId names the owner of the row about to be inserted, and it arrives
+  # from the browser. Unguarded, this wrote a household member into somebody
+  # else's household — the file header's rule applied to an insert rather than
+  # an update, which is easy to miss precisely because there is no existing
+  # row whose ownership looks like it needs checking.
+  query @redact {
+    user(key: { id: $userId }) @check(
+      expr: "this != null && this.googleUid == auth.uid"
+      message: "Not authorized to add a household member for this account"
+    ) {
+      googleUid
+    }
+  }
   familyMember_insert(data: {
     id: $familyMemberId
     userId: $userId
@@ -297,6 +328,17 @@ mutation CreateTransaction(
         googleUid
       }
     }
+    # The family member was always checked; $userId was not, and it is a
+    # separate variable naming the row's owner. Stamping a transaction with
+    # somebody else's userId used to be possible, and it matters more now than
+    # it did: ownership is what the household visibility filter joins through,
+    # so a mislabelled row is one that surfaces in the wrong household.
+    user(key: { id: $userId }) @check(
+      expr: "this != null && this.googleUid == auth.uid"
+      message: "Not authorized to record transactions for this account"
+    ) {
+      googleUid
+    }
   }
   transaction_insert(data: {
     userId: $userId
@@ -410,6 +452,25 @@ mutation DeleteTransaction($transactionId: UUID!) @auth(level: USER) @transactio
 # ─────────────────────────────────────────────────────────────────────────────
 # Plaid Integration Mutations
 # ─────────────────────────────────────────────────────────────────────────────
+#
+# KNOWN GAP — THESE THREE ARE NOT SAFE TO CALL FROM A BROWSER YET.
+#
+# All three are @auth(level: USER), take a client-supplied $userId with no
+# ownership @check, and are _upsert operations taking a client-supplied $id.
+# Either half is a cross-tenant write on its own: the first stamps a row with
+# somebody else's ownership, and the second overwrites an existing row of
+# theirs outright given its UUID.
+#
+# They are deliberately left as they are rather than given the `user(key: {id:
+# $userId}) @check` that CreateFamilyMember and CreateTransaction now carry,
+# because that guard alone would close only the first half and would read like
+# the operation had been made safe. The $id-on-upsert half cannot be fixed
+# without deciding how Plaid sync actually runs, and nothing in the app calls
+# these — there is no Plaid integration yet, only the schema for one.
+#
+# BEFORE WIRING PLAID UP: either move these to NO_ACCESS and drive them from a
+# route handler that resolves the uid itself (the sync-user pattern), or give
+# each one both guards. Do not add a call site first.
 
 mutation UpsertPlaidItem(
   $id: UUID!
@@ -501,4 +562,270 @@ mutation SyncPlaidTransaction(
     isPending: $isPending
     plaidPendingTransactionId: $plaidPendingTransactionId
   })
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Families (pattern 2 throughout — every one of these takes an id)
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# READ THIS BEFORE EDITING ANY MUTATION IN THIS SECTION.
+#
+# The guards here differ from the ones above in a way that matters. Elsewhere
+# the checked row and the written row are the same row, so a missing @check is
+# mitigated by the write simply matching nothing — `familyMember_update(id:
+# $x)` on somebody else's id is a cross-tenant write, but on a *nonexistent*
+# id it is a no-op.
+#
+# That is not true here. ApproveJoinRequest checks a FamilyJoinRequest and
+# then writes a *User* row named by a different variable. If the guard query
+# returns no row, its nested @checks never evaluate — there is nothing for
+# them to evaluate against — and the write would proceed unguarded. That is
+# the difference between "approve a request somebody made" and "drag any
+# account in the system into my household without asking them".
+#
+# Hence the `@check(expr: "this != null")` on the TOP-LEVEL guard field in
+# every mutation below. Absence of a row must be a denial, never a silence.
+# Do not remove it, and do not add a mutation to this section without it.
+
+# Creates a household and makes the caller its primary user.
+#
+# $familyId and $inviteCode are both generated client-side — the id with
+# crypto.randomUUID for the same reason CreateFamilyMember does it (the
+# caller can route into the app without a second round trip), and the code by
+# lib/inviteCode.ts, which must use a CSPRNG. See the note on
+# Family.inviteCode in schema.gql: the code is a capability, so a predictable
+# one is a way into somebody's household.
+#
+# The `this.family == null` half of the check is not a UI nicety. Without it
+# this mutation would happily point an account that is already in a household
+# at a brand-new one, orphaning the old family if they owned it and silently
+# removing them from it if they did not.
+mutation CreateFamily(
+  $userId: UUID!
+  $familyId: UUID!
+  $name: String!
+  $inviteCode: String!
+) @auth(level: USER) @transaction {
+  query @redact {
+    user(key: { id: $userId }) @check(
+      expr: "this != null && this.googleUid == auth.uid && this.family == null"
+      message: "Not authorized, or this account already belongs to a household"
+    ) {
+      googleUid
+      family { id }
+    }
+  }
+  family_insert(data: {
+    id: $familyId
+    name: $name
+    inviteCode: $inviteCode
+    ownerUserId: $userId
+  })
+  user_update(id: $userId, data: { familyId: $familyId })
+}
+
+# Asks to join a household the caller has the invite code for.
+#
+# _upsert rather than _insert: the row is keyed on (family, requester), so
+# asking twice updates one row instead of queueing two identical asks in
+# front of the owner. `decidedAt: null` and a refreshed `createdAt` are what
+# make a re-ask after a denial read as a new request rather than as a stale
+# decided one.
+#
+# Note what this does NOT do: it does not put the requester in the family.
+# Only ApproveJoinRequest does that, and only the owner can call it.
+mutation RequestToJoinFamily($userId: UUID!, $familyId: UUID!) @auth(level: USER) @transaction {
+  query @redact {
+    user(key: { id: $userId }) @check(
+      expr: "this != null && this.googleUid == auth.uid && this.family == null"
+      message: "Not authorized, or this account already belongs to a household"
+    ) {
+      googleUid
+      family { id }
+    }
+  }
+  familyJoinRequest_upsert(data: {
+    familyId: $familyId
+    requesterId: $userId
+    status: "PENDING"
+    createdAt_expr: "request.time"
+    decidedAt: null
+  })
+}
+
+# Admits a requester into the household. Owner-only.
+#
+# Three things must all hold, and each one is a real attack or a real bug if
+# dropped:
+#
+#   this != null        — see the section header. Without it, any signed-in
+#                         account could name any other account and pull it
+#                         into their household.
+#   status == PENDING   — stops an already-decided request from being
+#                         replayed, which would re-admit somebody who has
+#                         since left or been denied.
+#   owner is the caller — the actual authorization check.
+#
+# The requester's own `family == null` check is what keeps two owners from
+# racing to approve the same person into different households; the loser's
+# transaction aborts rather than silently moving them.
+mutation ApproveJoinRequest($familyId: UUID!, $requesterId: UUID!) @auth(level: USER) @transaction {
+  query @redact {
+    familyJoinRequest(key: { familyId: $familyId, requesterId: $requesterId }) @check(
+      expr: "this != null"
+      message: "No such join request"
+    ) {
+      status @check(
+        expr: "this == 'PENDING'"
+        message: "That join request is no longer pending"
+      )
+      family {
+        ownerUser @check(
+          expr: "this != null && this.googleUid == auth.uid"
+          message: "Only the household's primary user can approve join requests"
+        ) {
+          googleUid
+        }
+      }
+      requester @check(
+        expr: "this != null && this.family == null"
+        message: "That account has already joined a household"
+      ) {
+        family { id }
+      }
+    }
+  }
+  familyJoinRequest_update(
+    key: { familyId: $familyId, requesterId: $requesterId }
+    data: { status: "APPROVED", decidedAt_expr: "request.time" }
+  )
+  user_update(id: $requesterId, data: { familyId: $familyId })
+}
+
+# Turns a request down. Owner-only, and deliberately not a delete — the row
+# stays so the requester's onboarding can tell them they were declined
+# instead of showing them a request that silently vanished.
+mutation DenyJoinRequest($familyId: UUID!, $requesterId: UUID!) @auth(level: USER) @transaction {
+  query @redact {
+    familyJoinRequest(key: { familyId: $familyId, requesterId: $requesterId }) @check(
+      expr: "this != null"
+      message: "No such join request"
+    ) {
+      status @check(
+        expr: "this == 'PENDING'"
+        message: "That join request is no longer pending"
+      )
+      family {
+        ownerUser @check(
+          expr: "this != null && this.googleUid == auth.uid"
+          message: "Only the household's primary user can deny join requests"
+        ) {
+          googleUid
+        }
+      }
+    }
+  }
+  familyJoinRequest_update(
+    key: { familyId: $familyId, requesterId: $requesterId }
+    data: { status: "DENIED", decidedAt_expr: "request.time" }
+  )
+}
+
+# Withdraws the caller's own pending request, so somebody who typed the wrong
+# code — or got tired of waiting — can create their own household instead of
+# being stuck on the waiting screen. Checks the requester is the caller, not
+# that the caller owns the family: this is the one operation on a join
+# request that belongs to the person who made it.
+mutation CancelMyJoinRequest($familyId: UUID!, $userId: UUID!) @auth(level: USER) @transaction {
+  query @redact {
+    familyJoinRequest(key: { familyId: $familyId, requesterId: $userId }) @check(
+      expr: "this != null"
+      message: "No such join request"
+    ) {
+      status @check(
+        expr: "this == 'PENDING'"
+        message: "That join request is no longer pending"
+      )
+      requester @check(
+        expr: "this != null && this.googleUid == auth.uid"
+        message: "Not authorized to cancel this join request"
+      ) {
+        googleUid
+      }
+    }
+  }
+  familyJoinRequest_update(
+    key: { familyId: $familyId, requesterId: $userId }
+    data: { status: "CANCELLED", decidedAt_expr: "request.time" }
+  )
+}
+
+# Leaves the household. The member keeps every transaction, family member and
+# connected account they created — those belong to the User row, not to the
+# Family (see schema.gql) — and simply stops being visible to the people they
+# left. That is the payoff of not hanging tenancy off the rows themselves.
+#
+# The primary user cannot leave. Family.ownerUser is non-null, so there is no
+# "ownerless household" state to leave behind, and reassigning ownership is a
+# feature that does not exist yet. Blocking it is honest; silently deleting
+# everybody else's household would not be.
+mutation LeaveMyFamily($userId: UUID!) @auth(level: USER) @transaction {
+  query @redact {
+    user(key: { id: $userId }) @check(
+      expr: "this != null && this.googleUid == auth.uid"
+      message: "Not authorized"
+    ) {
+      googleUid
+      family @check(
+        expr: "this != null && this.ownerUser.googleUid != auth.uid"
+        message: "The household's primary user cannot leave it"
+      ) {
+        ownerUser { googleUid }
+      }
+    }
+  }
+  user_update(id: $userId, data: { familyId: null })
+}
+
+# Rotates the invite code. Owner-only.
+#
+# An invite code is a bearer capability with no expiry — anyone holding it
+# can ask to join forever. Once it has been read over somebody's shoulder or
+# pasted into the wrong thread, the only remedy is a new one, so this is
+# hygiene rather than a nice-to-have. Outstanding PENDING requests are
+# untouched: they were already made, and the owner can still deny them.
+mutation RegenerateFamilyInviteCode($familyId: UUID!, $inviteCode: String!) @auth(level: USER) @transaction {
+  query @redact {
+    family(key: { id: $familyId }) @check(
+      expr: "this != null"
+      message: "No such household"
+    ) {
+      ownerUser @check(
+        expr: "this != null && this.googleUid == auth.uid"
+        message: "Only the household's primary user can change the invite code"
+      ) {
+        googleUid
+      }
+    }
+  }
+  family_update(id: $familyId, data: { inviteCode: $inviteCode })
+}
+
+
+# Backfills the settings row for an account created before CreateUserFromGoogle
+# nested one (see the note there). Called only by sync-user, only after it has
+# established the row is genuinely absent.
+#
+# NO_ACCESS, and not because the operation is dangerous — it writes a row of
+# defaults — but because it takes a $userId. A USER-level version would let a
+# caller name somebody else's account, and while the worst outcome is a
+# duplicate-key error, "it takes an id and has no @check" is precisely the
+# shape this file exists to keep out. The route has a verified uid; it resolves
+# that to the id itself.
+#
+# The empty data object leans on the column defaults in schema.gql, exactly as
+# the nested insert in CreateUserFromGoogle does, so a new preference added to
+# the table is picked up by both paths without either being edited.
+mutation CreateUserSettingForUser($userId: UUID!) @auth(level: NO_ACCESS) {
+  userSetting_insert(data: { userId: $userId })
 }

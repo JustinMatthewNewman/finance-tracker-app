@@ -205,16 +205,22 @@ export function FamilyMemberListBox({
             <Person width={16} height={16} />
           </Button>
 
+          {/* Editing is gated on ownership, not just on selection. The
+              sidebar now lists people whose records belong to a housemate —
+              reads widened to the household, writes did not — and
+              RenameFamilyMember/DeleteFamilyMember would reject those at the
+              `@check`. Offering an enabled button that is guaranteed to fail
+              turns a deliberate boundary into what looks like a bug. */}
           <Button
             aria-label="Rename family member"
-            isDisabled={!selectedItem}
+            isDisabled={!selectedItem?.isMine}
             onPress={() => setIsRenameDialogOpen(true)}
           >
             <Pencil width={16} height={16} />
           </Button>
 
           <Dropdown>
-            <Dropdown.Trigger aria-label="Family member actions" isDisabled={!selectedItem}>
+            <Dropdown.Trigger aria-label="Family member actions" isDisabled={!selectedItem?.isMine}>
               <Ellipsis width={16} height={16} />
             </Dropdown.Trigger>
             <Dropdown.Popover>
@@ -228,6 +234,16 @@ export function FamilyMemberListBox({
             </Dropdown.Popover>
           </Dropdown>
         </div>
+
+        {/* Says why the controls above are greyed out. Without it the only
+            signal is a disabled button, which reads as broken rather than as
+            "this is somebody else's record". */}
+        {selectedItem && !selectedItem.isMine && (
+          <p className="text-xs text-foreground/60">
+            {selectedItem.name} was added by {selectedItem.ownerUsername}. You can see their
+            transactions, but only {selectedItem.ownerUsername} can change them.
+          </p>
+        )}
       </Card>
 
       <NewFamilyMemberDialog

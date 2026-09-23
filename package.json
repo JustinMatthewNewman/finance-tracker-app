@@ -11,6 +11,7 @@
     "seed": "node scripts/seed.mjs",
     "make-env": "node scripts/make-env.mjs",
     "dataconnect:generate": "firebase dataconnect:sdk:generate",
+    "verify:guards": "node scripts/verify-guards.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
   },

@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useGetMyUser } from "@/src/dataconnect-generated/react";
 import { syncUserRecord } from "@/lib/auth";
+import { useUserSettings } from "@/context/UserSettingsContext";
 
 /**
  * Repairs an authenticated session that has no `User` row behind it.
@@ -26,6 +27,12 @@ import { syncUserRecord } from "@/lib/auth";
 export function UserRecordSync() {
   const { user } = useAuth();
   const myUserQuery = useGetMyUser({ enabled: !!user?.uid });
+  // The repaired row has to reach UserSettingsContext too, not just this
+  // query. That context holds `userId` and `familyId`, and OnboardingGate
+  // refuses to act while `userId` is null — so without this refetch a
+  // repaired account sits in an empty app until the next full page load
+  // rather than being offered onboarding.
+  const { refetch: refetchUserSettings } = useUserSettings();
 
   // One attempt per account per page load. Without this the repair can loop:
   // if the sync fails, or succeeds but the refetch still reports no row, the
@@ -48,7 +55,7 @@ export function UserRecordSync() {
       if (!current || cancelled) return;
       try {
         await syncUserRecord(current);
-        if (!cancelled) await refetch();
+        if (!cancelled) await Promise.all([refetch(), refetchUserSettings()]);
       } catch (err) {
         // Deliberately not surfaced to the user. This runs in the background
         // on an ordinary page load, and the person did not ask for it — a
@@ -63,7 +70,7 @@ export function UserRecordSync() {
     return () => {
       cancelled = true;
     };
-  }, [uid, isMissing, refetch]);
+  }, [uid, isMissing, refetch, refetchUserSettings]);
 
   return null;
 }

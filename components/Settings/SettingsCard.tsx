@@ -11,6 +11,7 @@ import { useBorders } from '@/context/BordersContext'
 import { useSquareCorners } from '@/context/SquareCornersContext'
 import { useCategoryColorsSetting } from '@/context/CategoryColorsContext'
 import { useUserSettings } from '@/context/UserSettingsContext'
+import FamilyPanel from '@/components/Family/FamilyPanel'
 import { useSelectMyExternalAccountLinkTemplate, useSelectMyCurrency } from '@/src/dataconnect-generated/react'
 import { SUPPORTED_CURRENCIES, DEFAULT_CURRENCY, isCurrencyCode, type CurrencyCode } from '@/lib/money'
 import { ACCOUNT_ID_PLACEHOLDER, isValidLinkTemplate } from '@/lib/externalAccountLink'
@@ -404,6 +405,9 @@ function SettingsCard() {
           </Button>
         </div>
       </Card>
+
+      {/* Household — who is in it, the invite code, and the join queue. */}
+      <FamilyPanel />
 
       {/* About */}
       <Card className="p-6">

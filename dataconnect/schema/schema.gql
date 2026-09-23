@@ -75,7 +75,109 @@ type User @table {
   # dataconnect/seed_data.gql.
   userType: UserType! @ref(fields: "userTypeName", references: "name")
   userTypeName: String! @default(value: "Regular")
+
+  # The family this account belongs to, or null if it has not joined or
+  # created one yet — exactly the state the onboarding flow exists to
+  # resolve (see app/(onboarding)/).
+  #
+  # Nullable is load-bearing rather than lazy. sync-user creates a User row
+  # the instant Firebase Auth accepts a sign-in, which is strictly before
+  # the person has had any chance to choose a family. A non-null column
+  # would force sync-user to invent one for everybody, including the people
+  # who signed in specifically to join an existing household, and every one
+  # of those inventions would be an orphan family nobody asked for.
+  #
+  # ONE FAMILY PER ACCOUNT, enforced structurally by this being a scalar FK
+  # rather than a membership cross-reference table. That is a deliberate
+  # trade: it makes "can I see this row" a two-hop question (row -> owner ->
+  # family) instead of a four-hop one, on every read in the app, forever. A
+  # FamilyMembership xref would buy accounts in several families at once,
+  # which nothing in the product asks for.
+  family: Family
+
   createdAt: Timestamp!
+}
+
+# A household group: the set of accounts that can see each other's finances.
+#
+# WHAT A FAMILY DOES AND DOES NOT OWN. It owns no financial data. Every
+# Transaction, FamilyMember, PlaidItem and BankAccount still belongs to the
+# User who created it, and every write is still guarded by "is this your
+# row", unchanged. What a family changes is *reads*: a row is visible to you
+# if you own it, OR if its owner is in your family. That asymmetry — shared
+# visibility, unshared authorship — is the whole design, and it is why no
+# financial table has a foreign key pointing at this one.
+#
+# Do not "simplify" that later by hanging a familyId off Transaction. Once a
+# row's tenancy lives on the row itself, changing families rewrites history,
+# and a person who leaves takes with them an unanswerable question about
+# which rows were ever really theirs.
+type Family @table {
+  id: UUID! @default(expr: "uuidV4()")
+  # User-authored display name ("The Newmans"). Deliberately not unique and
+  # not a key: two unrelated households may pick the same name with no
+  # conflict, because the invite code — not the name — is what identifies a
+  # family to somebody joining it.
+  name: String!
+
+  # The shared secret that makes joining possible.
+  #
+  # This is a capability, not an identifier: holding it is what authorizes a
+  # request to join, so it must be unguessable. lib/inviteCode.ts generates
+  # 10 Crockford base32 characters (~50 bits, with the visually ambiguous
+  # letters removed) from a CSPRNG. Never derive one from the family name,
+  # the owner, or a counter.
+  #
+  # @unique because GetFamilyByInviteCode resolves a code to exactly one
+  # family; a duplicate would silently hand a joiner the wrong household.
+  inviteCode: String! @unique
+
+  # The "household primary user" — the single account that can approve or
+  # deny join requests.
+  #
+  # Authoritative and singular by construction. The alternative, a role
+  # column on each member, can drift into a family with two owners or none,
+  # and then every approval path needs a tie-breaker for a state that should
+  # not be representable.
+  #
+  # CASCADE WARNING, the same class of hazard as the UserType note above.
+  # Non-null makes this ON DELETE CASCADE: deleting the owner's User row
+  # deletes the Family, which in turn nulls every remaining member's
+  # User.family (nullable, so ON DELETE SET NULL). Those members lose no
+  # data — their transactions are their own and untouched, and they land
+  # back in onboarding — but they are silently ejected. Nothing in the app
+  # deletes an account today. If that ever changes, ownership must be
+  # reassigned first.
+  ownerUser: User!
+
+  createdAt: Timestamp! @default(expr: "request.time")
+}
+
+# A pending, approved or denied ask from one account to join one family.
+#
+# Keyed on (family, requester) rather than on a UUID, for the same reason
+# UserTypeFeature is: the natural key makes the row idempotent to upsert, so
+# somebody tapping "Request to join" twice — or asking again after being
+# denied — updates one row instead of filling the owner's queue with
+# duplicates that all say the same thing.
+#
+# `status` is text because Data Connect has no enum table or CHECK
+# constraint to hang one on. The four legal values are "PENDING",
+# "APPROVED", "DENIED" and "CANCELLED", validated in lib/familyStatus.ts and
+# nowhere else — the same arrangement as Transaction.direction.
+#
+# The row is NOT deleted on approval, deliberately. Keeping it is what gives
+# a household an audit trail of who joined when, and it means somebody who
+# leaves and comes back updates one row rather than resurrecting a deleted
+# one.
+type FamilyJoinRequest @table(key: ["family", "requester"]) {
+  family: Family!
+  requester: User!
+  status: String! @default(value: "PENDING")
+  createdAt: Timestamp! @default(expr: "request.time")
+  # Null for as long as the request is PENDING. The approve/deny mutations
+  # set it from `request.time`, never from a client-supplied timestamp.
+  decidedAt: Timestamp
 }
 
 # Dedicated per-account display preferences table, decoupled from user identity.

@@ -5,11 +5,50 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth } from "@/lib/firebase-admin";
 import {
   createUserFromGoogle,
-  getUserAccessByGoogleUid,
+  createUserSettingForUser,
+  getUserProvisioningByGoogleUid,
 } from "@/src/dataconnect-admin-generated";
 
 /**
- * Creates the signed-in account's `User` row, if it doesn't already exist.
+ * Both "already exists" races this route can lose, in one predicate.
+ *
+ * Kept as a named function rather than an inline regex because it is now
+ * consulted from two places, and the two must agree: a divergence would show
+ * up only under concurrent sign-ins, which is exactly the condition nobody
+ * reproduces on purpose.
+ */
+function isUniqueViolation(message: string): boolean {
+  return /unique constraint|already exists|duplicate key/i.test(message);
+}
+
+/**
+ * Adds the missing settings row for a pre-existing account.
+ *
+ * Deliberately does NOT fail the sign-in if it cannot. The person is standing
+ * at a login screen waiting to get into the app, and their account works
+ * without this row — preferences fall back to defaults in
+ * context/UserSettingsContext.tsx. Turning a repair we chose to attempt into
+ * a failed sign-in would make things strictly worse for them. It is logged
+ * instead, and the next sign-in tries again.
+ *
+ * The unique-violation swallow covers the same race as the user insert:
+ * `UserSetting.user` is @unique, so two concurrent sign-ins for one account
+ * both see no row and both insert. The loser's error means the row exists,
+ * which is the outcome it wanted.
+ */
+async function backfillUserSetting(userId: string): Promise<void> {
+  try {
+    await createUserSettingForUser({ userId });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (isUniqueViolation(message)) return;
+    console.error("[sync-user] could not backfill the settings row:", message);
+  }
+}
+
+/**
+ * Brings the signed-in account's database rows up to date: the `User` row and
+ * the `UserSetting` row that hangs off it.
  *
  * Called on every sign-in, and also whenever the app notices an authenticated
  * session with no row behind it (see components/Utilities/UserRecordSync.tsx).
@@ -18,6 +57,16 @@ import {
  * The uid comes from verifying the ID token, never from the request body — a
  * caller must not be able to create or claim a row for somebody else's
  * account.
+ *
+ * WHY THIS HANDLES SETTINGS AT ALL. New accounts get their settings row from
+ * the nested insert inside CreateUserFromGoogle, atomically, and need nothing
+ * here. But every account created before that nesting existed has no settings
+ * row and never will — and because a `userSetting_update` matching zero rows
+ * reports success, those accounts fail silently forever: every preference
+ * they change appears to save and is gone on reload. Sign-in is the one
+ * moment we are already talking to the database on their behalf, so it is
+ * where the backfill belongs. It costs nothing for an account that is already
+ * whole.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -45,12 +94,22 @@ export async function POST(req: NextRequest) {
     // changes, every returning user's sign-in starts 500ing, and the failure
     // would land on returning users rather than on whoever made the change.
     // Asking the database whether the row exists has no such coupling.
-    const existing = await getUserAccessByGoogleUid({ googleUid });
+    const existing = await getUserProvisioningByGoogleUid({ googleUid });
+
     if (existing.data.user) {
+      // The account is here. The only thing that can still be missing is the
+      // settings row, and only for accounts predating the nested insert.
+      if (!existing.data.user.userSetting) {
+        await backfillUserSetting(existing.data.user.id);
+        return NextResponse.json({ success: true, created: false, repairedSettings: true });
+      }
       return NextResponse.json({ success: true, created: false });
     }
 
     try {
+      // Creates the User and its UserSetting in one transaction — see the
+      // nested `userSetting_on_user` in CreateUserFromGoogle. Nothing else is
+      // needed for a brand-new account.
       await createUserFromGoogle({
         googleUid,
         username,
@@ -64,7 +123,7 @@ export async function POST(req: NextRequest) {
       // the row it wanted exists. Any other database error is real and must
       // propagate, so this stays a narrow check rather than a blanket catch.
       const message = dbErr instanceof Error ? dbErr.message : String(dbErr);
-      if (!/unique constraint|already exists|duplicate key/i.test(message)) {
+      if (!isUniqueViolation(message)) {
         throw dbErr;
       }
       return NextResponse.json({ success: true, created: false });
