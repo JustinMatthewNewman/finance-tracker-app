@@ -585,6 +585,15 @@ extend type FamilyMember {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "FamilyMember.relationship", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `FamilyMember` table where the `selfUserId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  selfUserId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "FamilyMember.selfUserId", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `FamilyMember` table where the `userId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   userId_count(
@@ -1252,6 +1261,10 @@ extend type User {
     """
     having: Transaction_Having
   ): [Transaction!]! @fdc_generated(from: "Transaction.user", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `FamilyMember` objects in a one-to-one relationship (where `FamilyMember`.`selfUser` is this object).
+  """
+  familyMember_on_selfUser: FamilyMember @fdc_generated(from: "FamilyMember.selfUser", purpose: QUERY_SINGLE_ONE_TO_ONE)
   """
   ✨ List `UserSetting` objects in a one-to-one relationship (where `UserSetting`.`user` is this object).
   """

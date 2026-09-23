@@ -185,6 +185,22 @@ and the month carousel sits next to the transaction list instead.
 
 ### Things worth knowing before you change anything
 
+**Every account is a person in its own household.** A `User` is an account
+that signs in; a `FamilyMember` is a person whose money is tracked. Nothing
+connected the two, so the person doing the tracking was the one person not
+represented in it — a new account opened on an empty sidebar and had to add
+itself before it could record anything, which reads as broken rather than as a
+step. `CreateUserFromGoogle` now creates the `User`, its settings and its own
+household entry in a single transaction, and `FamilyMember.selfUser` is
+`@unique` so "one self entry per account" is enforced by the database rather
+than by whoever remembers to check. It cannot be deleted — nothing re-creates
+it, so removing it would strand somebody outside their own household — and the
+sidebar opens on it.
+
+Note that `FamilyMember.user` and `FamilyMember.selfUser` mean different
+things: the first is the account that owns and may edit the row, the second is
+the account the row represents. They coincide on exactly one row per account.
+
 **Projected and actual money share one table.** A bill the household expects
 on the 28th and a payment that actually went out are both `Transaction` rows,
 separated by `status` (`FORECASTED` vs `POSTED`). A separate projections table
@@ -304,15 +320,23 @@ npm run dataconnect:generate
 ### Verifying the authorization boundary
 
 ```bash
-npm run emulators       # terminal 1
-npm run verify:guards   # terminal 2
+npm run emulators                                   # terminal 1
+npm run verify:guards                               # terminal 2
+APP_URL=http://localhost:3000 npm run verify:guards # also checks sync-user
 ```
 
-Mints three real identities against the Auth emulator and drives the connector
-over HTTP as each of them, trying to read and write across household
-boundaries — approving requests that do not exist, admitting accounts that
-never asked, renaming a housemate's records, reading a transaction by id from
-outside the household.
+Mints real identities against the Auth emulator and drives the connector over
+HTTP as each of them, trying to read and write across household boundaries —
+approving requests that do not exist, admitting accounts that never asked,
+renaming a housemate's records, reading a transaction by id from outside the
+household, marking somebody else's projected bill as paid, deleting your own
+household entry.
+
+With `APP_URL` set it additionally creates an account holding only its `User`
+row and signs it in, asserting that `sync-user` backfills both the settings row
+and the self household entry, and that signing in again changes nothing
+further. That repair lives in a Next route rather than in the connector, so it
+needs the app running.
 
 Run it after any change to `schema.gql`, `mutations.gql` or `queries.gql`.
 Nothing in `npm test` can reach these: `@auth` levels, `@check` expressions and
@@ -359,6 +383,6 @@ because the tier system is kept, but nothing calls them yet.
 | `npm run seed` | Load reference data into the emulator (idempotent) |
 | `npm run make-env` | Build `.env.local` from the Firebase config + service account key |
 | `npm run dataconnect:generate` | Regenerate the Data Connect SDKs |
-| `npm run verify:guards` | Drive the connector as three identities and try to break the household boundary |
+| `npm run verify:guards` | Drive the connector as several identities and try to break the household boundary. `APP_URL=http://localhost:3000` also exercises the sync-user repair path |
 | `npm run lint` | ESLint |
 | `npm test` | Vitest |

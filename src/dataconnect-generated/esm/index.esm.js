@@ -394,6 +394,18 @@ export function createUserSettingForUser(dcOrVars, vars) {
   return executeMutation(createUserSettingForUserRef(dcInstance, inputVars));
 }
 
+export const createSelfFamilyMemberForUserRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CreateSelfFamilyMemberForUser', inputVars);
+}
+createSelfFamilyMemberForUserRef.operationName = 'CreateSelfFamilyMemberForUser';
+
+export function createSelfFamilyMemberForUser(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createSelfFamilyMemberForUserRef(dcInstance, inputVars));
+}
+
 export const listUsersRef = (dc) => {
   const { dc: dcInstance} = validateArgs(connectorConfig, dc, undefined);
   dcInstance._useGeneratedSdk();

@@ -133,20 +133,63 @@ async function mkUser(tag) {
 
   // Admin-side, because CreateUserFromGoogle is @auth(level: NO_ACCESS) —
   // exactly as app/api/auth/sync-user/route.ts calls it.
+  // Mirrors CreateUserFromGoogle, which creates three rows in one
+  // transaction: the User, its settings, and its own entry in its household.
+  const userId = randomUUID();
   await admin.executeGraphql(
-    `mutation($g:String!,$u:String!,$e:String!,$c:Timestamp!){
+    `mutation($id:UUID!,$fm:UUID!,$g:String!,$u:String!,$e:String!,$c:Timestamp!){
        userType_upsert(data:{name:"Regular"})
-       user_insert(data:{googleUid:$g,username:$u,email:$e,userTypeName:"Regular",createdAt:$c,userSetting_on_user:{}})
+       user_insert(data:{id:$id,googleUid:$g,username:$u,email:$e,userTypeName:"Regular",createdAt:$c,userSetting_on_user:{}})
+       familyMember_insert(data:{id:$fm,userId:$id,selfUserId:$id,name:$u,relationship:"Self"})
      }`,
-    { variables: { g: acct.localId, u: tag, e: email, c: new Date().toISOString() } }
+    { variables: { id: userId, fm: randomUUID(), g: acct.localId, u: tag, e: email, c: new Date().toISOString() } }
   );
   const row = await admin.executeGraphql(
     `query($g:String!){ user(first:{where:{googleUid:{eq:$g}}}){
-       id userSetting: userSetting_on_user { id currencyCode backgroundOpacity bordersEnabled } } }`,
+       id
+       userSetting: userSetting_on_user { id currencyCode backgroundOpacity bordersEnabled }
+       selfMember: familyMember_on_selfUser { id name relationship } } }`,
     { variables: { g: acct.localId } }
   );
   const user = row.data.user;
-  return { tag, token: acct.idToken, uid: acct.localId, id: user.id, setting: user.userSetting };
+  return {
+    tag,
+    token: acct.idToken,
+    uid: acct.localId,
+    id: user.id,
+    setting: user.userSetting,
+    selfMember: user.selfMember,
+  };
+}
+
+/** An account with ONLY its User row — the shape sync-user has to repair. */
+async function mkBareUser(tag) {
+  const email = `${tag}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@example.com`;
+  const res = await fetch(`${AUTH}/identitytoolkit.googleapis.com/v1/accounts:signUp?key=fake`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password: "password123", returnSecureToken: true }),
+  });
+  const acct = await res.json();
+  await admin.executeGraphql(
+    `mutation($g:String!,$u:String!,$e:String!,$c:Timestamp!){
+       userType_upsert(data:{name:"Regular"})
+       user_insert(data:{googleUid:$g,username:$u,email:$e,userTypeName:"Regular",createdAt:$c})
+     }`,
+    { variables: { g: acct.localId, u: tag, e: email, c: new Date().toISOString() } }
+  );
+  return { tag, token: acct.idToken, uid: acct.localId };
+}
+
+async function provisioningOf(googleUid) {
+  const r = await admin.executeGraphql(
+    `query($g:String!){ user(first:{where:{googleUid:{eq:$g}}}){
+       id
+       userSetting: userSetting_on_user { id }
+       selfMember: familyMember_on_selfUser { id name } } }`,
+    { variables: { g: googleUid } }
+  );
+  return r.data.user;
 }
 
 // Data Connect returns UUIDs with the hyphens stripped (see the caveat in
@@ -164,6 +207,11 @@ for (const u of [alice, bob, carol]) {
        `opacity=${u.setting.backgroundOpacity}, borders=${u.setting.bordersEnabled})`);
   } else {
     bad(`${u.tag}: NO settings row — CreateUserFromGoogle lost its nested insert`);
+  }
+  if (u.selfMember?.id) {
+    ok(`${u.tag}: appears in their own household as "${u.selfMember.name}" (${u.selfMember.relationship})`);
+  } else {
+    bad(`${u.tag}: NO self household entry — they would open on an empty sidebar`);
   }
 }
 
@@ -236,10 +284,17 @@ const bobTx = await query(bob.token, "ListMyTransactions");
   ? ok("bob sees alice's transaction")
   : bad("bob cannot see alice's transaction", JSON.stringify(bobTx.data ?? bobTx.errors));
 
+// Carol is not in alice's household, but she is in her OWN — every account
+// now has a self entry — so "sees nothing" is the wrong assertion. What must
+// hold is that she sees only rows she owns, and none of alice's.
 const carolMembers = await query(carol.token, "ListFamilyMembers");
-(carolMembers.data?.familyMembers ?? []).length === 0
-  ? ok("carol (outsider) sees no household members")
-  : bad("LEAK: carol sees household members", JSON.stringify(carolMembers.data));
+const carolRoster = carolMembers.data?.familyMembers ?? [];
+carolRoster.every((m) => sameId(m.user?.id, carol.id))
+  ? ok(`carol (outsider) sees only her own roster (${carolRoster.length} row)`)
+  : bad("LEAK: carol sees rows she does not own", JSON.stringify(carolRoster));
+carolRoster.some((m) => m.name === "Alice's Kid")
+  ? bad("LEAK: carol sees alice's household member", JSON.stringify(carolRoster))
+  : ok("...and none of alice's");
 
 const carolTx = await query(carol.token, "ListMyTransactions");
 (carolTx.data?.transactions ?? []).length === 0
@@ -338,6 +393,69 @@ await mustFail("bob rotates alice's invite code",
   mutate(bob.token, "RegenerateFamilyInviteCode", { familyId, inviteCode: code() }));
 await mustPass("alice rotates her own invite code",
   mutate(alice.token, "RegenerateFamilyInviteCode", { familyId, inviteCode: code() }));
+
+console.log("\n\x1b[1m11 · You cannot remove yourself from your own household\x1b[0m");
+// The invariant this protects: the self entry is created once, with the User,
+// and nothing re-creates it. Soft-deleting it would leave somebody staring at
+// a household they are not in, unrecoverable without a database edit.
+await mustFail("alice deletes her own household entry",
+  mutate(alice.token, "DeleteFamilyMember", { familyMemberId: alice.selfMember.id }));
+await mustPass("alice renames herself",
+  mutate(alice.token, "RenameFamilyMember", { familyMemberId: alice.selfMember.id, name: "Alice N." }));
+
+// An ordinary member must still be removable — the guard has to be narrow.
+const disposableId = randomUUID();
+await mustPass("alice adds an ordinary household member",
+  mutate(alice.token, "CreateFamilyMember", { userId: alice.id, familyMemberId: disposableId, name: "Lodger" }));
+await mustPass("alice removes that ordinary member",
+  mutate(alice.token, "DeleteFamilyMember", { familyMemberId: disposableId }));
+
+const roster = await query(alice.token, "ListFamilyMembers");
+const mine = (roster.data?.familyMembers ?? []).find((m) => sameId(m.selfUser?.id, alice.id));
+mine?.name === "Alice N."
+  ? ok("her own entry is in the roster, flagged as hers, under the new name")
+  : bad("self entry missing or unflagged in ListFamilyMembers", JSON.stringify(roster.data?.familyMembers));
+
+console.log("\n\x1b[1m12 · sync-user repairs an account missing either row\x1b[0m");
+// The repair path for accounts created before settings and self entries were
+// made alongside the User. It lives in a Next route rather than the
+// connector, so this needs the app running; set APP_URL to include it.
+const APP_URL = process.env.APP_URL;
+if (!APP_URL) {
+  console.log("  \x1b[2m- skipped (set APP_URL, e.g. APP_URL=http://localhost:3000)\x1b[0m");
+} else {
+  const bare = await mkBareUser("dora");
+  const before = await provisioningOf(bare.uid);
+  !before.userSetting && !before.selfMember
+    ? ok("dora starts with neither a settings row nor a household entry")
+    : bad("test setup wrong: dora already had them", JSON.stringify(before));
+
+  const res = await fetch(`${APP_URL}/api/auth/sync-user`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ idToken: bare.token }),
+  });
+  const body = await res.json().catch(() => ({}));
+  res.ok ? ok(`sync-user accepted the sign-in (${JSON.stringify(body.repaired ?? [])})`)
+         : bad("sync-user failed", JSON.stringify(body).slice(0, 200));
+
+  const after = await provisioningOf(bare.uid);
+  after.userSetting?.id ? ok("...settings row was backfilled") : bad("settings row not backfilled");
+  after.selfMember?.id
+    ? ok(`...household entry was backfilled as "${after.selfMember.name}"`)
+    : bad("self household entry not backfilled");
+
+  // Idempotent: signing in again must not produce a second of either.
+  await fetch(`${APP_URL}/api/auth/sync-user`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ idToken: bare.token }),
+  });
+  const twice = await provisioningOf(bare.uid);
+  sameId(twice.selfMember?.id, after.selfMember?.id)
+    ? ok("signing in again repairs nothing further")
+    : bad("a second sign-in changed the self entry", JSON.stringify(twice.selfMember));
+}
 
 console.log(
   `\n${fail === 0 ? "\x1b[32m" : "\x1b[31m"}\x1b[1m${pass} passed, ${fail} failed\x1b[0m\n`

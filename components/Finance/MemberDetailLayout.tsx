@@ -50,6 +50,7 @@ function MemberDetailLayout({ showBreakdown = false, onToggleBreakdown }: Member
     renameFamilyMember,
     deleteFamilyMember,
     myUserId,
+    selfMemberId,
   } = useFamilyMembers();
 
   const { transactions: allTransactions, refetch: refetchAll } = useMyTransactions();
@@ -63,6 +64,26 @@ function MemberDetailLayout({ showBreakdown = false, onToggleBreakdown }: Member
   } = useTransactions(selectedFamilyMemberId);
 
   const selectedMember = familyMembers.find((m) => m.id === selectedFamilyMemberId) ?? null;
+
+  // Open on the signed-in person rather than on nothing.
+  //
+  // The page used to land on "No one selected" with a populated sidebar
+  // beside it, which asks somebody to make a choice before the app will show
+  // them anything — and the answer is nearly always "me".
+  //
+  // Only ever fills an EMPTY selection. Without that guard this fights every
+  // click: selecting a housemate would be reverted to yourself on the next
+  // render. It also means the choice survives navigating away and back,
+  // because the selection lives in a context above this component.
+  //
+  // `selfMemberId` is null while the roster loads, so this resolves once the
+  // real answer arrives rather than selecting the first row that happens to
+  // appear.
+  useEffect(() => {
+    if (selectedFamilyMemberId) return;
+    if (!selfMemberId) return;
+    setSelectedFamilyMemberId(selfMemberId);
+  }, [selectedFamilyMemberId, selfMemberId, setSelectedFamilyMemberId]);
 
   // The month the panel is showing. Lives here rather than in the sidebar
   // because in this app the *panel* owns time and the sidebar owns people —

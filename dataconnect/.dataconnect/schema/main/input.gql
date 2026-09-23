@@ -1127,6 +1127,14 @@ input FamilyMember_Data {
   """
   id_expr: UUID_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `FamilyMember`.`selfUserId` of type `UUID`
+  """
+  selfUserId: UUID
+  """
+  ✨ `_expr` server value variant of `selfUserId` (✨ Generated from Field `FamilyMember`.`selfUserId` of type `UUID`)
+  """
+  selfUserId_expr: UUID_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `FamilyMember`.`userId` of type `UUID!`
   """
   userId: UUID
@@ -1134,6 +1142,10 @@ input FamilyMember_Data {
   ✨ `_expr` server value variant of `userId` (✨ Generated from Field `FamilyMember`.`userId` of type `UUID!`)
   """
   userId_expr: UUID_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `FamilyMember`.`selfUser` of type `User`
+  """
+  selfUser: User_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `FamilyMember`.`user` of type `User!`
   """
@@ -1232,9 +1244,17 @@ input FamilyMember_Filter {
   """
   id: UUID_Filter
   """
+  ✨ Generated from Field `FamilyMember`.`selfUserId` of type `UUID`
+  """
+  selfUserId: UUID_Filter
+  """
   ✨ Generated from Field `FamilyMember`.`userId` of type `UUID!`
   """
   userId: UUID_Filter
+  """
+  ✨ Generated from Field `FamilyMember`.`selfUser` of type `User`
+  """
+  selfUser: User_Filter
   """
   ✨ Generated from Field `FamilyMember`.`user` of type `User!`
   """
@@ -1342,6 +1362,10 @@ input FamilyMember_Having {
   """
   relationship_count: Int_Filter
   """
+  ✨ Generated from Field `FamilyMember`.`selfUserId_count` of type `Int!`
+  """
+  selfUserId_count: Int_Filter
+  """
   ✨ Generated from Field `FamilyMember`.`userId_count` of type `Int!`
   """
   userId_count: Int_Filter
@@ -1405,9 +1429,17 @@ input FamilyMember_Order {
   """
   id: OrderDirection
   """
+  ✨ Generated from Field `FamilyMember`.`selfUserId` of type `UUID`
+  """
+  selfUserId: OrderDirection
+  """
   ✨ Generated from Field `FamilyMember`.`userId` of type `UUID!`
   """
   userId: OrderDirection
+  """
+  ✨ Generated from Field `FamilyMember`.`selfUser` of type `User`
+  """
+  selfUser: User_Order
   """
   ✨ Generated from Field `FamilyMember`.`user` of type `User!`
   """
@@ -1476,6 +1508,10 @@ input FamilyMember_Order {
   ✨ Generated from Field `FamilyMember`.`relationship_count` of type `Int!`
   """
   relationship_count: OrderDirection
+  """
+  ✨ Generated from Field `FamilyMember`.`selfUserId_count` of type `Int!`
+  """
+  selfUserId_count: OrderDirection
   """
   ✨ Generated from Field `FamilyMember`.`userId_count` of type `Int!`
   """
@@ -2915,6 +2951,10 @@ input User_Data {
   """
   transactions_on_user: [Transaction_Data!]
   """
+  ✨ Generated from Field `User`.`familyMember_on_selfUser` of type `FamilyMember`
+  """
+  familyMember_on_selfUser: FamilyMember_Data
+  """
   ✨ Generated from Field `User`.`userSetting_on_user` of type `UserSetting`
   """
   userSetting_on_user: UserSetting_Data
@@ -2987,6 +3027,10 @@ input User_Filter {
   ✨ Generated from Field `User`.`transactions_on_user` of type `[Transaction!]!`
   """
   transactions_on_user: Transaction_ListFilter
+  """
+  ✨ Generated from Field `User`.`familyMember_on_selfUser` of type `FamilyMember`
+  """
+  familyMember_on_selfUser: FamilyMember_Filter
   """
   ✨ Generated from Field `User`.`userSetting_on_user` of type `UserSetting`
   """

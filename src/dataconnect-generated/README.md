@@ -57,6 +57,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*LeaveMyFamily*](#leavemyfamily)
   - [*RegenerateFamilyInviteCode*](#regeneratefamilyinvitecode)
   - [*CreateUserSettingForUser*](#createusersettingforuser)
+  - [*CreateSelfFamilyMemberForUser*](#createselffamilymemberforuser)
 
 # Accessing the connector
 A connector is a collection of Queries and Mutations. One SDK is generated for each connector - this SDK is generated for the connector `finance`. You can find more information about connectors in the [Data Connect documentation](https://firebase.google.com/docs/data-connect#how-does).
@@ -699,9 +700,13 @@ The `data` property is an object of type `GetUserProvisioningByGoogleUidData`, w
 export interface GetUserProvisioningByGoogleUidData {
   user?: {
     id: UUIDString;
+    username: string;
     userSetting?: {
       id: UUIDString;
     } & UserSetting_Key;
+    selfMember?: {
+      id: UUIDString;
+    } & FamilyMember_Key;
   } & User_Key;
 }
 ```
@@ -823,6 +828,9 @@ export interface ListFamilyMembersData {
     user: {
       id: UUIDString;
       username: string;
+    } & User_Key;
+    selfUser?: {
+      id: UUIDString;
     } & User_Key;
   } & FamilyMember_Key)[];
 }
@@ -1827,6 +1835,8 @@ The `CreateUserFromGoogle` mutation requires an argument of type `CreateUserFrom
 
 ```typescript
 export interface CreateUserFromGoogleVariables {
+  userId: UUIDString;
+  selfFamilyMemberId: UUIDString;
   googleUid: string;
   username: string;
   email: string;
@@ -1842,6 +1852,7 @@ The `data` property is an object of type `CreateUserFromGoogleData`, which is de
 export interface CreateUserFromGoogleData {
   userType_upsert: UserType_Key;
   user_insert: User_Key;
+  familyMember_insert: FamilyMember_Key;
 }
 ```
 ### Using `CreateUserFromGoogle`'s action shortcut function
@@ -1852,6 +1863,8 @@ import { connectorConfig, createUserFromGoogle, CreateUserFromGoogleVariables } 
 
 // The `CreateUserFromGoogle` mutation requires an argument of type `CreateUserFromGoogleVariables`:
 const createUserFromGoogleVars: CreateUserFromGoogleVariables = {
+  userId: ..., 
+  selfFamilyMemberId: ..., 
   googleUid: ..., 
   username: ..., 
   email: ..., 
@@ -1863,7 +1876,7 @@ const createUserFromGoogleVars: CreateUserFromGoogleVariables = {
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await createUserFromGoogle(createUserFromGoogleVars);
 // Variables can be defined inline as well.
-const { data } = await createUserFromGoogle({ googleUid: ..., username: ..., email: ..., createdAt: ..., userTypeName: ..., });
+const { data } = await createUserFromGoogle({ userId: ..., selfFamilyMemberId: ..., googleUid: ..., username: ..., email: ..., createdAt: ..., userTypeName: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -1871,12 +1884,14 @@ const { data } = await createUserFromGoogle(dataConnect, createUserFromGoogleVar
 
 console.log(data.userType_upsert);
 console.log(data.user_insert);
+console.log(data.familyMember_insert);
 
 // Or, you can use the `Promise` API.
 createUserFromGoogle(createUserFromGoogleVars).then((response) => {
   const data = response.data;
   console.log(data.userType_upsert);
   console.log(data.user_insert);
+  console.log(data.familyMember_insert);
 });
 ```
 
@@ -1888,6 +1903,8 @@ import { connectorConfig, createUserFromGoogleRef, CreateUserFromGoogleVariables
 
 // The `CreateUserFromGoogle` mutation requires an argument of type `CreateUserFromGoogleVariables`:
 const createUserFromGoogleVars: CreateUserFromGoogleVariables = {
+  userId: ..., 
+  selfFamilyMemberId: ..., 
   googleUid: ..., 
   username: ..., 
   email: ..., 
@@ -1898,7 +1915,7 @@ const createUserFromGoogleVars: CreateUserFromGoogleVariables = {
 // Call the `createUserFromGoogleRef()` function to get a reference to the mutation.
 const ref = createUserFromGoogleRef(createUserFromGoogleVars);
 // Variables can be defined inline as well.
-const ref = createUserFromGoogleRef({ googleUid: ..., username: ..., email: ..., createdAt: ..., userTypeName: ..., });
+const ref = createUserFromGoogleRef({ userId: ..., selfFamilyMemberId: ..., googleUid: ..., username: ..., email: ..., createdAt: ..., userTypeName: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -1910,12 +1927,14 @@ const { data } = await executeMutation(ref);
 
 console.log(data.userType_upsert);
 console.log(data.user_insert);
+console.log(data.familyMember_insert);
 
 // Or, you can use the `Promise` API.
 executeMutation(ref).then((response) => {
   const data = response.data;
   console.log(data.userType_upsert);
   console.log(data.user_insert);
+  console.log(data.familyMember_insert);
 });
 ```
 
@@ -5465,6 +5484,121 @@ console.log(data.userSetting_insert);
 executeMutation(ref).then((response) => {
   const data = response.data;
   console.log(data.userSetting_insert);
+});
+```
+
+## CreateSelfFamilyMemberForUser
+You can execute the `CreateSelfFamilyMemberForUser` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+createSelfFamilyMemberForUser(vars: CreateSelfFamilyMemberForUserVariables): MutationPromise<CreateSelfFamilyMemberForUserData, CreateSelfFamilyMemberForUserVariables>;
+
+interface CreateSelfFamilyMemberForUserRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateSelfFamilyMemberForUserVariables): MutationRef<CreateSelfFamilyMemberForUserData, CreateSelfFamilyMemberForUserVariables>;
+}
+export const createSelfFamilyMemberForUserRef: CreateSelfFamilyMemberForUserRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+createSelfFamilyMemberForUser(dc: DataConnect, vars: CreateSelfFamilyMemberForUserVariables): MutationPromise<CreateSelfFamilyMemberForUserData, CreateSelfFamilyMemberForUserVariables>;
+
+interface CreateSelfFamilyMemberForUserRef {
+  ...
+  (dc: DataConnect, vars: CreateSelfFamilyMemberForUserVariables): MutationRef<CreateSelfFamilyMemberForUserData, CreateSelfFamilyMemberForUserVariables>;
+}
+export const createSelfFamilyMemberForUserRef: CreateSelfFamilyMemberForUserRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the createSelfFamilyMemberForUserRef:
+```typescript
+const name = createSelfFamilyMemberForUserRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `CreateSelfFamilyMemberForUser` mutation requires an argument of type `CreateSelfFamilyMemberForUserVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface CreateSelfFamilyMemberForUserVariables {
+  userId: UUIDString;
+  familyMemberId: UUIDString;
+  name: string;
+}
+```
+### Return Type
+Recall that executing the `CreateSelfFamilyMemberForUser` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `CreateSelfFamilyMemberForUserData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface CreateSelfFamilyMemberForUserData {
+  familyMember_insert: FamilyMember_Key;
+}
+```
+### Using `CreateSelfFamilyMemberForUser`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, createSelfFamilyMemberForUser, CreateSelfFamilyMemberForUserVariables } from '@financeconnect/generated';
+
+// The `CreateSelfFamilyMemberForUser` mutation requires an argument of type `CreateSelfFamilyMemberForUserVariables`:
+const createSelfFamilyMemberForUserVars: CreateSelfFamilyMemberForUserVariables = {
+  userId: ..., 
+  familyMemberId: ..., 
+  name: ..., 
+};
+
+// Call the `createSelfFamilyMemberForUser()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await createSelfFamilyMemberForUser(createSelfFamilyMemberForUserVars);
+// Variables can be defined inline as well.
+const { data } = await createSelfFamilyMemberForUser({ userId: ..., familyMemberId: ..., name: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await createSelfFamilyMemberForUser(dataConnect, createSelfFamilyMemberForUserVars);
+
+console.log(data.familyMember_insert);
+
+// Or, you can use the `Promise` API.
+createSelfFamilyMemberForUser(createSelfFamilyMemberForUserVars).then((response) => {
+  const data = response.data;
+  console.log(data.familyMember_insert);
+});
+```
+
+### Using `CreateSelfFamilyMemberForUser`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, createSelfFamilyMemberForUserRef, CreateSelfFamilyMemberForUserVariables } from '@financeconnect/generated';
+
+// The `CreateSelfFamilyMemberForUser` mutation requires an argument of type `CreateSelfFamilyMemberForUserVariables`:
+const createSelfFamilyMemberForUserVars: CreateSelfFamilyMemberForUserVariables = {
+  userId: ..., 
+  familyMemberId: ..., 
+  name: ..., 
+};
+
+// Call the `createSelfFamilyMemberForUserRef()` function to get a reference to the mutation.
+const ref = createSelfFamilyMemberForUserRef(createSelfFamilyMemberForUserVars);
+// Variables can be defined inline as well.
+const ref = createSelfFamilyMemberForUserRef({ userId: ..., familyMemberId: ..., name: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = createSelfFamilyMemberForUserRef(dataConnect, createSelfFamilyMemberForUserVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.familyMember_insert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.familyMember_insert);
 });
 ```
 

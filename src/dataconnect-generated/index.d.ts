@@ -69,6 +69,16 @@ export interface CreateFamilyVariables {
   inviteCode: string;
 }
 
+export interface CreateSelfFamilyMemberForUserData {
+  familyMember_insert: FamilyMember_Key;
+}
+
+export interface CreateSelfFamilyMemberForUserVariables {
+  userId: UUIDString;
+  familyMemberId: UUIDString;
+  name: string;
+}
+
 export interface CreateTransactionData {
   transaction_insert: Transaction_Key;
 }
@@ -92,9 +102,12 @@ export interface CreateTransactionVariables {
 export interface CreateUserFromGoogleData {
   userType_upsert: UserType_Key;
   user_insert: User_Key;
+  familyMember_insert: FamilyMember_Key;
 }
 
 export interface CreateUserFromGoogleVariables {
+  userId: UUIDString;
+  selfFamilyMemberId: UUIDString;
   googleUid: string;
   username: string;
   email: string;
@@ -275,9 +288,13 @@ export interface GetUserAccessByGoogleUidVariables {
 export interface GetUserProvisioningByGoogleUidData {
   user?: {
     id: UUIDString;
+    username: string;
     userSetting?: {
       id: UUIDString;
     } & UserSetting_Key;
+    selfMember?: {
+      id: UUIDString;
+    } & FamilyMember_Key;
   } & User_Key;
 }
 
@@ -345,6 +362,9 @@ export interface ListFamilyMembersData {
     user: {
       id: UUIDString;
       username: string;
+    } & User_Key;
+    selfUser?: {
+      id: UUIDString;
     } & User_Key;
   } & FamilyMember_Key)[];
 }
@@ -1090,6 +1110,18 @@ export const createUserSettingForUserRef: CreateUserSettingForUserRef;
 
 export function createUserSettingForUser(vars: CreateUserSettingForUserVariables): MutationPromise<CreateUserSettingForUserData, CreateUserSettingForUserVariables>;
 export function createUserSettingForUser(dc: DataConnect, vars: CreateUserSettingForUserVariables): MutationPromise<CreateUserSettingForUserData, CreateUserSettingForUserVariables>;
+
+interface CreateSelfFamilyMemberForUserRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateSelfFamilyMemberForUserVariables): MutationRef<CreateSelfFamilyMemberForUserData, CreateSelfFamilyMemberForUserVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateSelfFamilyMemberForUserVariables): MutationRef<CreateSelfFamilyMemberForUserData, CreateSelfFamilyMemberForUserVariables>;
+  operationName: string;
+}
+export const createSelfFamilyMemberForUserRef: CreateSelfFamilyMemberForUserRef;
+
+export function createSelfFamilyMemberForUser(vars: CreateSelfFamilyMemberForUserVariables): MutationPromise<CreateSelfFamilyMemberForUserData, CreateSelfFamilyMemberForUserVariables>;
+export function createSelfFamilyMemberForUser(dc: DataConnect, vars: CreateSelfFamilyMemberForUserVariables): MutationPromise<CreateSelfFamilyMemberForUserData, CreateSelfFamilyMemberForUserVariables>;
 
 interface ListUsersRef {
   /* Allow users to create refs without passing in DataConnect */

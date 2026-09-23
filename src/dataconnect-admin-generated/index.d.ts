@@ -66,6 +66,16 @@ export interface CreateFamilyVariables {
   inviteCode: string;
 }
 
+export interface CreateSelfFamilyMemberForUserData {
+  familyMember_insert: FamilyMember_Key;
+}
+
+export interface CreateSelfFamilyMemberForUserVariables {
+  userId: UUIDString;
+  familyMemberId: UUIDString;
+  name: string;
+}
+
 export interface CreateTransactionData {
   transaction_insert: Transaction_Key;
 }
@@ -89,9 +99,12 @@ export interface CreateTransactionVariables {
 export interface CreateUserFromGoogleData {
   userType_upsert: UserType_Key;
   user_insert: User_Key;
+  familyMember_insert: FamilyMember_Key;
 }
 
 export interface CreateUserFromGoogleVariables {
+  userId: UUIDString;
+  selfFamilyMemberId: UUIDString;
   googleUid: string;
   username: string;
   email: string;
@@ -272,9 +285,13 @@ export interface GetUserAccessByGoogleUidVariables {
 export interface GetUserProvisioningByGoogleUidData {
   user?: {
     id: UUIDString;
+    username: string;
     userSetting?: {
       id: UUIDString;
     } & UserSetting_Key;
+    selfMember?: {
+      id: UUIDString;
+    } & FamilyMember_Key;
   } & User_Key;
 }
 
@@ -342,6 +359,9 @@ export interface ListFamilyMembersData {
     user: {
       id: UUIDString;
       username: string;
+    } & User_Key;
+    selfUser?: {
+      id: UUIDString;
     } & User_Key;
   } & FamilyMember_Key)[];
 }
@@ -863,6 +883,11 @@ export function regenerateFamilyInviteCode(vars: RegenerateFamilyInviteCodeVaria
 export function createUserSettingForUser(dc: DataConnect, vars: CreateUserSettingForUserVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateUserSettingForUserData>>;
 /** Generated Node Admin SDK operation action function for the 'CreateUserSettingForUser' Mutation. Allow users to pass in custom DataConnect instances. */
 export function createUserSettingForUser(vars: CreateUserSettingForUserVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateUserSettingForUserData>>;
+
+/** Generated Node Admin SDK operation action function for the 'CreateSelfFamilyMemberForUser' Mutation. Allow users to execute without passing in DataConnect. */
+export function createSelfFamilyMemberForUser(dc: DataConnect, vars: CreateSelfFamilyMemberForUserVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateSelfFamilyMemberForUserData>>;
+/** Generated Node Admin SDK operation action function for the 'CreateSelfFamilyMemberForUser' Mutation. Allow users to pass in custom DataConnect instances. */
+export function createSelfFamilyMemberForUser(vars: CreateSelfFamilyMemberForUserVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateSelfFamilyMemberForUserData>>;
 
 /** Generated Node Admin SDK operation action function for the 'ListUsers' Query. Allow users to execute without passing in DataConnect. */
 export function listUsers(dc: DataConnect, options?: OperationOptions): Promise<ExecuteOperationResponse<ListUsersData>>;

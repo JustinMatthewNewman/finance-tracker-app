@@ -64,6 +64,7 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*LeaveMyFamily*](#leavemyfamily)
   - [*RegenerateFamilyInviteCode*](#regeneratefamilyinvitecode)
   - [*CreateUserSettingForUser*](#createusersettingforuser)
+  - [*CreateSelfFamilyMemberForUser*](#createselffamilymemberforuser)
 
 # TanStack Query Firebase & TanStack React Query
 This SDK provides [React](https://react.dev/) hooks generated specific to your application, for the operations found in the connector `finance`. These hooks are generated using [TanStack Query Firebase](https://react-query-firebase.invertase.dev/) by our partners at Invertase, a library built on top of [TanStack React Query v5](https://tanstack.com/query/v5/docs/framework/react/overview).
@@ -620,9 +621,13 @@ To access the data returned by a Query, use the `UseQueryResult.data` field. The
 export interface GetUserProvisioningByGoogleUidData {
   user?: {
     id: UUIDString;
+    username: string;
     userSetting?: {
       id: UUIDString;
     } & UserSetting_Key;
+    selfMember?: {
+      id: UUIDString;
+    } & FamilyMember_Key;
   } & User_Key;
 }
 ```
@@ -717,6 +722,9 @@ export interface ListFamilyMembersData {
     user: {
       id: UUIDString;
       username: string;
+    } & User_Key;
+    selfUser?: {
+      id: UUIDString;
     } & User_Key;
   } & FamilyMember_Key)[];
 }
@@ -1520,6 +1528,8 @@ The `CreateUserFromGoogle` Mutation requires an argument of type `CreateUserFrom
 
 ```javascript
 export interface CreateUserFromGoogleVariables {
+  userId: UUIDString;
+  selfFamilyMemberId: UUIDString;
   googleUid: string;
   username: string;
   email: string;
@@ -1539,6 +1549,7 @@ To access the data returned by a Mutation, use the `UseMutationResult.data` fiel
 export interface CreateUserFromGoogleData {
   userType_upsert: UserType_Key;
   user_insert: User_Key;
+  familyMember_insert: FamilyMember_Key;
 }
 ```
 
@@ -1575,6 +1586,8 @@ export default function CreateUserFromGoogleComponent() {
   // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
   // The `useCreateUserFromGoogle` Mutation requires an argument of type `CreateUserFromGoogleVariables`:
   const createUserFromGoogleVars: CreateUserFromGoogleVariables = {
+    userId: ..., 
+    selfFamilyMemberId: ..., 
     googleUid: ..., 
     username: ..., 
     email: ..., 
@@ -1583,7 +1596,7 @@ export default function CreateUserFromGoogleComponent() {
   };
   mutation.mutate(createUserFromGoogleVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ googleUid: ..., username: ..., email: ..., createdAt: ..., userTypeName: ..., });
+  mutation.mutate({ userId: ..., selfFamilyMemberId: ..., googleUid: ..., username: ..., email: ..., createdAt: ..., userTypeName: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -1604,6 +1617,7 @@ export default function CreateUserFromGoogleComponent() {
   if (mutation.isSuccess) {
     console.log(mutation.data.userType_upsert);
     console.log(mutation.data.user_insert);
+    console.log(mutation.data.familyMember_insert);
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }
@@ -4631,6 +4645,104 @@ export default function CreateUserSettingForUserComponent() {
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
     console.log(mutation.data.userSetting_insert);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## CreateSelfFamilyMemberForUser
+You can execute the `CreateSelfFamilyMemberForUser` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useCreateSelfFamilyMemberForUser(options?: useDataConnectMutationOptions<CreateSelfFamilyMemberForUserData, FirebaseError, CreateSelfFamilyMemberForUserVariables>): UseDataConnectMutationResult<CreateSelfFamilyMemberForUserData, CreateSelfFamilyMemberForUserVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useCreateSelfFamilyMemberForUser(dc: DataConnect, options?: useDataConnectMutationOptions<CreateSelfFamilyMemberForUserData, FirebaseError, CreateSelfFamilyMemberForUserVariables>): UseDataConnectMutationResult<CreateSelfFamilyMemberForUserData, CreateSelfFamilyMemberForUserVariables>;
+```
+
+### Variables
+The `CreateSelfFamilyMemberForUser` Mutation requires an argument of type `CreateSelfFamilyMemberForUserVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface CreateSelfFamilyMemberForUserVariables {
+  userId: UUIDString;
+  familyMemberId: UUIDString;
+  name: string;
+}
+```
+### Return Type
+Recall that calling the `CreateSelfFamilyMemberForUser` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `CreateSelfFamilyMemberForUser` Mutation is of type `CreateSelfFamilyMemberForUserData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface CreateSelfFamilyMemberForUserData {
+  familyMember_insert: FamilyMember_Key;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `CreateSelfFamilyMemberForUser`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, CreateSelfFamilyMemberForUserVariables } from '@financeconnect/generated';
+import { useCreateSelfFamilyMemberForUser } from '@financeconnect/generated/react'
+
+export default function CreateSelfFamilyMemberForUserComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useCreateSelfFamilyMemberForUser();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useCreateSelfFamilyMemberForUser(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useCreateSelfFamilyMemberForUser(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useCreateSelfFamilyMemberForUser(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useCreateSelfFamilyMemberForUser` Mutation requires an argument of type `CreateSelfFamilyMemberForUserVariables`:
+  const createSelfFamilyMemberForUserVars: CreateSelfFamilyMemberForUserVariables = {
+    userId: ..., 
+    familyMemberId: ..., 
+    name: ..., 
+  };
+  mutation.mutate(createSelfFamilyMemberForUserVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ userId: ..., familyMemberId: ..., name: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(createSelfFamilyMemberForUserVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.familyMember_insert);
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }
