@@ -315,6 +315,80 @@ type Category @table(key: "name") {
   createdAt: Timestamp! @default(expr: "request.time")
 }
 
+# One upload of one bank statement CSV — the header record for the rows it
+# produced.
+#
+# WHY THIS TABLE EXISTS. Without it, "the transactions that came from that
+# file" is not a thing the database can name: it is a set of rows that happen to
+# share a source and a date range, and taking an upload back means reconstructing
+# which rows those were from whatever the client still remembers. With it, an
+# upload has an identity, every row it wrote points at that identity, and
+# removing it is a filter on one column.
+#
+# TWO LEVELS OF DUPLICATE PROTECTION, ANSWERING TWO DIFFERENT QUESTIONS. They
+# are not redundant and neither replaces the other:
+#
+#   `contentKey` here      — "is this the same FILE again?" Caught before a
+#                            single row is written, which is what lets the
+#                            dialog say "you uploaded this on 14 Sep" instead of
+#                            importing a second copy of a month.
+#   Transaction.importKey  — "is this the same LINE again?" Which is a different
+#                            question, because the usual re-upload is not the
+#                            same file: it is a wider date range that overlaps
+#                            the last one. The file is new, most of its lines
+#                            are not.
+#
+# NO CASCADE, DELIBERATELY. Transaction.statementImport below has to be nullable
+# — almost no transaction comes from an upload — and Data Connect derives ON
+# DELETE from nullability, so deleting a row here SETS NULL on its transactions
+# rather than removing them. Removing an upload is therefore two mutations in
+# order: the rows, then this. See DeleteStatementImportRows in mutations.gql.
+# Getting that order wrong does not corrupt anything, but it does strand the
+# rows with nothing pointing at them, and then only their importKeys can find
+# them again.
+type StatementImport @table {
+  id: UUID! @default(expr: "uuidV4()")
+  # Who uploaded it — the owner, in the same sense as Transaction.user, and what
+  # every guard on this table checks.
+  user: User!
+  # Who the rows were attributed to. Denormalized from the transactions so the
+  # list of uploads can say "Sarah's Checking" without reading any of them.
+  familyMember: FamilyMember!
+
+  # What the person called the account ("Checking", "Joint Savings"). Defaults
+  # from the filename and is editable at upload time, because it is also part of
+  # every row's importKey — two accounts with a payment of the same amount on
+  # the same day are two transactions, and only this tells them apart.
+  accountLabel: String!
+  # The file's own name, kept as uploaded. Purely so somebody recognizes the row
+  # a month later; nothing keys off it.
+  filename: String!
+
+  # Fingerprint of the file's CONTENTS, scoped to the uploader — a digest of the
+  # text, not of the name. Renaming a file does not make it a different
+  # statement, and Wells Fargo names every export the same thing anyway.
+  #
+  # @unique for the same reason Transaction.importKey is: the client checks this
+  # list before uploading, but a read followed by a write is not a guarantee, and
+  # the failure this prevents is a household's month of spending counted twice.
+  # Nullable so the constraint constrains only rows that set it.
+  contentKey: String @unique
+
+  # What the file contained and what came of it. Stored rather than counted from
+  # the transactions on demand, because the interesting numbers are the ones the
+  # rows CANNOT answer: how many lines were skipped as already imported, and how
+  # many were unreadable, are facts about the upload that left no row behind.
+  rowCount: Int!
+  importedRowCount: Int! @default(expr: "0")
+  skippedRowCount: Int! @default(expr: "0")
+  # The range the statement covered, for the list. Nullable because an upload
+  # whose every line was unreadable has no range.
+  earliestOccurredOn: Date
+  latestOccurredOn: Date
+
+  createdAt: Timestamp! @default(expr: "request.time")
+}
+
 # One movement of money, attributed to a family member. The template's
 # TimeEntry in the same structural slot: the leaf row the main panel lists,
 # groups and totals.
@@ -409,9 +483,18 @@ type Transaction @table {
   # the app already renders. Nothing about that import is built yet, and
   # nothing here anticipates it beyond leaving the door open.
 
-  # "MANUAL" — entered by hand, and it already happened.
+  # "MANUAL"   — entered by hand, and it already happened.
   # "FORECAST" — entered by hand, and it is expected.
+  # "IMPORT"   — read out of a bank statement CSV, and it already happened.
   # Validated in lib/transactionKind.ts, like every other string enum here.
+  #
+  # IMPORT IS PROVENANCE, NOT A THIRD KIND OF MONEY. An imported row is an
+  # actual: `status: "POSTED"`, counted in every real-money total exactly like
+  # a MANUAL one, and the split this table exists to make — happened vs.
+  # expected — still runs entirely through `status`. What the value buys is the
+  # ability to say where a row came from: which rows a person typed, which the
+  # bank did, and (once Plaid lands) which a feed did, without any of them
+  # needing a table of their own.
   source: String! @default(value: "MANUAL")
   # "POSTED" — real money moved.
   # "FORECASTED" — expected, hasn't happened yet.
@@ -422,6 +505,79 @@ type Transaction @table {
   # projection" after the fact. Collapsing them into one column would throw
   # that away the moment it becomes interesting.
   status: String! @default(value: "POSTED")
+
+  # Identity of the statement line this row was imported from, or null for a
+  # row that was not imported — which is the normal case and not a gap to
+  # backfill.
+  #
+  # WHAT IT IS FOR: importing the same statement twice must not double the
+  # household's money, and people do that constantly — they re-download a month
+  # to pick up the last few days of it, or a wider range to fill a gap. A bank
+  # CSV carries no transaction id, so the identity has to be reconstructed from
+  # the columns (day, signed amount, memo, plus an ordinal for the genuinely
+  # identical rows) and scoped by owner and account. lib/wellsFargoCsv.ts builds
+  # it; see importKeyFor() there for the full shape and its one trade-off.
+  #
+  # @unique IS THE POINT, and the pre-flight check in hooks/useTransactionImport.ts
+  # is not. That hook reads the keys it is about to write and filters out the
+  # ones already present, which is what makes the import report "142 new, 88
+  # already imported" instead of failing — but it is a read followed by a write,
+  # so two imports racing each other both see a clean slate. The constraint is
+  # what actually holds the invariant, and it holds it in the safe direction:
+  # the loser's batch is rejected rather than quietly duplicating a month of
+  # somebody's spending.
+  #
+  # Nullable, so Postgres permits many NULLs under the unique index and every
+  # hand-entered row is unaffected — the same arrangement as
+  # FamilyMember.selfUser above. Nullable also makes this ON DELETE SET NULL
+  # rather than CASCADE, which is moot for a scalar but worth not getting
+  # backwards.
+  #
+  # Scoped by owner INSIDE the value rather than by a composite unique on
+  # (user, importKey): Data Connect derives uniqueness from the directive, and a
+  # single opaque string that already contains the owner needs no second column
+  # kept in step with it.
+  importKey: String @unique
+
+  # The bank's own reference for this transaction, as printed in the statement
+  # memo ("S000000000000014", "REF #IB00000001"). Null for a hand-entered row,
+  # and null for an imported one whose memo carried none.
+  #
+  # WHY THIS IS WORTH A COLUMN. It is the only thing in a Wells Fargo export that
+  # identifies a transaction rather than describing it, and it is what makes
+  # re-uploading an overlapping statement correct instead of merely usually
+  # correct. A PENDING row and the SETTLED version of the same purchase are two
+  # completely different lines — different memo format, usually a different date,
+  # sometimes a different amount once a tip lands — so `importKey` sees two
+  # unrelated rows and imports the charge twice. A settled row carries a
+  # reference; matching on it resolves that pair exactly, with no guessing.
+  #
+  # It cuts the other way too, and that half matters just as much: two rows whose
+  # references are both present and DIFFERENT are definitely two transactions,
+  # however alike they look. That is what stops two same-price shops at the same
+  # supermarket in one week being reported as a duplicate.
+  #
+  # DELIBERATELY NOT @unique, unlike importKey. A pending row has no reference at
+  # all, so the constraint would not cover the rows that need it most; an amount
+  # that legitimately changes between pending and settled must not be refused
+  # outright, because that case needs a person to look at it; and the same
+  # reference can appear in two different accounts' exports. This is evidence for
+  # lib/importReconcile.ts to weigh, and `importKey` remains the hard constraint.
+  importRef: String
+
+  # Which upload wrote this row, or null for a row nobody uploaded.
+  #
+  # This is the handle "undo that import" is built on, and it is why it is a
+  # foreign key rather than a second string: an upload is an entity with its own
+  # facts (what it was called, how much of it was skipped, when it happened),
+  # and those belong on one row rather than repeated onto every transaction that
+  # came from it. See StatementImport above, including why removing one is two
+  # mutations and not a cascade.
+  #
+  # Nullable and null by default, like importKey. The two travel together —
+  # every imported row has both, every other row has neither — but they answer
+  # different questions: this one says which upload, importKey says which line.
+  statementImport: StatementImport
 
   createdAt: Timestamp!
 }

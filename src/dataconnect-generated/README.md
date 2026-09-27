@@ -21,6 +21,9 @@ This README will guide you through the process of using the generated JavaScript
   - [*ListTransactionsByFamilyMember*](#listtransactionsbyfamilymember)
   - [*ListMyTransactions*](#listmytransactions)
   - [*ListMyTransactionsByDateRange*](#listmytransactionsbydaterange)
+  - [*ListMyStatementImports*](#listmystatementimports)
+  - [*ListMyImportedInRange*](#listmyimportedinrange)
+  - [*ListMyImportedKeys*](#listmyimportedkeys)
   - [*GetFamilyByInviteCode*](#getfamilybyinvitecode)
   - [*GetMyFamilyDetail*](#getmyfamilydetail)
   - [*GetMyJoinRequests*](#getmyjoinrequests)
@@ -47,6 +50,10 @@ This README will guide you through the process of using the generated JavaScript
   - [*CreateTransaction*](#createtransaction)
   - [*UpdateTransaction*](#updatetransaction)
   - [*UpdateTransactionClearCategory*](#updatetransactionclearcategory)
+  - [*CreateStatementImport*](#createstatementimport)
+  - [*FinalizeStatementImport*](#finalizestatementimport)
+  - [*DeleteStatementImportRows*](#deletestatementimportrows)
+  - [*DeleteStatementImport*](#deletestatementimport)
   - [*MarkTransactionPosted*](#marktransactionposted)
   - [*MarkTransactionProjected*](#marktransactionprojected)
   - [*DeleteTransaction*](#deletetransaction)
@@ -1444,6 +1451,385 @@ const ref = listMyTransactionsByDateRangeRef({ startDate: ..., endDate: ..., lim
 // You can also pass in a `DataConnect` instance to the `QueryRef` function.
 const dataConnect = getDataConnect(connectorConfig);
 const ref = listMyTransactionsByDateRangeRef(dataConnect, listMyTransactionsByDateRangeVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.transactions);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.transactions);
+});
+```
+
+## ListMyStatementImports
+You can execute the `ListMyStatementImports` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+listMyStatementImports(vars?: ListMyStatementImportsVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyStatementImportsData, ListMyStatementImportsVariables>;
+
+interface ListMyStatementImportsRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars?: ListMyStatementImportsVariables): QueryRef<ListMyStatementImportsData, ListMyStatementImportsVariables>;
+}
+export const listMyStatementImportsRef: ListMyStatementImportsRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+listMyStatementImports(dc: DataConnect, vars?: ListMyStatementImportsVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyStatementImportsData, ListMyStatementImportsVariables>;
+
+interface ListMyStatementImportsRef {
+  ...
+  (dc: DataConnect, vars?: ListMyStatementImportsVariables): QueryRef<ListMyStatementImportsData, ListMyStatementImportsVariables>;
+}
+export const listMyStatementImportsRef: ListMyStatementImportsRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the listMyStatementImportsRef:
+```typescript
+const name = listMyStatementImportsRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `ListMyStatementImports` query has an optional argument of type `ListMyStatementImportsVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface ListMyStatementImportsVariables {
+  limit?: number | null;
+  offset?: number | null;
+}
+```
+### Return Type
+Recall that executing the `ListMyStatementImports` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `ListMyStatementImportsData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface ListMyStatementImportsData {
+  statementImports: ({
+    id: UUIDString;
+    accountLabel: string;
+    filename: string;
+    contentKey?: string | null;
+    rowCount: number;
+    importedRowCount: number;
+    skippedRowCount: number;
+    earliestOccurredOn?: DateString | null;
+    latestOccurredOn?: DateString | null;
+    createdAt: TimestampString;
+    familyMember: {
+      id: UUIDString;
+      name: string;
+    } & FamilyMember_Key;
+    user: {
+      id: UUIDString;
+      username: string;
+    } & User_Key;
+  } & StatementImport_Key)[];
+}
+```
+### Using `ListMyStatementImports`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, listMyStatementImports, ListMyStatementImportsVariables } from '@financeconnect/generated';
+
+// The `ListMyStatementImports` query has an optional argument of type `ListMyStatementImportsVariables`:
+const listMyStatementImportsVars: ListMyStatementImportsVariables = {
+  limit: ..., // optional
+  offset: ..., // optional
+};
+
+// Call the `listMyStatementImports()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await listMyStatementImports(listMyStatementImportsVars);
+// Variables can be defined inline as well.
+const { data } = await listMyStatementImports({ limit: ..., offset: ..., });
+// Since all variables are optional for this query, you can omit the `ListMyStatementImportsVariables` argument.
+const { data } = await listMyStatementImports();
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await listMyStatementImports(dataConnect, listMyStatementImportsVars);
+
+console.log(data.statementImports);
+
+// Or, you can use the `Promise` API.
+listMyStatementImports(listMyStatementImportsVars).then((response) => {
+  const data = response.data;
+  console.log(data.statementImports);
+});
+```
+
+### Using `ListMyStatementImports`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, listMyStatementImportsRef, ListMyStatementImportsVariables } from '@financeconnect/generated';
+
+// The `ListMyStatementImports` query has an optional argument of type `ListMyStatementImportsVariables`:
+const listMyStatementImportsVars: ListMyStatementImportsVariables = {
+  limit: ..., // optional
+  offset: ..., // optional
+};
+
+// Call the `listMyStatementImportsRef()` function to get a reference to the query.
+const ref = listMyStatementImportsRef(listMyStatementImportsVars);
+// Variables can be defined inline as well.
+const ref = listMyStatementImportsRef({ limit: ..., offset: ..., });
+// Since all variables are optional for this query, you can omit the `ListMyStatementImportsVariables` argument.
+const ref = listMyStatementImportsRef();
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = listMyStatementImportsRef(dataConnect, listMyStatementImportsVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.statementImports);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.statementImports);
+});
+```
+
+## ListMyImportedInRange
+You can execute the `ListMyImportedInRange` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+listMyImportedInRange(vars: ListMyImportedInRangeVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyImportedInRangeData, ListMyImportedInRangeVariables>;
+
+interface ListMyImportedInRangeRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListMyImportedInRangeVariables): QueryRef<ListMyImportedInRangeData, ListMyImportedInRangeVariables>;
+}
+export const listMyImportedInRangeRef: ListMyImportedInRangeRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+listMyImportedInRange(dc: DataConnect, vars: ListMyImportedInRangeVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyImportedInRangeData, ListMyImportedInRangeVariables>;
+
+interface ListMyImportedInRangeRef {
+  ...
+  (dc: DataConnect, vars: ListMyImportedInRangeVariables): QueryRef<ListMyImportedInRangeData, ListMyImportedInRangeVariables>;
+}
+export const listMyImportedInRangeRef: ListMyImportedInRangeRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the listMyImportedInRangeRef:
+```typescript
+const name = listMyImportedInRangeRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `ListMyImportedInRange` query requires an argument of type `ListMyImportedInRangeVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface ListMyImportedInRangeVariables {
+  startDate: DateString;
+  endDate: DateString;
+  limit?: number | null;
+  offset?: number | null;
+}
+```
+### Return Type
+Recall that executing the `ListMyImportedInRange` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `ListMyImportedInRangeData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface ListMyImportedInRangeData {
+  transactions: ({
+    id: UUIDString;
+    importKey?: string | null;
+    importRef?: string | null;
+    occurredOn: DateString;
+    amountMinor: number;
+    direction: string;
+    merchant?: string | null;
+  } & Transaction_Key)[];
+}
+```
+### Using `ListMyImportedInRange`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, listMyImportedInRange, ListMyImportedInRangeVariables } from '@financeconnect/generated';
+
+// The `ListMyImportedInRange` query requires an argument of type `ListMyImportedInRangeVariables`:
+const listMyImportedInRangeVars: ListMyImportedInRangeVariables = {
+  startDate: ..., 
+  endDate: ..., 
+  limit: ..., // optional
+  offset: ..., // optional
+};
+
+// Call the `listMyImportedInRange()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await listMyImportedInRange(listMyImportedInRangeVars);
+// Variables can be defined inline as well.
+const { data } = await listMyImportedInRange({ startDate: ..., endDate: ..., limit: ..., offset: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await listMyImportedInRange(dataConnect, listMyImportedInRangeVars);
+
+console.log(data.transactions);
+
+// Or, you can use the `Promise` API.
+listMyImportedInRange(listMyImportedInRangeVars).then((response) => {
+  const data = response.data;
+  console.log(data.transactions);
+});
+```
+
+### Using `ListMyImportedInRange`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, listMyImportedInRangeRef, ListMyImportedInRangeVariables } from '@financeconnect/generated';
+
+// The `ListMyImportedInRange` query requires an argument of type `ListMyImportedInRangeVariables`:
+const listMyImportedInRangeVars: ListMyImportedInRangeVariables = {
+  startDate: ..., 
+  endDate: ..., 
+  limit: ..., // optional
+  offset: ..., // optional
+};
+
+// Call the `listMyImportedInRangeRef()` function to get a reference to the query.
+const ref = listMyImportedInRangeRef(listMyImportedInRangeVars);
+// Variables can be defined inline as well.
+const ref = listMyImportedInRangeRef({ startDate: ..., endDate: ..., limit: ..., offset: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = listMyImportedInRangeRef(dataConnect, listMyImportedInRangeVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.transactions);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.transactions);
+});
+```
+
+## ListMyImportedKeys
+You can execute the `ListMyImportedKeys` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+listMyImportedKeys(vars: ListMyImportedKeysVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyImportedKeysData, ListMyImportedKeysVariables>;
+
+interface ListMyImportedKeysRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListMyImportedKeysVariables): QueryRef<ListMyImportedKeysData, ListMyImportedKeysVariables>;
+}
+export const listMyImportedKeysRef: ListMyImportedKeysRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+listMyImportedKeys(dc: DataConnect, vars: ListMyImportedKeysVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyImportedKeysData, ListMyImportedKeysVariables>;
+
+interface ListMyImportedKeysRef {
+  ...
+  (dc: DataConnect, vars: ListMyImportedKeysVariables): QueryRef<ListMyImportedKeysData, ListMyImportedKeysVariables>;
+}
+export const listMyImportedKeysRef: ListMyImportedKeysRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the listMyImportedKeysRef:
+```typescript
+const name = listMyImportedKeysRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `ListMyImportedKeys` query requires an argument of type `ListMyImportedKeysVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface ListMyImportedKeysVariables {
+  importKeys: string[];
+  limit?: number | null;
+  offset?: number | null;
+}
+```
+### Return Type
+Recall that executing the `ListMyImportedKeys` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `ListMyImportedKeysData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface ListMyImportedKeysData {
+  transactions: ({
+    id: UUIDString;
+    importKey?: string | null;
+  } & Transaction_Key)[];
+}
+```
+### Using `ListMyImportedKeys`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, listMyImportedKeys, ListMyImportedKeysVariables } from '@financeconnect/generated';
+
+// The `ListMyImportedKeys` query requires an argument of type `ListMyImportedKeysVariables`:
+const listMyImportedKeysVars: ListMyImportedKeysVariables = {
+  importKeys: ..., 
+  limit: ..., // optional
+  offset: ..., // optional
+};
+
+// Call the `listMyImportedKeys()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await listMyImportedKeys(listMyImportedKeysVars);
+// Variables can be defined inline as well.
+const { data } = await listMyImportedKeys({ importKeys: ..., limit: ..., offset: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await listMyImportedKeys(dataConnect, listMyImportedKeysVars);
+
+console.log(data.transactions);
+
+// Or, you can use the `Promise` API.
+listMyImportedKeys(listMyImportedKeysVars).then((response) => {
+  const data = response.data;
+  console.log(data.transactions);
+});
+```
+
+### Using `ListMyImportedKeys`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, listMyImportedKeysRef, ListMyImportedKeysVariables } from '@financeconnect/generated';
+
+// The `ListMyImportedKeys` query requires an argument of type `ListMyImportedKeysVariables`:
+const listMyImportedKeysVars: ListMyImportedKeysVariables = {
+  importKeys: ..., 
+  limit: ..., // optional
+  offset: ..., // optional
+};
+
+// Call the `listMyImportedKeysRef()` function to get a reference to the query.
+const ref = listMyImportedKeysRef(listMyImportedKeysVars);
+// Variables can be defined inline as well.
+const ref = listMyImportedKeysRef({ importKeys: ..., limit: ..., offset: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = listMyImportedKeysRef(dataConnect, listMyImportedKeysVars);
 
 // Call `executeQuery()` on the reference to execute the query.
 // You can use the `await` keyword to wait for the promise to resolve.
@@ -4031,6 +4417,9 @@ export interface CreateTransactionVariables {
   categoryName?: string | null;
   source?: string | null;
   status?: string | null;
+  importKey?: string | null;
+  importRef?: string | null;
+  statementImportId?: UUIDString | null;
 }
 ```
 ### Return Type
@@ -4064,13 +4453,16 @@ const createTransactionVars: CreateTransactionVariables = {
   categoryName: ..., // optional
   source: ..., // optional
   status: ..., // optional
+  importKey: ..., // optional
+  importRef: ..., // optional
+  statementImportId: ..., // optional
 };
 
 // Call the `createTransaction()` function to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await createTransaction(createTransactionVars);
 // Variables can be defined inline as well.
-const { data } = await createTransaction({ userId: ..., familyMemberId: ..., amountMinor: ..., direction: ..., occurredOn: ..., createdAt: ..., description: ..., merchant: ..., method: ..., recurrence: ..., recurrenceEndsOn: ..., categoryName: ..., source: ..., status: ..., });
+const { data } = await createTransaction({ userId: ..., familyMemberId: ..., amountMinor: ..., direction: ..., occurredOn: ..., createdAt: ..., description: ..., merchant: ..., method: ..., recurrence: ..., recurrenceEndsOn: ..., categoryName: ..., source: ..., status: ..., importKey: ..., importRef: ..., statementImportId: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -4107,12 +4499,15 @@ const createTransactionVars: CreateTransactionVariables = {
   categoryName: ..., // optional
   source: ..., // optional
   status: ..., // optional
+  importKey: ..., // optional
+  importRef: ..., // optional
+  statementImportId: ..., // optional
 };
 
 // Call the `createTransactionRef()` function to get a reference to the mutation.
 const ref = createTransactionRef(createTransactionVars);
 // Variables can be defined inline as well.
-const ref = createTransactionRef({ userId: ..., familyMemberId: ..., amountMinor: ..., direction: ..., occurredOn: ..., createdAt: ..., description: ..., merchant: ..., method: ..., recurrence: ..., recurrenceEndsOn: ..., categoryName: ..., source: ..., status: ..., });
+const ref = createTransactionRef({ userId: ..., familyMemberId: ..., amountMinor: ..., direction: ..., occurredOn: ..., createdAt: ..., description: ..., merchant: ..., method: ..., recurrence: ..., recurrenceEndsOn: ..., categoryName: ..., source: ..., status: ..., importKey: ..., importRef: ..., statementImportId: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -4409,6 +4804,475 @@ console.log(data.transaction_update);
 executeMutation(ref).then((response) => {
   const data = response.data;
   console.log(data.transaction_update);
+});
+```
+
+## CreateStatementImport
+You can execute the `CreateStatementImport` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+createStatementImport(vars: CreateStatementImportVariables): MutationPromise<CreateStatementImportData, CreateStatementImportVariables>;
+
+interface CreateStatementImportRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateStatementImportVariables): MutationRef<CreateStatementImportData, CreateStatementImportVariables>;
+}
+export const createStatementImportRef: CreateStatementImportRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+createStatementImport(dc: DataConnect, vars: CreateStatementImportVariables): MutationPromise<CreateStatementImportData, CreateStatementImportVariables>;
+
+interface CreateStatementImportRef {
+  ...
+  (dc: DataConnect, vars: CreateStatementImportVariables): MutationRef<CreateStatementImportData, CreateStatementImportVariables>;
+}
+export const createStatementImportRef: CreateStatementImportRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the createStatementImportRef:
+```typescript
+const name = createStatementImportRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `CreateStatementImport` mutation requires an argument of type `CreateStatementImportVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface CreateStatementImportVariables {
+  statementImportId: UUIDString;
+  userId: UUIDString;
+  familyMemberId: UUIDString;
+  accountLabel: string;
+  filename: string;
+  contentKey?: string | null;
+  rowCount: number;
+  createdAt: TimestampString;
+}
+```
+### Return Type
+Recall that executing the `CreateStatementImport` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `CreateStatementImportData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface CreateStatementImportData {
+  statementImport_insert: StatementImport_Key;
+}
+```
+### Using `CreateStatementImport`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, createStatementImport, CreateStatementImportVariables } from '@financeconnect/generated';
+
+// The `CreateStatementImport` mutation requires an argument of type `CreateStatementImportVariables`:
+const createStatementImportVars: CreateStatementImportVariables = {
+  statementImportId: ..., 
+  userId: ..., 
+  familyMemberId: ..., 
+  accountLabel: ..., 
+  filename: ..., 
+  contentKey: ..., // optional
+  rowCount: ..., 
+  createdAt: ..., 
+};
+
+// Call the `createStatementImport()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await createStatementImport(createStatementImportVars);
+// Variables can be defined inline as well.
+const { data } = await createStatementImport({ statementImportId: ..., userId: ..., familyMemberId: ..., accountLabel: ..., filename: ..., contentKey: ..., rowCount: ..., createdAt: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await createStatementImport(dataConnect, createStatementImportVars);
+
+console.log(data.statementImport_insert);
+
+// Or, you can use the `Promise` API.
+createStatementImport(createStatementImportVars).then((response) => {
+  const data = response.data;
+  console.log(data.statementImport_insert);
+});
+```
+
+### Using `CreateStatementImport`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, createStatementImportRef, CreateStatementImportVariables } from '@financeconnect/generated';
+
+// The `CreateStatementImport` mutation requires an argument of type `CreateStatementImportVariables`:
+const createStatementImportVars: CreateStatementImportVariables = {
+  statementImportId: ..., 
+  userId: ..., 
+  familyMemberId: ..., 
+  accountLabel: ..., 
+  filename: ..., 
+  contentKey: ..., // optional
+  rowCount: ..., 
+  createdAt: ..., 
+};
+
+// Call the `createStatementImportRef()` function to get a reference to the mutation.
+const ref = createStatementImportRef(createStatementImportVars);
+// Variables can be defined inline as well.
+const ref = createStatementImportRef({ statementImportId: ..., userId: ..., familyMemberId: ..., accountLabel: ..., filename: ..., contentKey: ..., rowCount: ..., createdAt: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = createStatementImportRef(dataConnect, createStatementImportVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.statementImport_insert);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.statementImport_insert);
+});
+```
+
+## FinalizeStatementImport
+You can execute the `FinalizeStatementImport` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+finalizeStatementImport(vars: FinalizeStatementImportVariables): MutationPromise<FinalizeStatementImportData, FinalizeStatementImportVariables>;
+
+interface FinalizeStatementImportRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: FinalizeStatementImportVariables): MutationRef<FinalizeStatementImportData, FinalizeStatementImportVariables>;
+}
+export const finalizeStatementImportRef: FinalizeStatementImportRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+finalizeStatementImport(dc: DataConnect, vars: FinalizeStatementImportVariables): MutationPromise<FinalizeStatementImportData, FinalizeStatementImportVariables>;
+
+interface FinalizeStatementImportRef {
+  ...
+  (dc: DataConnect, vars: FinalizeStatementImportVariables): MutationRef<FinalizeStatementImportData, FinalizeStatementImportVariables>;
+}
+export const finalizeStatementImportRef: FinalizeStatementImportRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the finalizeStatementImportRef:
+```typescript
+const name = finalizeStatementImportRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `FinalizeStatementImport` mutation requires an argument of type `FinalizeStatementImportVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface FinalizeStatementImportVariables {
+  statementImportId: UUIDString;
+  importedRowCount: number;
+  skippedRowCount: number;
+  earliestOccurredOn?: DateString | null;
+  latestOccurredOn?: DateString | null;
+}
+```
+### Return Type
+Recall that executing the `FinalizeStatementImport` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `FinalizeStatementImportData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface FinalizeStatementImportData {
+  statementImport_update?: StatementImport_Key | null;
+}
+```
+### Using `FinalizeStatementImport`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, finalizeStatementImport, FinalizeStatementImportVariables } from '@financeconnect/generated';
+
+// The `FinalizeStatementImport` mutation requires an argument of type `FinalizeStatementImportVariables`:
+const finalizeStatementImportVars: FinalizeStatementImportVariables = {
+  statementImportId: ..., 
+  importedRowCount: ..., 
+  skippedRowCount: ..., 
+  earliestOccurredOn: ..., // optional
+  latestOccurredOn: ..., // optional
+};
+
+// Call the `finalizeStatementImport()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await finalizeStatementImport(finalizeStatementImportVars);
+// Variables can be defined inline as well.
+const { data } = await finalizeStatementImport({ statementImportId: ..., importedRowCount: ..., skippedRowCount: ..., earliestOccurredOn: ..., latestOccurredOn: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await finalizeStatementImport(dataConnect, finalizeStatementImportVars);
+
+console.log(data.statementImport_update);
+
+// Or, you can use the `Promise` API.
+finalizeStatementImport(finalizeStatementImportVars).then((response) => {
+  const data = response.data;
+  console.log(data.statementImport_update);
+});
+```
+
+### Using `FinalizeStatementImport`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, finalizeStatementImportRef, FinalizeStatementImportVariables } from '@financeconnect/generated';
+
+// The `FinalizeStatementImport` mutation requires an argument of type `FinalizeStatementImportVariables`:
+const finalizeStatementImportVars: FinalizeStatementImportVariables = {
+  statementImportId: ..., 
+  importedRowCount: ..., 
+  skippedRowCount: ..., 
+  earliestOccurredOn: ..., // optional
+  latestOccurredOn: ..., // optional
+};
+
+// Call the `finalizeStatementImportRef()` function to get a reference to the mutation.
+const ref = finalizeStatementImportRef(finalizeStatementImportVars);
+// Variables can be defined inline as well.
+const ref = finalizeStatementImportRef({ statementImportId: ..., importedRowCount: ..., skippedRowCount: ..., earliestOccurredOn: ..., latestOccurredOn: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = finalizeStatementImportRef(dataConnect, finalizeStatementImportVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.statementImport_update);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.statementImport_update);
+});
+```
+
+## DeleteStatementImportRows
+You can execute the `DeleteStatementImportRows` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+deleteStatementImportRows(vars: DeleteStatementImportRowsVariables): MutationPromise<DeleteStatementImportRowsData, DeleteStatementImportRowsVariables>;
+
+interface DeleteStatementImportRowsRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteStatementImportRowsVariables): MutationRef<DeleteStatementImportRowsData, DeleteStatementImportRowsVariables>;
+}
+export const deleteStatementImportRowsRef: DeleteStatementImportRowsRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+deleteStatementImportRows(dc: DataConnect, vars: DeleteStatementImportRowsVariables): MutationPromise<DeleteStatementImportRowsData, DeleteStatementImportRowsVariables>;
+
+interface DeleteStatementImportRowsRef {
+  ...
+  (dc: DataConnect, vars: DeleteStatementImportRowsVariables): MutationRef<DeleteStatementImportRowsData, DeleteStatementImportRowsVariables>;
+}
+export const deleteStatementImportRowsRef: DeleteStatementImportRowsRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the deleteStatementImportRowsRef:
+```typescript
+const name = deleteStatementImportRowsRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `DeleteStatementImportRows` mutation requires an argument of type `DeleteStatementImportRowsVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface DeleteStatementImportRowsVariables {
+  statementImportId: UUIDString;
+}
+```
+### Return Type
+Recall that executing the `DeleteStatementImportRows` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `DeleteStatementImportRowsData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface DeleteStatementImportRowsData {
+  transaction_deleteMany: number;
+}
+```
+### Using `DeleteStatementImportRows`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, deleteStatementImportRows, DeleteStatementImportRowsVariables } from '@financeconnect/generated';
+
+// The `DeleteStatementImportRows` mutation requires an argument of type `DeleteStatementImportRowsVariables`:
+const deleteStatementImportRowsVars: DeleteStatementImportRowsVariables = {
+  statementImportId: ..., 
+};
+
+// Call the `deleteStatementImportRows()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await deleteStatementImportRows(deleteStatementImportRowsVars);
+// Variables can be defined inline as well.
+const { data } = await deleteStatementImportRows({ statementImportId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await deleteStatementImportRows(dataConnect, deleteStatementImportRowsVars);
+
+console.log(data.transaction_deleteMany);
+
+// Or, you can use the `Promise` API.
+deleteStatementImportRows(deleteStatementImportRowsVars).then((response) => {
+  const data = response.data;
+  console.log(data.transaction_deleteMany);
+});
+```
+
+### Using `DeleteStatementImportRows`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, deleteStatementImportRowsRef, DeleteStatementImportRowsVariables } from '@financeconnect/generated';
+
+// The `DeleteStatementImportRows` mutation requires an argument of type `DeleteStatementImportRowsVariables`:
+const deleteStatementImportRowsVars: DeleteStatementImportRowsVariables = {
+  statementImportId: ..., 
+};
+
+// Call the `deleteStatementImportRowsRef()` function to get a reference to the mutation.
+const ref = deleteStatementImportRowsRef(deleteStatementImportRowsVars);
+// Variables can be defined inline as well.
+const ref = deleteStatementImportRowsRef({ statementImportId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = deleteStatementImportRowsRef(dataConnect, deleteStatementImportRowsVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.transaction_deleteMany);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.transaction_deleteMany);
+});
+```
+
+## DeleteStatementImport
+You can execute the `DeleteStatementImport` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+deleteStatementImport(vars: DeleteStatementImportVariables): MutationPromise<DeleteStatementImportData, DeleteStatementImportVariables>;
+
+interface DeleteStatementImportRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteStatementImportVariables): MutationRef<DeleteStatementImportData, DeleteStatementImportVariables>;
+}
+export const deleteStatementImportRef: DeleteStatementImportRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+deleteStatementImport(dc: DataConnect, vars: DeleteStatementImportVariables): MutationPromise<DeleteStatementImportData, DeleteStatementImportVariables>;
+
+interface DeleteStatementImportRef {
+  ...
+  (dc: DataConnect, vars: DeleteStatementImportVariables): MutationRef<DeleteStatementImportData, DeleteStatementImportVariables>;
+}
+export const deleteStatementImportRef: DeleteStatementImportRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the deleteStatementImportRef:
+```typescript
+const name = deleteStatementImportRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `DeleteStatementImport` mutation requires an argument of type `DeleteStatementImportVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface DeleteStatementImportVariables {
+  statementImportId: UUIDString;
+}
+```
+### Return Type
+Recall that executing the `DeleteStatementImport` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `DeleteStatementImportData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface DeleteStatementImportData {
+  statementImport_delete?: StatementImport_Key | null;
+}
+```
+### Using `DeleteStatementImport`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, deleteStatementImport, DeleteStatementImportVariables } from '@financeconnect/generated';
+
+// The `DeleteStatementImport` mutation requires an argument of type `DeleteStatementImportVariables`:
+const deleteStatementImportVars: DeleteStatementImportVariables = {
+  statementImportId: ..., 
+};
+
+// Call the `deleteStatementImport()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await deleteStatementImport(deleteStatementImportVars);
+// Variables can be defined inline as well.
+const { data } = await deleteStatementImport({ statementImportId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await deleteStatementImport(dataConnect, deleteStatementImportVars);
+
+console.log(data.statementImport_delete);
+
+// Or, you can use the `Promise` API.
+deleteStatementImport(deleteStatementImportVars).then((response) => {
+  const data = response.data;
+  console.log(data.statementImport_delete);
+});
+```
+
+### Using `DeleteStatementImport`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, deleteStatementImportRef, DeleteStatementImportVariables } from '@financeconnect/generated';
+
+// The `DeleteStatementImport` mutation requires an argument of type `DeleteStatementImportVariables`:
+const deleteStatementImportVars: DeleteStatementImportVariables = {
+  statementImportId: ..., 
+};
+
+// Call the `deleteStatementImportRef()` function to get a reference to the mutation.
+const ref = deleteStatementImportRef(deleteStatementImportVars);
+// Variables can be defined inline as well.
+const ref = deleteStatementImportRef({ statementImportId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = deleteStatementImportRef(dataConnect, deleteStatementImportVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.statementImport_delete);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.statementImport_delete);
 });
 ```
 

@@ -1,4 +1,4 @@
-const { createUserFromGoogleRef, setUserTypeRef, selectMyColorSchemeRef, clearMyColorSchemeRef, selectMyPerformanceModeRef, selectMyBackgroundOpacityRef, selectMyExternalAccountLinkTemplateRef, selectMyCardStyleRef, selectMySquareCornersRef, selectMyBordersEnabledRef, selectMyCategoryColorsEnabledRef, selectMyCurrencyRef, createFamilyMemberRef, updateFamilyMemberRef, renameFamilyMemberRef, deleteFamilyMemberRef, upsertCategoryRef, updateCategoryRef, createTransactionRef, updateTransactionRef, updateTransactionClearCategoryRef, markTransactionPostedRef, markTransactionProjectedRef, deleteTransactionRef, createFamilyRef, requestToJoinFamilyRef, approveJoinRequestRef, denyJoinRequestRef, cancelMyJoinRequestRef, leaveMyFamilyRef, regenerateFamilyInviteCodeRef, createUserSettingForUserRef, createSelfFamilyMemberForUserRef, listUsersRef, getMyUserRef, listColorSchemesRef, listUserTypesRef, getUserAccessByGoogleUidRef, getUserProvisioningByGoogleUidRef, listFamilyMembersRef, listCategoriesRef, listTransactionsByFamilyMemberRef, listMyTransactionsRef, listMyTransactionsByDateRangeRef, getFamilyByInviteCodeRef, getMyFamilyDetailRef, getMyJoinRequestsRef, listMyRecurringProjectionsRef, connectorConfig } = require('../index.cjs.js');
+const { createUserFromGoogleRef, setUserTypeRef, selectMyColorSchemeRef, clearMyColorSchemeRef, selectMyPerformanceModeRef, selectMyBackgroundOpacityRef, selectMyExternalAccountLinkTemplateRef, selectMyCardStyleRef, selectMySquareCornersRef, selectMyBordersEnabledRef, selectMyCategoryColorsEnabledRef, selectMyCurrencyRef, createFamilyMemberRef, updateFamilyMemberRef, renameFamilyMemberRef, deleteFamilyMemberRef, upsertCategoryRef, updateCategoryRef, createTransactionRef, updateTransactionRef, updateTransactionClearCategoryRef, createStatementImportRef, finalizeStatementImportRef, deleteStatementImportRowsRef, deleteStatementImportRef, markTransactionPostedRef, markTransactionProjectedRef, deleteTransactionRef, createFamilyRef, requestToJoinFamilyRef, approveJoinRequestRef, denyJoinRequestRef, cancelMyJoinRequestRef, leaveMyFamilyRef, regenerateFamilyInviteCodeRef, createUserSettingForUserRef, createSelfFamilyMemberForUserRef, listUsersRef, getMyUserRef, listColorSchemesRef, listUserTypesRef, getUserAccessByGoogleUidRef, getUserProvisioningByGoogleUidRef, listFamilyMembersRef, listCategoriesRef, listTransactionsByFamilyMemberRef, listMyTransactionsRef, listMyTransactionsByDateRangeRef, listMyStatementImportsRef, listMyImportedInRangeRef, listMyImportedKeysRef, getFamilyByInviteCodeRef, getMyFamilyDetailRef, getMyJoinRequestsRef, listMyRecurringProjectionsRef, connectorConfig } = require('../index.cjs.js');
 const { validateArgs, CallerSdkTypeEnum } = require('firebase/data-connect');
 const { useDataConnectQuery, useDataConnectMutation, validateReactArgs } = require('@tanstack-query-firebase/react/data-connect');
 
@@ -170,6 +170,38 @@ exports.useUpdateTransactionClearCategory = function useUpdateTransactionClearCa
   return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
 }
 
+exports.useCreateStatementImport = function useCreateStatementImport(dcOrOptions, options) {
+  const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
+  function refFactory(vars) {
+    return createStatementImportRef(dcInstance, vars);
+  }
+  return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+exports.useFinalizeStatementImport = function useFinalizeStatementImport(dcOrOptions, options) {
+  const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
+  function refFactory(vars) {
+    return finalizeStatementImportRef(dcInstance, vars);
+  }
+  return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+exports.useDeleteStatementImportRows = function useDeleteStatementImportRows(dcOrOptions, options) {
+  const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
+  function refFactory(vars) {
+    return deleteStatementImportRowsRef(dcInstance, vars);
+  }
+  return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+exports.useDeleteStatementImport = function useDeleteStatementImport(dcOrOptions, options) {
+  const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
+  function refFactory(vars) {
+    return deleteStatementImportRef(dcInstance, vars);
+  }
+  return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
 exports.useMarkTransactionPosted = function useMarkTransactionPosted(dcOrOptions, options) {
   const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
   function refFactory(vars) {
@@ -330,6 +362,24 @@ exports.useListMyTransactions = function useListMyTransactions(dcOrVars, varsOrO
 exports.useListMyTransactionsByDateRange = function useListMyTransactionsByDateRange(dcOrVars, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateReactArgs(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   const ref = listMyTransactionsByDateRangeRef(dcInstance, inputVars);
+  return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+exports.useListMyStatementImports = function useListMyStatementImports(dcOrVars, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateReactArgs(connectorConfig, dcOrVars, varsOrOptions, options, true, false);
+  const ref = listMyStatementImportsRef(dcInstance, inputVars);
+  return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+exports.useListMyImportedInRange = function useListMyImportedInRange(dcOrVars, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateReactArgs(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  const ref = listMyImportedInRangeRef(dcInstance, inputVars);
+  return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+exports.useListMyImportedKeys = function useListMyImportedKeys(dcOrVars, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateReactArgs(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  const ref = listMyImportedKeysRef(dcInstance, inputVars);
   return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
 }
 

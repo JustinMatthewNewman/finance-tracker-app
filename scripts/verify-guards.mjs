@@ -467,7 +467,163 @@ mine?.name === "Alice N."
   ? ok("her own entry is in the roster, flagged as hers, under the new name")
   : bad("self entry missing or unflagged in ListFamilyMembers", JSON.stringify(roster.data?.familyMembers));
 
-console.log("\n\x1b[1m13 · sync-user repairs an account missing either row\x1b[0m");
+console.log("\n\x1b[1m13 · Statement imports\x1b[0m");
+// The whole import path, and the two things about it that are not like anything
+// else in this connector: rows carry an idempotency key with a @unique index
+// behind it, and an upload is a parent row whose removal is a deleteMany whose
+// WHERE CLAUSE IS ITS OWN GUARD. A weakened filter there does not throw, it
+// deletes a housemate's statement.
+// Bob left in section 10, so he is an outsider now — the "a housemate can see
+// it but not delete it" half of this needs somebody actually in the household.
+// Placed in it admin-side because the invite code has been rotated since bob
+// joined and this is setup, not one of the things being tested.
+const erin = await mkUser("erin");
+await admin.executeGraphql(
+  `mutation($u:UUID!,$f:UUID!){ user_update(id:$u, data:{ familyId:$f }) }`,
+  { variables: { u: erin.id, f: familyId } }
+);
+
+const importId = randomUUID();
+const importKey = `${alice.id}|CHECKING|2026-09-15|2841667|MERIDIAN CAPITAL PAYROLL|0`;
+
+await mustPass("alice creates a statement import", mutate(alice.token, "CreateStatementImport", {
+  statementImportId: importId, userId: alice.id, familyMemberId: memberId,
+  accountLabel: "Checking", filename: "Checking.csv", contentKey: `${alice.id}|deadbeef`,
+  rowCount: 2, createdAt: new Date().toISOString(),
+}));
+
+// The same insert-ownership hole section 6 probes, on the new parent row.
+await mustFail("carol creates a statement import owned by alice",
+  mutate(carol.token, "CreateStatementImport", {
+    statementImportId: randomUUID(), userId: alice.id, familyMemberId: memberId,
+    accountLabel: "Smuggled", filename: "x.csv", contentKey: null,
+    rowCount: 1, createdAt: new Date().toISOString(),
+  }));
+await mustFail("erin (same household) creates an import against alice's member",
+  mutate(erin.token, "CreateStatementImport", {
+    statementImportId: randomUUID(), userId: erin.id, familyMemberId: memberId,
+    accountLabel: "Housemate", filename: "x.csv", contentKey: null,
+    rowCount: 1, createdAt: new Date().toISOString(),
+  }));
+
+await mustPass("alice imports a transaction under it", mutate(alice.token, "CreateTransaction", {
+  userId: alice.id, familyMemberId: memberId, amountMinor: 2841667, direction: "INCOME",
+  occurredOn: "2026-09-15", createdAt: new Date().toISOString(),
+  merchant: "MERIDIAN CAPITAL PAYROLL", source: "IMPORT", status: "POSTED",
+  importKey, statementImportId: importId,
+}));
+
+// THE IDEMPOTENCY GUARANTEE, which is the whole reason an import is safe to run
+// twice. This must be the DATABASE refusing, not the client remembering.
+await mustFail("the same statement line cannot be imported twice",
+  mutate(alice.token, "CreateTransaction", {
+    userId: alice.id, familyMemberId: memberId, amountMinor: 2841667, direction: "INCOME",
+    occurredOn: "2026-09-15", createdAt: new Date().toISOString(),
+    merchant: "MERIDIAN CAPITAL PAYROLL", source: "IMPORT", status: "POSTED",
+    importKey, statementImportId: importId,
+  }));
+// ...and neither can the same FILE, which is the other half.
+await mustFail("the same file cannot be uploaded twice",
+  mutate(alice.token, "CreateStatementImport", {
+    statementImportId: randomUUID(), userId: alice.id, familyMemberId: memberId,
+    accountLabel: "Checking", filename: "Checking (1).csv", contentKey: `${alice.id}|deadbeef`,
+    rowCount: 2, createdAt: new Date().toISOString(),
+  }));
+
+// Reads widen to the household; the deletes do not.
+const erinSeesImports = await query(erin.token, "ListMyStatementImports");
+(erinSeesImports.data?.statementImports ?? []).some((i) => sameId(i.id, importId))
+  ? ok("erin (same household) sees alice's upload")
+  : bad("bob cannot see alice's upload", JSON.stringify(erinSeesImports.data ?? erinSeesImports.errors));
+const carolSeesImports = await query(carol.token, "ListMyStatementImports");
+(carolSeesImports.data?.statementImports ?? []).length === 0
+  ? ok("carol (outsider) sees no uploads")
+  : bad("LEAK: carol sees uploads", JSON.stringify(carolSeesImports.data));
+
+// ListMyImportedKeys is the one read in queries.gql deliberately NOT widened to
+// the household, because its answer decides what gets WRITTEN. If a housemate's
+// rows matched it, their import would make alice's look already-done and her
+// rows would silently never be inserted.
+const aliceKeys = await query(alice.token, "ListMyImportedKeys", { importKeys: [importKey] });
+(aliceKeys.data?.transactions ?? []).length === 1
+  ? ok("alice's own import key comes back to her")
+  : bad("alice cannot see her own import key", JSON.stringify(aliceKeys.data ?? aliceKeys.errors));
+// ListMyImportedInRange is the other deliberately-unwidened read, and it exists
+// to answer a harder question than the key lookup above: "does anything already
+// here look like this row under a different memo?" It returns whole rows, so a
+// widened version would hand a housemate's merchant names and amounts to the
+// reconciler — and worse, let their rows suppress this account's imports.
+const aliceRange = await query(alice.token, "ListMyImportedInRange", {
+  startDate: "2026-09-01", endDate: "2026-09-30",
+});
+(aliceRange.data?.transactions ?? []).some((t) => t.importKey === importKey)
+  ? ok("alice's imported row comes back in the range read")
+  : bad("alice cannot see her own imported row in range", JSON.stringify(aliceRange.data ?? aliceRange.errors));
+const erinRange = await query(erin.token, "ListMyImportedInRange", {
+  startDate: "2026-09-01", endDate: "2026-09-30",
+});
+(erinRange.data?.transactions ?? []).length === 0
+  ? ok("...and erin (same household) gets nothing from it")
+  : bad("ListMyImportedInRange widened to the household", JSON.stringify(erinRange.data));
+
+// It must also exclude hand-typed rows: a person's own entry is not a candidate
+// for "did the bank already tell me this", and matching against one would let an
+// import decide their manual transaction was a duplicate of a statement line.
+await mustPass("alice types an ordinary transaction in the same range",
+  mutate(alice.token, "CreateTransaction", {
+    userId: alice.id, familyMemberId: memberId, amountMinor: 4242, direction: "EXPENSE",
+    occurredOn: "2026-09-16", createdAt: new Date().toISOString(), description: "Typed by hand",
+  }));
+const rangeAgain = await query(alice.token, "ListMyImportedInRange", {
+  startDate: "2026-09-01", endDate: "2026-09-30",
+});
+(rangeAgain.data?.transactions ?? []).every((t) => t.importKey)
+  ? ok("...and a hand-typed row is not offered to the reconciler")
+  : bad("ListMyImportedInRange returned a non-imported row", JSON.stringify(rangeAgain.data));
+
+const erinKeys = await query(erin.token, "ListMyImportedKeys", { importKeys: [importKey] });
+(erinKeys.data?.transactions ?? []).length === 0
+  ? ok("...and NOT to erin, who could otherwise suppress her rows")
+  : bad("ListMyImportedKeys widened to the household", JSON.stringify(erinKeys.data));
+
+// THE DELETE FILTERS. Both are deleteMany/-delete on an id the caller supplies,
+// and both are visible to the whole household, so the filter is all that stands
+// between a housemate and somebody else's statement. "Denied" is not what a
+// deleteMany does when its filter excludes everything — it succeeds having
+// deleted nothing, so these assert the ROWS SURVIVED rather than that the call
+// failed.
+const rowsFor = async (token) => {
+  const r = await query(token, "ListMyImportedKeys", { importKeys: [importKey] });
+  return (r.data?.transactions ?? []).length;
+};
+await mustPass("erin calls DeleteStatementImportRows on alice's upload",
+  mutate(erin.token, "DeleteStatementImportRows", { statementImportId: importId }));
+(await rowsFor(alice.token)) === 1
+  ? ok("...and alice's imported row is still there")
+  : bad("LEAK: erin deleted the rows behind alice's upload");
+await mustFail("erin removes alice's upload itself",
+  mutate(erin.token, "DeleteStatementImport", { statementImportId: importId }));
+await mustFail("carol removes alice's upload",
+  mutate(carol.token, "DeleteStatementImport", { statementImportId: importId }));
+
+// The owner's own undo, in the order the rows require: rows, then header.
+await mustPass("alice deletes her upload's rows",
+  mutate(alice.token, "DeleteStatementImportRows", { statementImportId: importId }));
+(await rowsFor(alice.token)) === 0
+  ? ok("...and the row is gone")
+  : bad("alice's own DeleteStatementImportRows did nothing");
+await mustPass("alice removes the upload itself",
+  mutate(alice.token, "DeleteStatementImport", { statementImportId: importId }));
+// Which means the same statement can be imported again from scratch — the
+// property that makes an interrupted import safe to simply retry.
+await mustPass("the same line can be imported again once the upload is gone",
+  mutate(alice.token, "CreateTransaction", {
+    userId: alice.id, familyMemberId: memberId, amountMinor: 2841667, direction: "INCOME",
+    occurredOn: "2026-09-15", createdAt: new Date().toISOString(),
+    merchant: "MERIDIAN CAPITAL PAYROLL", source: "IMPORT", status: "POSTED", importKey,
+  }));
+
+console.log("\n\x1b[1m14 · sync-user repairs an account missing either row\x1b[0m");
 // The repair path for accounts created before settings and self entries were
 // made alongside the User. It lives in a Next route rather than the
 // connector, so this needs the app running; set APP_URL to include it.

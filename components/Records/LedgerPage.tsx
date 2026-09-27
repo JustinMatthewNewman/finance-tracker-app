@@ -11,6 +11,7 @@ import AmbientBackground from "@/components/AmbientBackground";
 import { RecordsTable, type RecordColumn, type RecordGroup } from "@/components/Records/RecordsTable";
 import { RecordsTableControls, type ColumnOption } from "@/components/Records/RecordsTableControls";
 import { TransactionForm } from "@/components/Finance/TransactionForm";
+import { ImportStatementDialog } from "@/components/Finance/ImportStatementDialog";
 import { ruleRowOf, type Transaction, type TransactionInput } from "@/hooks/useTransactions";
 import { RECURRENCE_LABELS, toRecurrence } from "@/lib/recurrence";
 import { DEFAULT_CURRENCY, formatMoney, isCurrencyCode, type Direction } from "@/lib/money";
@@ -51,6 +52,7 @@ const ALL_COLUMNS: ColumnOption[] = [
   { key: "amount", label: "Amount" },
   { key: "occurredOn", label: "Date" },
   { key: "state", label: "Status" },
+  { key: "origin", label: "Source" },
   { key: "method", label: "Method" },
   { key: "recurrence", label: "Repeats" },
   { key: "recordedBy", label: "Recorded by" },
@@ -76,6 +78,7 @@ export function LedgerPage({
   const [monthKey, setMonthKey] = useState<MonthKey>(currentMonthKey);
   const [selectedColumns, setSelectedColumns] = useState<Set<string>>(new Set(DEFAULT_COLUMNS));
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const [editing, setEditing] = useState<Transaction | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -94,6 +97,7 @@ export function LedgerPage({
     remove,
     markPosted,
     markProjected,
+    refetch,
   } = useHouseholdMonth(monthKey);
 
   useEffect(() => {
@@ -164,11 +168,24 @@ export function LedgerPage({
       state: {
         key: "state",
         label: "Status",
+        // Branches on `status`, never on `source`: an imported row is money that
+        // moved, so it reads the same as a typed one here. Where it came from is
+        // the Source column below — see lib/transactionKind.ts.
         render: (r) =>
           r.status === "FORECASTED" ? (
             <Chip size="sm" color="warning">Projected</Chip>
           ) : (
             <Chip size="sm" color="success">{postedLabel}</Chip>
+          ),
+      },
+      origin: {
+        key: "origin",
+        label: "Source",
+        render: (r) =>
+          r.source === "IMPORT" ? (
+            <Chip size="sm" variant="secondary">Imported</Chip>
+          ) : (
+            <span className="text-foreground/40">Entered</span>
           ),
       },
       method: { key: "method", label: "Method", render: (r) => r.method || "—" },
@@ -314,6 +331,7 @@ export function LedgerPage({
               onSelectedColumnsChange={setSelectedColumns}
               onAdd={canAdd ? () => { setEditing(null); setIsFormOpen(true); } : undefined}
               addLabel={addLabel}
+              onImport={canAdd ? () => setIsImportOpen(true) : undefined}
             />
             {(error || actionError) && (
               <p className="px-4 pb-3 text-sm text-danger">{error ?? actionError}</p>
@@ -340,6 +358,18 @@ export function LedgerPage({
           </div>
         </Card>
       </div>
+
+      {/* Imported rows land as ordinary POSTED transactions, so nothing on this
+          page needs to know an import happened beyond refetching the month. */}
+      {isImportOpen && (
+        <ImportStatementDialog
+          isOpen={isImportOpen}
+          memberOptions={myMembers.map((m) => ({ id: m.id, name: m.name }))}
+          defaultMemberId={myMembers[0]?.id ?? null}
+          onClose={() => setIsImportOpen(false)}
+          onImported={() => void refetch()}
+        />
+      )}
 
       {isFormOpen && (
         <TransactionForm

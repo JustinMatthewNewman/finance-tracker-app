@@ -46,3 +46,9 @@ next-env.d.ts
 /firebase-debug.log
 /pglite-debug.log
 !.env.local.example
+
+# Real bank statement exports. transaction_data/ is where you drop your own
+# Wells Fargo CSVs to try the importer against; it is nobody else's business
+# and it never goes in the repo. The committed fake equivalents live in
+# transaction_data.example/ and are what lib/wellsFargoCsv.test.ts reads.
+/transaction_data/

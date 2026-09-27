@@ -7,6 +7,7 @@ import { Persons, House, ArrowRightFromSquare, Clock, Copy, CircleCheck, CircleX
 import { useAuth } from "@/hooks/useAuth";
 import { useUserSettings } from "@/context/UserSettingsContext";
 import { useOnboarding, type ResolvedFamily } from "@/hooks/useOnboarding";
+import { logout } from "@/lib/auth";
 import { formatInviteCode, INVITE_CODE_LENGTH } from "@/lib/inviteCode";
 
 /** Where somebody lands once they have a household. */
@@ -376,8 +377,64 @@ export default function OnboardingFlow() {
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mx-auto flex min-h-full w-full max-w-2xl flex-col justify-center px-4 py-12">
+    <div className="relative mx-auto flex min-h-full w-full max-w-2xl flex-col justify-center px-4 pb-12 pt-16">
+      {/* In the Shell rather than on one screen, so it is reachable from every
+          state of the flow — including the one where somebody is waiting on a
+          household owner to approve them, which is the only screen in the app
+          where a person is blocked on another human and therefore the one they
+          are most likely to want to leave. There is no navbar here to sign out
+          from (see the route group's layout), so without this the only way out
+          is clearing site data. */}
+      <SignedInAs />
       {children}
+    </div>
+  );
+}
+
+/**
+ * Who you are signed in as, and the way out.
+ *
+ * Shows the account, not just a button: somebody who signed in with the wrong
+ * Google account needs to know that is what happened, and "Sign out" alone does
+ * not tell them. This is the commonest reason to want to leave onboarding —
+ * a second household in the family, or a work account chosen by the browser.
+ *
+ * Calls useAuth() again rather than taking props. It subscribes to
+ * onAuthStateChanged and holds no state of its own beyond that, so a second
+ * instance cannot drift from the first — unlike useFamilyMembers, which is why
+ * that one carries a warning and this does not.
+ */
+function SignedInAs() {
+  const { user } = useAuth();
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+
+  if (!user) return null;
+
+  return (
+    <div className="absolute inset-x-4 top-4 flex flex-wrap items-center justify-end gap-2 text-xs">
+      <span className="truncate text-foreground/50">{user.email ?? user.displayName}</span>
+      <Button
+        size="sm"
+        variant="ghost"
+        isDisabled={busy}
+        onPress={async () => {
+          setBusy(true);
+          try {
+            await logout();
+            // Pushed explicitly rather than left to OnboardingGate. That gate
+            // lives in the (app) route group's layout and does not run here, so
+            // nothing else would move a signed-out person off this page — they
+            // would sit looking at an onboarding form with no account behind it.
+            router.replace("/");
+          } finally {
+            setBusy(false);
+          }
+        }}
+      >
+        <ArrowRightFromSquare width={14} height={14} aria-hidden />
+        {busy ? "Signing out…" : "Sign out"}
+      </Button>
     </div>
   );
 }

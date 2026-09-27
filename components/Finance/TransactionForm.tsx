@@ -11,7 +11,7 @@ import {
   parseAmountToMinor,
 } from "@/lib/money";
 import { toDateString } from "@/lib/monthRange";
-import { statusForSource } from "@/lib/transactionKind";
+import { statusForSource, type TransactionSource } from "@/lib/transactionKind";
 import { countOccurrences, defaultRecurrenceEnd, isRecurrence } from "@/lib/recurrence";
 import type { TransactionInput } from "@/hooks/useTransactions";
 import type { Transaction } from "@/hooks/useTransactions";
@@ -75,9 +75,17 @@ export function TransactionForm({
   const { categories } = useCategories();
 
   const [direction, setDirection] = useState<Direction>(existing?.direction ?? "EXPENSE");
-  const [source, setSource] = useState<"MANUAL" | "FORECAST">(
-    existing ? (existing.source === "FORECAST" ? "FORECAST" : "MANUAL") : defaultProjected ? "FORECAST" : "MANUAL"
+  // The toggle below offers two choices — already happened, or expected — but
+  // `source` has three values, because "already happened" has two provenances:
+  // a row somebody typed (MANUAL) and one read out of a bank statement
+  // (IMPORT). Editing an imported row must not quietly relabel it as typed, so
+  // this keeps whichever actual provenance the row arrived with and only ever
+  // swaps it for FORECAST when the person actually says "expected".
+  const actualSource: TransactionSource = existing?.source === "IMPORT" ? "IMPORT" : "MANUAL";
+  const [source, setSource] = useState<TransactionSource>(
+    existing ? existing.source : defaultProjected ? "FORECAST" : "MANUAL"
   );
+  const isExpected = source === "FORECAST";
   const [familyMemberId, setFamilyMemberId] = useState<string>(
     existing?.familyMemberId ?? defaultMemberId ?? memberOptions?.[0]?.id ?? ""
   );
@@ -108,7 +116,7 @@ export function TransactionForm({
     setLastFormKey(formKey);
     if (isOpen) {
       setDirection(existing?.direction ?? "EXPENSE");
-      setSource(existing?.source === "FORECAST" ? "FORECAST" : "MANUAL");
+      setSource(existing ? existing.source : defaultProjected ? "FORECAST" : "MANUAL");
       setAmount(existing ? minorToInput(existing.amountMinor, currency) : "");
       setOccurredOn(existing?.occurredOn ?? toDateString(new Date()));
       setCategoryName(existing?.category?.name ?? "");
@@ -179,7 +187,7 @@ export function TransactionForm({
   // from the category. See the schema note on Category.kind.
   // Repeating only means something for a projection — see the note on
   // Transaction.recurrence in schema.gql.
-  const showsRepeatWindow = source === "FORECAST" && isRecurrence(recurrence);
+  const showsRepeatWindow = isExpected && isRecurrence(recurrence);
   const endsBeforeItStarts = !!recurrenceEndsOn && recurrenceEndsOn < occurredOn;
 
   const occurrenceCount = showsRepeatWindow
@@ -258,10 +266,13 @@ export function TransactionForm({
               <ToggleButtonGroup
                 selectionMode="single"
                 disallowEmptySelection
-                selectedKeys={[source]}
+                selectedKeys={[isExpected ? "FORECAST" : "MANUAL"]}
                 onSelectionChange={(keys) => {
                   const next = Array.from(keys)[0];
-                  if (next === "MANUAL" || next === "FORECAST") setSource(next);
+                  // "Already happened" resolves to the row's own actual
+                  // provenance, not literally to MANUAL — see actualSource.
+                  if (next === "MANUAL") setSource(actualSource);
+                  else if (next === "FORECAST") setSource("FORECAST");
                 }}
                 aria-label="Transaction Type"
               >

@@ -79,6 +79,21 @@ export interface CreateSelfFamilyMemberForUserVariables {
   name: string;
 }
 
+export interface CreateStatementImportData {
+  statementImport_insert: StatementImport_Key;
+}
+
+export interface CreateStatementImportVariables {
+  statementImportId: UUIDString;
+  userId: UUIDString;
+  familyMemberId: UUIDString;
+  accountLabel: string;
+  filename: string;
+  contentKey?: string | null;
+  rowCount: number;
+  createdAt: TimestampString;
+}
+
 export interface CreateTransactionData {
   transaction_insert: Transaction_Key;
 }
@@ -98,6 +113,9 @@ export interface CreateTransactionVariables {
   categoryName?: string | null;
   source?: string | null;
   status?: string | null;
+  importKey?: string | null;
+  importRef?: string | null;
+  statementImportId?: UUIDString | null;
 }
 
 export interface CreateUserFromGoogleData {
@@ -130,6 +148,22 @@ export interface DeleteFamilyMemberData {
 
 export interface DeleteFamilyMemberVariables {
   familyMemberId: UUIDString;
+}
+
+export interface DeleteStatementImportData {
+  statementImport_delete?: StatementImport_Key | null;
+}
+
+export interface DeleteStatementImportRowsData {
+  transaction_deleteMany: number;
+}
+
+export interface DeleteStatementImportRowsVariables {
+  statementImportId: UUIDString;
+}
+
+export interface DeleteStatementImportVariables {
+  statementImportId: UUIDString;
 }
 
 export interface DeleteTransactionData {
@@ -168,6 +202,18 @@ export interface Family_Key {
 export interface Feature_Key {
   name: string;
   __typename?: 'Feature_Key';
+}
+
+export interface FinalizeStatementImportData {
+  statementImport_update?: StatementImport_Key | null;
+}
+
+export interface FinalizeStatementImportVariables {
+  statementImportId: UUIDString;
+  importedRowCount: number;
+  skippedRowCount: number;
+  earliestOccurredOn?: DateString | null;
+  latestOccurredOn?: DateString | null;
 }
 
 export interface GetFamilyByInviteCodeData {
@@ -375,6 +421,38 @@ export interface ListFamilyMembersVariables {
   offset?: number | null;
 }
 
+export interface ListMyImportedInRangeData {
+  transactions: ({
+    id: UUIDString;
+    importKey?: string | null;
+    importRef?: string | null;
+    occurredOn: DateString;
+    amountMinor: number;
+    direction: string;
+    merchant?: string | null;
+  } & Transaction_Key)[];
+}
+
+export interface ListMyImportedInRangeVariables {
+  startDate: DateString;
+  endDate: DateString;
+  limit?: number | null;
+  offset?: number | null;
+}
+
+export interface ListMyImportedKeysData {
+  transactions: ({
+    id: UUIDString;
+    importKey?: string | null;
+  } & Transaction_Key)[];
+}
+
+export interface ListMyImportedKeysVariables {
+  importKeys: string[];
+  limit?: number | null;
+  offset?: number | null;
+}
+
 export interface ListMyRecurringProjectionsData {
   transactions: ({
     id: UUIDString;
@@ -409,6 +487,34 @@ export interface ListMyRecurringProjectionsData {
 export interface ListMyRecurringProjectionsVariables {
   rangeStart: DateString;
   rangeEnd: DateString;
+  limit?: number | null;
+  offset?: number | null;
+}
+
+export interface ListMyStatementImportsData {
+  statementImports: ({
+    id: UUIDString;
+    accountLabel: string;
+    filename: string;
+    contentKey?: string | null;
+    rowCount: number;
+    importedRowCount: number;
+    skippedRowCount: number;
+    earliestOccurredOn?: DateString | null;
+    latestOccurredOn?: DateString | null;
+    createdAt: TimestampString;
+    familyMember: {
+      id: UUIDString;
+      name: string;
+    } & FamilyMember_Key;
+    user: {
+      id: UUIDString;
+      username: string;
+    } & User_Key;
+  } & StatementImport_Key)[];
+}
+
+export interface ListMyStatementImportsVariables {
   limit?: number | null;
   offset?: number | null;
 }
@@ -666,6 +772,11 @@ export interface SetUserTypeData {
 export interface SetUserTypeVariables {
   userId: UUIDString;
   userTypeName: string;
+}
+
+export interface StatementImport_Key {
+  id: UUIDString;
+  __typename?: 'StatementImport_Key';
 }
 
 export interface Theme_Key {
@@ -1023,6 +1134,54 @@ export const updateTransactionClearCategoryRef: UpdateTransactionClearCategoryRe
 export function updateTransactionClearCategory(vars: UpdateTransactionClearCategoryVariables): MutationPromise<UpdateTransactionClearCategoryData, UpdateTransactionClearCategoryVariables>;
 export function updateTransactionClearCategory(dc: DataConnect, vars: UpdateTransactionClearCategoryVariables): MutationPromise<UpdateTransactionClearCategoryData, UpdateTransactionClearCategoryVariables>;
 
+interface CreateStatementImportRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: CreateStatementImportVariables): MutationRef<CreateStatementImportData, CreateStatementImportVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: CreateStatementImportVariables): MutationRef<CreateStatementImportData, CreateStatementImportVariables>;
+  operationName: string;
+}
+export const createStatementImportRef: CreateStatementImportRef;
+
+export function createStatementImport(vars: CreateStatementImportVariables): MutationPromise<CreateStatementImportData, CreateStatementImportVariables>;
+export function createStatementImport(dc: DataConnect, vars: CreateStatementImportVariables): MutationPromise<CreateStatementImportData, CreateStatementImportVariables>;
+
+interface FinalizeStatementImportRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: FinalizeStatementImportVariables): MutationRef<FinalizeStatementImportData, FinalizeStatementImportVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: FinalizeStatementImportVariables): MutationRef<FinalizeStatementImportData, FinalizeStatementImportVariables>;
+  operationName: string;
+}
+export const finalizeStatementImportRef: FinalizeStatementImportRef;
+
+export function finalizeStatementImport(vars: FinalizeStatementImportVariables): MutationPromise<FinalizeStatementImportData, FinalizeStatementImportVariables>;
+export function finalizeStatementImport(dc: DataConnect, vars: FinalizeStatementImportVariables): MutationPromise<FinalizeStatementImportData, FinalizeStatementImportVariables>;
+
+interface DeleteStatementImportRowsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteStatementImportRowsVariables): MutationRef<DeleteStatementImportRowsData, DeleteStatementImportRowsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: DeleteStatementImportRowsVariables): MutationRef<DeleteStatementImportRowsData, DeleteStatementImportRowsVariables>;
+  operationName: string;
+}
+export const deleteStatementImportRowsRef: DeleteStatementImportRowsRef;
+
+export function deleteStatementImportRows(vars: DeleteStatementImportRowsVariables): MutationPromise<DeleteStatementImportRowsData, DeleteStatementImportRowsVariables>;
+export function deleteStatementImportRows(dc: DataConnect, vars: DeleteStatementImportRowsVariables): MutationPromise<DeleteStatementImportRowsData, DeleteStatementImportRowsVariables>;
+
+interface DeleteStatementImportRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeleteStatementImportVariables): MutationRef<DeleteStatementImportData, DeleteStatementImportVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: DeleteStatementImportVariables): MutationRef<DeleteStatementImportData, DeleteStatementImportVariables>;
+  operationName: string;
+}
+export const deleteStatementImportRef: DeleteStatementImportRef;
+
+export function deleteStatementImport(vars: DeleteStatementImportVariables): MutationPromise<DeleteStatementImportData, DeleteStatementImportVariables>;
+export function deleteStatementImport(dc: DataConnect, vars: DeleteStatementImportVariables): MutationPromise<DeleteStatementImportData, DeleteStatementImportVariables>;
+
 interface MarkTransactionPostedRef {
   /* Allow users to create refs without passing in DataConnect */
   (vars: MarkTransactionPostedVariables): MutationRef<MarkTransactionPostedData, MarkTransactionPostedVariables>;
@@ -1298,6 +1457,42 @@ export const listMyTransactionsByDateRangeRef: ListMyTransactionsByDateRangeRef;
 
 export function listMyTransactionsByDateRange(vars: ListMyTransactionsByDateRangeVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyTransactionsByDateRangeData, ListMyTransactionsByDateRangeVariables>;
 export function listMyTransactionsByDateRange(dc: DataConnect, vars: ListMyTransactionsByDateRangeVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyTransactionsByDateRangeData, ListMyTransactionsByDateRangeVariables>;
+
+interface ListMyStatementImportsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars?: ListMyStatementImportsVariables): QueryRef<ListMyStatementImportsData, ListMyStatementImportsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars?: ListMyStatementImportsVariables): QueryRef<ListMyStatementImportsData, ListMyStatementImportsVariables>;
+  operationName: string;
+}
+export const listMyStatementImportsRef: ListMyStatementImportsRef;
+
+export function listMyStatementImports(vars?: ListMyStatementImportsVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyStatementImportsData, ListMyStatementImportsVariables>;
+export function listMyStatementImports(dc: DataConnect, vars?: ListMyStatementImportsVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyStatementImportsData, ListMyStatementImportsVariables>;
+
+interface ListMyImportedInRangeRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListMyImportedInRangeVariables): QueryRef<ListMyImportedInRangeData, ListMyImportedInRangeVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListMyImportedInRangeVariables): QueryRef<ListMyImportedInRangeData, ListMyImportedInRangeVariables>;
+  operationName: string;
+}
+export const listMyImportedInRangeRef: ListMyImportedInRangeRef;
+
+export function listMyImportedInRange(vars: ListMyImportedInRangeVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyImportedInRangeData, ListMyImportedInRangeVariables>;
+export function listMyImportedInRange(dc: DataConnect, vars: ListMyImportedInRangeVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyImportedInRangeData, ListMyImportedInRangeVariables>;
+
+interface ListMyImportedKeysRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: ListMyImportedKeysVariables): QueryRef<ListMyImportedKeysData, ListMyImportedKeysVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: ListMyImportedKeysVariables): QueryRef<ListMyImportedKeysData, ListMyImportedKeysVariables>;
+  operationName: string;
+}
+export const listMyImportedKeysRef: ListMyImportedKeysRef;
+
+export function listMyImportedKeys(vars: ListMyImportedKeysVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyImportedKeysData, ListMyImportedKeysVariables>;
+export function listMyImportedKeys(dc: DataConnect, vars: ListMyImportedKeysVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyImportedKeysData, ListMyImportedKeysVariables>;
 
 interface GetFamilyByInviteCodeRef {
   /* Allow users to create refs without passing in DataConnect */

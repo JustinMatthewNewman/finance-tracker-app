@@ -471,6 +471,40 @@ extend type FamilyJoinRequest {
 }
 extend type FamilyMember {
   """
+  ✨ List `StatementImport` objects in a one-to-many relationship (where `StatementImport`.`familyMember` is this object).
+  """
+  statementImports_on_familyMember(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: StatementImport_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [StatementImport_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: StatementImport_Having
+  ): [StatementImport!]! @fdc_generated(from: "StatementImport.familyMember", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
   ✨ List `Transaction` objects in a one-to-many relationship (where `Transaction`.`familyMember` is this object).
   """
   transactions_on_familyMember(
@@ -767,6 +801,264 @@ extend type Feature {
   """
   _id: ID! @fdc_generated(from: "Feature.name", purpose: ENTITY_ID)
 }
+extend type StatementImport {
+  """
+  ✨ List `Transaction` objects in a one-to-many relationship (where `Transaction`.`statementImport` is this object).
+  """
+  transactions_on_statementImport(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Transaction_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Transaction_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Transaction_Having
+  ): [Transaction!]! @fdc_generated(from: "Transaction.statementImport", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "StatementImport", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `StatementImport` table.
+  """
+  _count: Int! @fdc_generated(from: "StatementImport.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `StatementImport` table where the `accountLabel` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  accountLabel_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "StatementImport.accountLabel", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `StatementImport` table where the `contentKey` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  contentKey_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "StatementImport.contentKey", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `StatementImport` table where the `createdAt` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  createdAt_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "StatementImport.createdAt", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `StatementImport` table where the `earliestOccurredOn` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  earliestOccurredOn_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "StatementImport.earliestOccurredOn", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `StatementImport` table where the `familyMemberId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  familyMemberId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "StatementImport.familyMemberId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `StatementImport` table where the `filename` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  filename_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "StatementImport.filename", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `StatementImport` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "StatementImport.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `StatementImport` table where the `importedRowCount` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  importedRowCount_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "StatementImport.importedRowCount", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `StatementImport` table where the `latestOccurredOn` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  latestOccurredOn_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "StatementImport.latestOccurredOn", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `StatementImport` table where the `rowCount` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  rowCount_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "StatementImport.rowCount", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `StatementImport` table where the `skippedRowCount` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  skippedRowCount_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "StatementImport.skippedRowCount", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `StatementImport` table where the `userId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  userId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "StatementImport.userId", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `importedRowCount` field in the `StatementImport` table.
+  """
+  importedRowCount_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "StatementImport.importedRowCount", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `rowCount` field in the `StatementImport` table.
+  """
+  rowCount_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "StatementImport.rowCount", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `skippedRowCount` field in the `StatementImport` table.
+  """
+  skippedRowCount_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "StatementImport.skippedRowCount", purpose: QUERY_SUM)
+  """
+  ✨ Average the `importedRowCount` field in the `StatementImport` table.
+  """
+  importedRowCount_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "StatementImport.importedRowCount", purpose: QUERY_AVG)
+  """
+  ✨ Average the `rowCount` field in the `StatementImport` table.
+  """
+  rowCount_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "StatementImport.rowCount", purpose: QUERY_AVG)
+  """
+  ✨ Average the `skippedRowCount` field in the `StatementImport` table.
+  """
+  skippedRowCount_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "StatementImport.skippedRowCount", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `createdAt` field in the `StatementImport` table.
+  """
+  createdAt_min: Timestamp @fdc_generated(from: "StatementImport.createdAt", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `earliestOccurredOn` field in the `StatementImport` table.
+  """
+  earliestOccurredOn_min: Date @fdc_generated(from: "StatementImport.earliestOccurredOn", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `importedRowCount` field in the `StatementImport` table.
+  """
+  importedRowCount_min: Int @fdc_generated(from: "StatementImport.importedRowCount", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `latestOccurredOn` field in the `StatementImport` table.
+  """
+  latestOccurredOn_min: Date @fdc_generated(from: "StatementImport.latestOccurredOn", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `rowCount` field in the `StatementImport` table.
+  """
+  rowCount_min: Int @fdc_generated(from: "StatementImport.rowCount", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `skippedRowCount` field in the `StatementImport` table.
+  """
+  skippedRowCount_min: Int @fdc_generated(from: "StatementImport.skippedRowCount", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `createdAt` field in the `StatementImport` table.
+  """
+  createdAt_max: Timestamp @fdc_generated(from: "StatementImport.createdAt", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `earliestOccurredOn` field in the `StatementImport` table.
+  """
+  earliestOccurredOn_max: Date @fdc_generated(from: "StatementImport.earliestOccurredOn", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `importedRowCount` field in the `StatementImport` table.
+  """
+  importedRowCount_max: Int @fdc_generated(from: "StatementImport.importedRowCount", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `latestOccurredOn` field in the `StatementImport` table.
+  """
+  latestOccurredOn_max: Date @fdc_generated(from: "StatementImport.latestOccurredOn", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `rowCount` field in the `StatementImport` table.
+  """
+  rowCount_max: Int @fdc_generated(from: "StatementImport.rowCount", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `skippedRowCount` field in the `StatementImport` table.
+  """
+  skippedRowCount_max: Int @fdc_generated(from: "StatementImport.skippedRowCount", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "StatementImport.id", purpose: ENTITY_ID)
+}
 extend type Theme {
   """
   Implicit metadata field that cannot be written. It provides extra information about query results.
@@ -1015,6 +1307,24 @@ extend type Transaction {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Transaction.id", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Transaction` table where the `importKey` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  importKey_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Transaction.importKey", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Transaction` table where the `importRef` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  importRef_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Transaction.importRef", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Transaction` table where the `merchant` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   merchant_count(
@@ -1068,6 +1378,15 @@ extend type Transaction {
     """
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Transaction.source", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Transaction` table where the `statementImportId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  statementImportId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Transaction.statementImportId", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `Transaction` table where the `status` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
@@ -1244,6 +1563,40 @@ extend type User {
     """
     having: FamilyMember_Having
   ): [FamilyMember!]! @fdc_generated(from: "FamilyMember.user", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `StatementImport` objects in a one-to-many relationship (where `StatementImport`.`user` is this object).
+  """
+  statementImports_on_user(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: StatementImport_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [StatementImport_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: StatementImport_Having
+  ): [StatementImport!]! @fdc_generated(from: "StatementImport.user", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
   """
   ✨ List `Transaction` objects in a one-to-many relationship (where `Transaction`.`user` is this object).
   """
