@@ -324,6 +324,114 @@ because category colours are user-chosen and cannot be relied on to contrast.
 Clicking any day (including an empty one) opens it, and adding from there
 defaults to "expected".
 
+### Importing a bank statement
+
+Income and Expenses both carry an **Import CSV** button, which takes a Wells
+Fargo statement export: `DATE, DESCRIPTION, AMOUNT, CHECK #, STATUS`, with or
+without a header row (Wells Fargo's own export has none). Positive amounts
+become income, negative ones become expenses, and everything lands as money
+that has **already moved** — `status: "POSTED"`, never a projection.
+
+`lib/wellsFargoCsv.ts` is the whole interpretation and is pure: CSV parsing,
+`MM/DD/YYYY` to a local calendar day by string surgery, the sign to a direction
+plus an unsigned magnitude, the counterparty pulled out of the memo line, a
+method, and a conservative category guess. `hooks/useTransactionImport.ts` is
+the write half. Neither knows anything about the other's job.
+
+**Imported rows are not a third kind of money.** `source: "IMPORT"` sits beside
+`MANUAL`, not beside `FORECAST`: it records where a row came from and nothing
+else, and every total still splits on `status`. The ledger shows the provenance
+in its own **Source** column, and the calendar's day panel tags it — neither
+changes an arithmetic.
+
+#### Uploading an overlapping statement again
+
+Nobody uploads once. People import September, then in October import
+August-to-October to fill a gap, and the two files overlap by weeks. Most of the
+second file must not be imported again — but some of it is new, and some rows
+that *look* like duplicates are two separate purchases that agree on every
+column. `lib/importReconcile.ts` decides, in three tiers, and **only the first
+two ever skip a row on their own**:
+
+| tier | question | evidence | acts on its own |
+|---|---|---|---|
+| Same **file** | "have I uploaded this?" | `StatementImport.contentKey`, a digest of the text | yes — caught before any row is written |
+| Same **line** | "have I imported this row?" | `Transaction.importKey` — day, amount, memo, ordinal, scoped to owner and account | yes |
+| Same **reference** | "is this that transaction, reformatted?" | `Transaction.importRef` — the bank's own id | yes |
+| **Looks the same** | "is this that transaction, with no reference to prove it?" | amount, date proximity, merchant | **no — reported for you to confirm** |
+
+**Why the reference tier exists.** Wells Fargo reports a transaction twice, in
+two different formats:
+
+| | pending | settled |
+|---|---|---|
+| memo | `PURCHASE LE BERNARDIN +15550001234 NY CARD0000` | `PURCHASE AUTHORIZED ON 09/15 LE BERNARDIN RESTAURANT NEW YORK NY S000000000000014 CARD 0000` |
+| date | 09/15 | 09/16 |
+| amount | 1284.50 | 1412.95 — a tip landed |
+| reference | *none* | `S000000000000014` |
+
+Nothing matches, so a fingerprint sees two unrelated rows and imports the charge
+twice. The reference resolves it exactly — and it cuts the other way too: two
+rows whose references are both present and **different** are definitely two
+transactions, which is what stops two same-price shops at one supermarket in the
+same week being called a duplicate.
+
+**The fourth tier never decides by itself, and that is deliberate.** A pending
+row has no reference, so all that is left is amount, date and merchant — and on
+those, one shop reported twice is indistinguishable from two identical shops. So
+it reports. The review step lists each one beside the row it resembles, why it
+matched, and how far apart they are; they are **imported unless you tick them**,
+with a "Skip all of them" for the common case. Quietly dropping a real
+transaction is the worse failure, because a ledger missing a row is wrong in a
+way nobody reconciles against.
+
+**Counts are respected throughout**, which is what protects legitimate
+duplicates. Every stored row can be claimed by at most one incoming row. Two
+identical coffees on the same afternoon are two rows, so a re-upload matches two
+and imports neither — and a third coffee a month later finds both already
+claimed and is correctly new. A half-finished import is the same story in
+reverse: if one of the two coffees landed, re-uploading brings exactly the one
+that did not.
+
+All four columns that matter here are `@unique` where they can be, and **the
+constraints are the guarantee** — the pre-flight reads only turn the common case
+into "88 already imported" instead of an error. `importRef` is deliberately *not*
+unique: it is absent on exactly the rows that need matching most, and an amount
+that legitimately changes between pending and settled must reach a person rather
+than be refused.
+
+**An upload is a row, not an event.** Every import writes a `StatementImport`
+header first and stamps its transactions with the id, so "the rows that came
+from that file" is a foreign key. Removing one is two mutations in order — the
+rows, then the header, because the FK is nullable and therefore
+`ON DELETE SET NULL`. The dialog lists previous uploads and offers Remove on
+the ones this account owns; a housemate's upload is visible and read-only, the
+same asymmetry as everywhere else.
+
+Imports go through `CreateTransaction` one row at a time rather than a batch
+insert. That was not the first choice: `transaction_insertMany` needs a
+`[Transaction_Data!]!` variable, and the code generator does not support those
+for either SDK. Idempotency buys what atomicity would have — an interrupted
+import is safe to simply run again.
+
+Two things worth knowing before pointing it at your own statements:
+
+- **Internal transfers.** "ONLINE TRANSFER" lines between your own Wells Fargo
+  accounts are real statement lines, so by the positive/negative rule they
+  count as income and spending. Every £500 swept into savings therefore adds
+  £500 to both sides of the month. A checkbox skips them; it defaults to **off**,
+  because the lines genuinely are on the statement.
+- **The raw memo is not stored.** Only the counterparty extracted from it, in
+  `merchant`. The review step shows the original line beside what will be
+  written, so the mapping is visible before it is committed.
+
+Your own exports go in `transaction_data/`, which is gitignored. The committed
+fake equivalents in `transaction_data.example/` are what keep the importer honest
+in CI — see that directory's own README for what each file exercises. Two of them
+are a deliberately overlapping pair, a statement downloaded with rows still
+pending and the same account downloaded three weeks later, which is what
+`lib/importReconcile.test.ts` runs against.
+
 ### Households
 
 A `Family` groups **accounts**, not people — the tracked people are still
@@ -390,7 +498,8 @@ unused. Nothing called them, and a `USER`-level mutation with an unchecked
 `$userId` upserting on a client-supplied `$id` is a cross-tenant write sitting
 in the connector whether or not a page happens to call it. When Plaid lands it
 writes `Transaction` rows with `source: "PLAID"` beside the manual and
-projected ones — the same model the app already renders.
+projected ones — the same model the app already renders, and the same slot
+`source: "IMPORT"` occupies today for CSV uploads.
 
 **An admin UI.** `ListUsers`, `ListUserTypes` and `SetUserType` are kept
 because the tier system is kept, but nothing calls them yet.

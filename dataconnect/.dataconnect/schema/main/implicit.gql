@@ -24,6 +24,16 @@ extend type FamilyMember {
   """
   userId: UUID! @fdc_generated(from: "FamilyMember.user", purpose: IMPLICIT_REF_FIELD)
 }
+extend type StatementImport {
+  """
+  ✨ Implicit foreign key field based on `StatementImport`.`familyMember`. It must match the value of `FamilyMember`.`id`. See `@ref` for how to customize it.
+  """
+  familyMemberId: UUID! @fdc_generated(from: "StatementImport.familyMember", purpose: IMPLICIT_REF_FIELD)
+  """
+  ✨ Implicit foreign key field based on `StatementImport`.`user`. It must match the value of `User`.`id`. See `@ref` for how to customize it.
+  """
+  userId: UUID! @fdc_generated(from: "StatementImport.user", purpose: IMPLICIT_REF_FIELD)
+}
 extend type Theme {
   """
   ✨ Implicit foreign key field based on `Theme`.`colorScheme`. It must match the value of `ColorScheme`.`id`. See `@ref` for how to customize it.
@@ -39,6 +49,10 @@ extend type Transaction {
   ✨ Implicit foreign key field based on `Transaction`.`familyMember`. It must match the value of `FamilyMember`.`id`. See `@ref` for how to customize it.
   """
   familyMemberId: UUID! @fdc_generated(from: "Transaction.familyMember", purpose: IMPLICIT_REF_FIELD)
+  """
+  ✨ Implicit foreign key field based on `Transaction`.`statementImport`. It must match the value of `StatementImport`.`id`. See `@ref` for how to customize it.
+  """
+  statementImportId: UUID @fdc_generated(from: "Transaction.statementImport", purpose: IMPLICIT_REF_FIELD)
   """
   ✨ Implicit foreign key field based on `Transaction`.`user`. It must match the value of `User`.`id`. See `@ref` for how to customize it.
   """

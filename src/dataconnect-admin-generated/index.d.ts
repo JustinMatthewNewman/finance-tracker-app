@@ -76,6 +76,21 @@ export interface CreateSelfFamilyMemberForUserVariables {
   name: string;
 }
 
+export interface CreateStatementImportData {
+  statementImport_insert: StatementImport_Key;
+}
+
+export interface CreateStatementImportVariables {
+  statementImportId: UUIDString;
+  userId: UUIDString;
+  familyMemberId: UUIDString;
+  accountLabel: string;
+  filename: string;
+  contentKey?: string | null;
+  rowCount: number;
+  createdAt: TimestampString;
+}
+
 export interface CreateTransactionData {
   transaction_insert: Transaction_Key;
 }
@@ -95,6 +110,9 @@ export interface CreateTransactionVariables {
   categoryName?: string | null;
   source?: string | null;
   status?: string | null;
+  importKey?: string | null;
+  importRef?: string | null;
+  statementImportId?: UUIDString | null;
 }
 
 export interface CreateUserFromGoogleData {
@@ -127,6 +145,22 @@ export interface DeleteFamilyMemberData {
 
 export interface DeleteFamilyMemberVariables {
   familyMemberId: UUIDString;
+}
+
+export interface DeleteStatementImportData {
+  statementImport_delete?: StatementImport_Key | null;
+}
+
+export interface DeleteStatementImportRowsData {
+  transaction_deleteMany: number;
+}
+
+export interface DeleteStatementImportRowsVariables {
+  statementImportId: UUIDString;
+}
+
+export interface DeleteStatementImportVariables {
+  statementImportId: UUIDString;
 }
 
 export interface DeleteTransactionData {
@@ -165,6 +199,18 @@ export interface Family_Key {
 export interface Feature_Key {
   name: string;
   __typename?: 'Feature_Key';
+}
+
+export interface FinalizeStatementImportData {
+  statementImport_update?: StatementImport_Key | null;
+}
+
+export interface FinalizeStatementImportVariables {
+  statementImportId: UUIDString;
+  importedRowCount: number;
+  skippedRowCount: number;
+  earliestOccurredOn?: DateString | null;
+  latestOccurredOn?: DateString | null;
 }
 
 export interface GetFamilyByInviteCodeData {
@@ -372,6 +418,38 @@ export interface ListFamilyMembersVariables {
   offset?: number | null;
 }
 
+export interface ListMyImportedInRangeData {
+  transactions: ({
+    id: UUIDString;
+    importKey?: string | null;
+    importRef?: string | null;
+    occurredOn: DateString;
+    amountMinor: number;
+    direction: string;
+    merchant?: string | null;
+  } & Transaction_Key)[];
+}
+
+export interface ListMyImportedInRangeVariables {
+  startDate: DateString;
+  endDate: DateString;
+  limit?: number | null;
+  offset?: number | null;
+}
+
+export interface ListMyImportedKeysData {
+  transactions: ({
+    id: UUIDString;
+    importKey?: string | null;
+  } & Transaction_Key)[];
+}
+
+export interface ListMyImportedKeysVariables {
+  importKeys: string[];
+  limit?: number | null;
+  offset?: number | null;
+}
+
 export interface ListMyRecurringProjectionsData {
   transactions: ({
     id: UUIDString;
@@ -406,6 +484,34 @@ export interface ListMyRecurringProjectionsData {
 export interface ListMyRecurringProjectionsVariables {
   rangeStart: DateString;
   rangeEnd: DateString;
+  limit?: number | null;
+  offset?: number | null;
+}
+
+export interface ListMyStatementImportsData {
+  statementImports: ({
+    id: UUIDString;
+    accountLabel: string;
+    filename: string;
+    contentKey?: string | null;
+    rowCount: number;
+    importedRowCount: number;
+    skippedRowCount: number;
+    earliestOccurredOn?: DateString | null;
+    latestOccurredOn?: DateString | null;
+    createdAt: TimestampString;
+    familyMember: {
+      id: UUIDString;
+      name: string;
+    } & FamilyMember_Key;
+    user: {
+      id: UUIDString;
+      username: string;
+    } & User_Key;
+  } & StatementImport_Key)[];
+}
+
+export interface ListMyStatementImportsVariables {
   limit?: number | null;
   offset?: number | null;
 }
@@ -665,6 +771,11 @@ export interface SetUserTypeVariables {
   userTypeName: string;
 }
 
+export interface StatementImport_Key {
+  id: UUIDString;
+  __typename?: 'StatementImport_Key';
+}
+
 export interface Theme_Key {
   id: UUIDString;
   __typename?: 'Theme_Key';
@@ -873,6 +984,26 @@ export function updateTransactionClearCategory(dc: DataConnect, vars: UpdateTran
 /** Generated Node Admin SDK operation action function for the 'UpdateTransactionClearCategory' Mutation. Allow users to pass in custom DataConnect instances. */
 export function updateTransactionClearCategory(vars: UpdateTransactionClearCategoryVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<UpdateTransactionClearCategoryData>>;
 
+/** Generated Node Admin SDK operation action function for the 'CreateStatementImport' Mutation. Allow users to execute without passing in DataConnect. */
+export function createStatementImport(dc: DataConnect, vars: CreateStatementImportVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateStatementImportData>>;
+/** Generated Node Admin SDK operation action function for the 'CreateStatementImport' Mutation. Allow users to pass in custom DataConnect instances. */
+export function createStatementImport(vars: CreateStatementImportVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<CreateStatementImportData>>;
+
+/** Generated Node Admin SDK operation action function for the 'FinalizeStatementImport' Mutation. Allow users to execute without passing in DataConnect. */
+export function finalizeStatementImport(dc: DataConnect, vars: FinalizeStatementImportVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<FinalizeStatementImportData>>;
+/** Generated Node Admin SDK operation action function for the 'FinalizeStatementImport' Mutation. Allow users to pass in custom DataConnect instances. */
+export function finalizeStatementImport(vars: FinalizeStatementImportVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<FinalizeStatementImportData>>;
+
+/** Generated Node Admin SDK operation action function for the 'DeleteStatementImportRows' Mutation. Allow users to execute without passing in DataConnect. */
+export function deleteStatementImportRows(dc: DataConnect, vars: DeleteStatementImportRowsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteStatementImportRowsData>>;
+/** Generated Node Admin SDK operation action function for the 'DeleteStatementImportRows' Mutation. Allow users to pass in custom DataConnect instances. */
+export function deleteStatementImportRows(vars: DeleteStatementImportRowsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteStatementImportRowsData>>;
+
+/** Generated Node Admin SDK operation action function for the 'DeleteStatementImport' Mutation. Allow users to execute without passing in DataConnect. */
+export function deleteStatementImport(dc: DataConnect, vars: DeleteStatementImportVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteStatementImportData>>;
+/** Generated Node Admin SDK operation action function for the 'DeleteStatementImport' Mutation. Allow users to pass in custom DataConnect instances. */
+export function deleteStatementImport(vars: DeleteStatementImportVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteStatementImportData>>;
+
 /** Generated Node Admin SDK operation action function for the 'MarkTransactionPosted' Mutation. Allow users to execute without passing in DataConnect. */
 export function markTransactionPosted(dc: DataConnect, vars: MarkTransactionPostedVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<MarkTransactionPostedData>>;
 /** Generated Node Admin SDK operation action function for the 'MarkTransactionPosted' Mutation. Allow users to pass in custom DataConnect instances. */
@@ -987,6 +1118,21 @@ export function listMyTransactions(vars?: ListMyTransactionsVariables, options?:
 export function listMyTransactionsByDateRange(dc: DataConnect, vars: ListMyTransactionsByDateRangeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListMyTransactionsByDateRangeData>>;
 /** Generated Node Admin SDK operation action function for the 'ListMyTransactionsByDateRange' Query. Allow users to pass in custom DataConnect instances. */
 export function listMyTransactionsByDateRange(vars: ListMyTransactionsByDateRangeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListMyTransactionsByDateRangeData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListMyStatementImports' Query. Allow users to execute without passing in DataConnect. */
+export function listMyStatementImports(dc: DataConnect, vars?: ListMyStatementImportsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListMyStatementImportsData>>;
+/** Generated Node Admin SDK operation action function for the 'ListMyStatementImports' Query. Allow users to pass in custom DataConnect instances. */
+export function listMyStatementImports(vars?: ListMyStatementImportsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListMyStatementImportsData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListMyImportedInRange' Query. Allow users to execute without passing in DataConnect. */
+export function listMyImportedInRange(dc: DataConnect, vars: ListMyImportedInRangeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListMyImportedInRangeData>>;
+/** Generated Node Admin SDK operation action function for the 'ListMyImportedInRange' Query. Allow users to pass in custom DataConnect instances. */
+export function listMyImportedInRange(vars: ListMyImportedInRangeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListMyImportedInRangeData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListMyImportedKeys' Query. Allow users to execute without passing in DataConnect. */
+export function listMyImportedKeys(dc: DataConnect, vars: ListMyImportedKeysVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListMyImportedKeysData>>;
+/** Generated Node Admin SDK operation action function for the 'ListMyImportedKeys' Query. Allow users to pass in custom DataConnect instances. */
+export function listMyImportedKeys(vars: ListMyImportedKeysVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListMyImportedKeysData>>;
 
 /** Generated Node Admin SDK operation action function for the 'GetFamilyByInviteCode' Query. Allow users to execute without passing in DataConnect. */
 export function getFamilyByInviteCode(dc: DataConnect, vars: GetFamilyByInviteCodeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<GetFamilyByInviteCodeData>>;

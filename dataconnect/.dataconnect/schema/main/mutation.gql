@@ -54,6 +54,15 @@ extend type Mutation {
     data: Feature_Data!
   ): Feature_KeyOutput! @fdc_generated(from: "Feature", purpose: INSERT_SINGLE)
   """
+  ✨ Insert a single `StatementImport` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  statementImport_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: StatementImport_Data!
+  ): StatementImport_KeyOutput! @fdc_generated(from: "StatementImport", purpose: INSERT_SINGLE)
+  """
   ✨ Insert a single `Theme` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
   theme_insert(
@@ -161,6 +170,15 @@ extend type Mutation {
     """
     data: [Feature_Data!]!
   ): [Feature_KeyOutput!]! @fdc_generated(from: "Feature", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `StatementImport` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  statementImport_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [StatementImport_Data!]!
+  ): [StatementImport_KeyOutput!]! @fdc_generated(from: "StatementImport", purpose: INSERT_MULTIPLE)
   """
   ✨ Insert `Theme` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
   """
@@ -270,6 +288,15 @@ extend type Mutation {
     data: Feature_Data!
   ): Feature_KeyOutput! @fdc_generated(from: "Feature", purpose: UPSERT_SINGLE)
   """
+  ✨ Insert or update a single `StatementImport` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `StatementImport`.
+  """
+  statementImport_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: StatementImport_Data!
+  ): StatementImport_KeyOutput! @fdc_generated(from: "StatementImport", purpose: UPSERT_SINGLE)
+  """
   ✨ Insert or update a single `Theme` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Theme`.
   """
   theme_upsert(
@@ -377,6 +404,15 @@ extend type Mutation {
     """
     data: [Feature_Data!]!
   ): [Feature_KeyOutput!]! @fdc_generated(from: "Feature", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `StatementImport` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `StatementImport`.
+  """
+  statementImport_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [StatementImport_Data!]!
+  ): [StatementImport_KeyOutput!]! @fdc_generated(from: "StatementImport", purpose: UPSERT_MULTIPLE)
   """
   ✨ Insert or update `Theme` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Theme`.
   """
@@ -560,6 +596,30 @@ extend type Mutation {
     """
     data: Feature_Data!
   ): Feature_KeyOutput @fdc_generated(from: "Feature", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `StatementImport` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `StatementImport` or `null` if not found.
+  """
+  statementImport_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: StatementImport_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: StatementImport_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: StatementImport_Data!
+  ): StatementImport_KeyOutput @fdc_generated(from: "StatementImport", purpose: UPDATE_SINGLE)
   """
   ✨ Update a single `Theme` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Theme` or `null` if not found.
   """
@@ -809,6 +869,25 @@ extend type Mutation {
     data: Feature_Data!
   ): Int! @fdc_generated(from: "Feature", purpose: UPDATE_MULTIPLE)
   """
+  ✨ Update `StatementImport` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  statementImport_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: StatementImport_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: StatementImport_Data!
+  ): Int! @fdc_generated(from: "StatementImport", purpose: UPDATE_MULTIPLE)
+  """
   ✨ Update `Theme` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
   """
   theme_updateMany(
@@ -1022,6 +1101,25 @@ extend type Mutation {
     first: Feature_FirstRow
   ): Feature_KeyOutput @fdc_generated(from: "Feature", purpose: DELETE_SINGLE)
   """
+  ✨ Delete a single `StatementImport` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  statementImport_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: StatementImport_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: StatementImport_FirstRow
+  ): StatementImport_KeyOutput @fdc_generated(from: "StatementImport", purpose: DELETE_SINGLE)
+  """
   ✨ Delete a single `Theme` based on `id`, `key` or `first` and return its key (or `null` if not found).
   """
   theme_delete(
@@ -1209,6 +1307,20 @@ extend type Mutation {
     """
     all: Boolean = false
   ): Int! @fdc_generated(from: "Feature", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `StatementImport` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  statementImport_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: StatementImport_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "StatementImport", purpose: DELETE_MULTIPLE)
   """
   ✨ Delete `Theme` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
   """

@@ -353,6 +353,28 @@ mutation CreateTransaction(
   $categoryName: String
   $source: String = "MANUAL"
   $status: String = "POSTED"
+  # Null on everything a person types, which is the normal case. Set only by the
+  # statement importer, where the @unique index behind it is what stops the same
+  # statement line becoming two rows. See Transaction.importKey in schema.gql
+  # and the section on imports below.
+  $importKey: String
+  # The bank's own reference for the transaction, where the memo carried one.
+  # Set only by the importer. Not guarded and not unique — it is evidence for
+  # duplicate detection, not identity. See Transaction.importRef in schema.gql.
+  $importRef: String
+  # Which upload this row came from. Set only by the importer, and always
+  # together with $importKey — see StatementImport in schema.gql.
+  #
+  # NOT GUARDED BY A @check OF ITS OWN, and that is safe for one specific
+  # reason: pointing a row at another account's upload leaks nothing and grants
+  # nothing. The row's OWNER still comes from $userId, which is checked below, so
+  # it is still the caller's row, still only visible to the caller's household,
+  # and still only editable by the caller. The worst a forged value achieves is
+  # that the caller's own row is deleted when a housemate removes an upload —
+  # somebody vandalizing their own ledger through the network tab. Guarding it
+  # would mean a third lookup on every one of the thousands of inserts an import
+  # makes, to prevent that.
+  $statementImportId: UUID
 ) @auth(level: USER) @transaction {
   query @redact {
     familyMember(key: { id: $familyMemberId }) {
@@ -388,6 +410,9 @@ mutation CreateTransaction(
     categoryName: $categoryName
     source: $source
     status: $status
+    importKey: $importKey
+    importRef: $importRef
+    statementImportId: $statementImportId
   })
 }
 
@@ -465,6 +490,160 @@ mutation UpdateTransactionClearCategory(
     source: $source
     status: $status
   })
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Statement import
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# THERE IS NO BATCH INSERT HERE, AND THAT WAS NOT THE FIRST CHOICE.
+#
+# A statement import writes hundreds to thousands of rows, so it wants
+# `transaction_insertMany($rows: [Transaction_Data!]! @allow(...))`. The schema
+# accepts that — including a CEL guard over `vars.rows` pinning every element's
+# userId to the one the guard query verifies, which is the only way a list
+# variable can be authorized at all. The CODE GENERATOR does not:
+#
+#   input: ImportTransactions.rows _Data input types are not yet supported
+#   by the generated SDKs: "Transaction_Data"
+#
+# and that is true of the admin SDK too, so a server route would not rescue it
+# either. Reaching Data Connect's HTTP API directly, around both SDKs, is the
+# only way to send one, and it would put the app's single most privileged write
+# on a bespoke transport nothing else in the codebase uses.
+#
+# So an import is CreateTransaction above, called once per row, with a bounded
+# number in flight. WHAT PAYS FOR THAT is `importKey` (see the schema): the
+# import is idempotent, so the property a batch would have bought — "a failure
+# half way through does not leave half a statement behind" — is bought instead
+# by the retry. Re-running an interrupted import re-reads what landed, filters
+# it out and writes only the rest. That is strictly better than atomicity per
+# chunk, which would still leave earlier chunks committed.
+#
+# If _Data variables ever land in the generator, the mutation to write is in
+# this file's history; its guard is the interesting part.
+
+# The header record for one upload, written BEFORE any of its rows.
+#
+# Before, not after, because every row it writes has to point at it, and Data
+# Connect cannot reference the result of an earlier field in the same document
+# (the same constraint that makes CreateUserFromGoogle generate its ids on the
+# client). So the client mints the id, creates this, writes the rows, then
+# finalizes the counts below.
+#
+# WHAT HAPPENS IF THE IMPORT DIES IN THE MIDDLE. This row exists with
+# importedRowCount still 0 and however many transactions actually landed pointing
+# at it. That is a recoverable state rather than a corrupt one: the rows are
+# real, they are correctly attributed, and running the upload again writes only
+# what is missing. The counts are a description of an upload, not the source of
+# truth for what it did — anything that needs the truth counts the rows.
+#
+# Pattern 2 on both ids it takes, exactly as CreateTransaction does: the member
+# must be the caller's, and the owner stamped on the row must be the caller.
+mutation CreateStatementImport(
+  $statementImportId: UUID!
+  $userId: UUID!
+  $familyMemberId: UUID!
+  $accountLabel: String!
+  $filename: String!
+  $contentKey: String
+  $rowCount: Int!
+  $createdAt: Timestamp!
+) @auth(level: USER) @transaction {
+  query @redact {
+    familyMember(key: { id: $familyMemberId }) @check(
+      expr: "this != null"
+      message: "Not authorized to import statements for this family member"
+    ) {
+      id
+      user @check(
+        expr: "this != null && this.googleUid == auth.uid"
+        message: "Not authorized to import statements for this family member"
+      ) {
+        googleUid
+      }
+    }
+    user(key: { id: $userId }) @check(
+      expr: "this != null && this.googleUid == auth.uid"
+      message: "Not authorized to import statements for this account"
+    ) {
+      googleUid
+    }
+  }
+  statementImport_insert(data: {
+    id: $statementImportId
+    userId: $userId
+    familyMemberId: $familyMemberId
+    accountLabel: $accountLabel
+    filename: $filename
+    contentKey: $contentKey
+    rowCount: $rowCount
+    createdAt: $createdAt
+  })
+}
+
+# The counts, once the rows are in.
+mutation FinalizeStatementImport(
+  $statementImportId: UUID!
+  $importedRowCount: Int!
+  $skippedRowCount: Int!
+  $earliestOccurredOn: Date
+  $latestOccurredOn: Date
+) @auth(level: USER) @transaction {
+  query @redact {
+    statementImport(key: { id: $statementImportId }) {
+      id
+      user @check(expr: "this != null && this.googleUid == auth.uid", message: "Not authorized to modify this import") {
+        googleUid
+      }
+    }
+  }
+  statementImport_update(id: $statementImportId, data: {
+    importedRowCount: $importedRowCount
+    skippedRowCount: $skippedRowCount
+    earliestOccurredOn: $earliestOccurredOn
+    latestOccurredOn: $latestOccurredOn
+  })
+}
+
+# ── Removing an upload: these two, in this order ────────────────────────────
+#
+# The rows first, then the header. The other order strands them: the foreign key
+# is nullable, so Data Connect makes it ON DELETE SET NULL, and deleting the
+# header quietly clears the pointer on every row instead of removing them. See
+# the note on StatementImport in schema.gql.
+
+# Every transaction one upload wrote.
+#
+# `_deleteMany` with a where clause rather than pattern 2, because there is no
+# single id to check and no guard query can enumerate what a filter will match.
+# THE FILTER IS THE GUARD, which is why the ownership predicate is inline and is
+# not redundant with the import id beside it: the id arrives as a variable, and a
+# caller is free to send a housemate's. Reads widen to the household, so they
+# genuinely can see it; without the `user` predicate they could delete the rows
+# behind it.
+mutation DeleteStatementImportRows($statementImportId: UUID!) @auth(level: USER) {
+  transaction_deleteMany(
+    where: {
+      _and: [
+        { user: { googleUid: { eq_expr: "auth.uid" } } }
+        { statementImportId: { eq: $statementImportId } }
+      ]
+    }
+  )
+}
+
+# The header record, after its rows.
+mutation DeleteStatementImport($statementImportId: UUID!) @auth(level: USER) @transaction {
+  query @redact {
+    statementImport(key: { id: $statementImportId }) {
+      id
+      user @check(expr: "this != null && this.googleUid == auth.uid", message: "Not authorized to remove this import") {
+        googleUid
+      }
+    }
+  }
+  statementImport_delete(id: $statementImportId)
 }
 
 # ─────────────────────────────────────────────────────────────────────────────

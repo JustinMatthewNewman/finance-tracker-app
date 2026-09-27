@@ -262,6 +262,54 @@ export function updateTransactionClearCategory(dcOrVars, vars) {
   return executeMutation(updateTransactionClearCategoryRef(dcInstance, inputVars));
 }
 
+export const createStatementImportRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'CreateStatementImport', inputVars);
+}
+createStatementImportRef.operationName = 'CreateStatementImport';
+
+export function createStatementImport(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(createStatementImportRef(dcInstance, inputVars));
+}
+
+export const finalizeStatementImportRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'FinalizeStatementImport', inputVars);
+}
+finalizeStatementImportRef.operationName = 'FinalizeStatementImport';
+
+export function finalizeStatementImport(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(finalizeStatementImportRef(dcInstance, inputVars));
+}
+
+export const deleteStatementImportRowsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'DeleteStatementImportRows', inputVars);
+}
+deleteStatementImportRowsRef.operationName = 'DeleteStatementImportRows';
+
+export function deleteStatementImportRows(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteStatementImportRowsRef(dcInstance, inputVars));
+}
+
+export const deleteStatementImportRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'DeleteStatementImport', inputVars);
+}
+deleteStatementImportRef.operationName = 'DeleteStatementImport';
+
+export function deleteStatementImport(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deleteStatementImportRef(dcInstance, inputVars));
+}
+
 export const markTransactionPostedRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
@@ -547,6 +595,45 @@ export function listMyTransactionsByDateRange(dcOrVars, varsOrOptions, options) 
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(listMyTransactionsByDateRangeRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const listMyStatementImportsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'ListMyStatementImports', inputVars);
+}
+listMyStatementImportsRef.operationName = 'ListMyStatementImports';
+
+export function listMyStatementImports(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, false);
+  return executeQuery(listMyStatementImportsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const listMyImportedInRangeRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'ListMyImportedInRange', inputVars);
+}
+listMyImportedInRangeRef.operationName = 'ListMyImportedInRange';
+
+export function listMyImportedInRange(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listMyImportedInRangeRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const listMyImportedKeysRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'ListMyImportedKeys', inputVars);
+}
+listMyImportedKeysRef.operationName = 'ListMyImportedKeys';
+
+export function listMyImportedKeys(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(listMyImportedKeysRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
 export const getFamilyByInviteCodeRef = (dcOrVars, vars) => {

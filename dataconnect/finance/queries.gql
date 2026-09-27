@@ -433,6 +433,140 @@ query ListMyTransactionsByDateRange(
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Statement import
+# ─────────────────────────────────────────────────────────────────────────────
+
+# "Which of these statement lines have I already imported?"
+#
+# Takes the keys it is about to write and returns the subset that is already
+# there, rather than listing every key the account owns and diffing client-side:
+# a household with years of statements has tens of thousands of them, and all
+# the client needs is the intersection with one file.
+#
+# SCOPED TO THE CALLER, NOT THE HOUSEHOLD — the one read in this file that is
+# not. Every other query here widens to the family on purpose (see the top of
+# this file), but this one exists to decide what to WRITE, and writes never
+# widen. If it matched a housemate's rows, their import of their own statement
+# would make this account's look already-done, and the rows would silently never
+# be inserted. The importKey format embeds the owner's id, so a collision across
+# accounts cannot happen anyway; this predicate is what makes that belt-and-
+# braces rather than load-bearing.
+#
+# Every statement upload the household has made, newest first.
+#
+# HOUSEHOLD-WIDE, unlike ListMyImportedKeys below it, and the difference is the
+# point: this is a READ — "who has uploaded what" is exactly the kind of thing
+# housemates should be able to see about shared finances, the same way they see
+# each other's transactions. The ownership check lives on the two delete
+# mutations instead, so a housemate's upload shows in the list and cannot be
+# removed from it. Same asymmetry as everywhere else in this file, and the reason
+# the owning `user` is selected: the UI has to know which rows it must not offer
+# to remove.
+#
+# `contentKey` is returned so the upload dialog can recognize a file it has
+# already seen before writing anything. It is a digest of the caller's own
+# statement, not a secret, and only ever reaches the household that uploaded it.
+query ListMyStatementImports($limit: Int = 500, $offset: Int = 0) @auth(level: USER) {
+  statementImports(
+    where: {
+      _or: [
+        { user: { googleUid: { eq_expr: "auth.uid" } } }
+        { user: { family: { users_on_family: { exist: { googleUid: { eq_expr: "auth.uid" } } } } } }
+      ]
+    }
+    orderBy: [{ createdAt: DESC }]
+    limit: $limit
+    offset: $offset
+  ) {
+    id
+    accountLabel
+    filename
+    contentKey
+    rowCount
+    importedRowCount
+    skippedRowCount
+    earliestOccurredOn
+    latestOccurredOn
+    createdAt
+    familyMember {
+      id
+      name
+    }
+    user {
+      id
+      username
+    }
+  }
+}
+
+# Every imported transaction in a date range, for reconciling a re-upload.
+#
+# WHY THIS IS NOT ListMyImportedKeys. That query answers "is this exact statement
+# line already here", which is a lookup by key. This one answers a harder
+# question: "does anything already here look like this row under a different
+# memo?" — which is what a pending charge that has since settled needs, because
+# the two lines share no key, often not even a date or an amount. Answering it
+# means comparing against the rows themselves, so the range has to come back
+# whole. See lib/importReconcile.ts for what is done with them.
+#
+# SCOPED TO THE CALLER, not the household, for exactly the reason
+# ListMyImportedKeys below is: this decides what gets WRITTEN, and writes never
+# widen. A housemate's rows appearing here would make this account's own import
+# look already-done and silently drop its rows.
+#
+# Restricted to rows that came from an import (`importKey` is non-null): a
+# hand-typed transaction is not a candidate for "did the bank already tell me
+# this", and matching against one would let the importer quietly decide a
+# person's own entry was a duplicate of a statement line.
+query ListMyImportedInRange(
+  $startDate: Date!
+  $endDate: Date!
+  $limit: Int = 500
+  $offset: Int = 0
+) @auth(level: USER) {
+  transactions(
+    where: {
+      _and: [
+        { user: { googleUid: { eq_expr: "auth.uid" } } }
+        { importKey: { isNull: false } }
+        { occurredOn: { ge: $startDate, le: $endDate } }
+      ]
+    }
+    orderBy: [{ occurredOn: ASC }, { createdAt: ASC }]
+    limit: $limit
+    offset: $offset
+  ) {
+    id
+    importKey
+    importRef
+    occurredOn
+    amountMinor
+    direction
+    merchant
+  }
+}
+
+# Returns `id` alongside the key so a caller can also answer "what is already
+# here" — the import summary names the rows it skipped.
+query ListMyImportedKeys($importKeys: [String!]!, $limit: Int = 500, $offset: Int = 0)
+  @auth(level: USER) {
+  transactions(
+    where: {
+      _and: [
+        { user: { googleUid: { eq_expr: "auth.uid" } } }
+        { importKey: { in: $importKeys } }
+      ]
+    }
+    orderBy: [{ importKey: ASC }]
+    limit: $limit
+    offset: $offset
+  ) {
+    id
+    importKey
+  }
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Families
 # ─────────────────────────────────────────────────────────────────────────────
 

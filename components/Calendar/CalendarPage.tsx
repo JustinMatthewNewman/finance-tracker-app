@@ -57,6 +57,15 @@ interface DayItem {
   direction: "INCOME" | "EXPENSE";
   color: string | null;
   projected: boolean;
+  /**
+   * Came out of a bank statement rather than being typed.
+   *
+   * Separate from `projected`, and orthogonal to it: `projected` is about
+   * whether the money has moved and drives every total on this page, while this
+   * is only provenance and drives a label. An imported row is an actual. See
+   * lib/transactionKind.ts.
+   */
+  imported: boolean;
   isMine: boolean;
   memberName: string;
   txn: Transaction;
@@ -139,6 +148,7 @@ function CalendarPage() {
         direction: txn.direction,
         color: effectiveColor(txn.category?.color ?? null, txn.category?.name ?? txn.familyMemberName),
         projected,
+        imported: txn.source === "IMPORT",
         isMine: txn.isMine,
         memberName: txn.familyMemberName,
         txn,
@@ -468,6 +478,15 @@ function CalendarPage() {
                         >
                           {item.label}
                           <span className="ml-2 text-xs text-foreground/40">{item.memberName}</span>
+                          {/* In the detail panel only. The grid cells are far
+                              too dense for another badge, and the dot there
+                              already carries the one distinction that changes
+                              what a figure means — happened vs. expected. */}
+                          {item.imported && (
+                            <Chip size="sm" variant="secondary" className="ml-2">
+                              Imported
+                            </Chip>
+                          )}
                         </span>
                         {item.projected && (
                           <Chip size="sm" color="warning">Projected</Chip>

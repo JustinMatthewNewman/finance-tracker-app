@@ -35,6 +35,12 @@ It has the same format as `Feature_Key`, but is only used as mutation return val
 """
 scalar Feature_KeyOutput
 """
+✨ `StatementImport_KeyOutput` returns the primary key fields of table type `StatementImport`.
+
+It has the same format as `StatementImport_Key`, but is only used as mutation return value.
+"""
+scalar StatementImport_KeyOutput
+"""
 ✨ `Theme_KeyOutput` returns the primary key fields of table type `Theme`.
 
 It has the same format as `Theme_Key`, but is only used as mutation return value.
@@ -1219,6 +1225,10 @@ input FamilyMember_Data {
   """
   relationship_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `FamilyMember`.`statementImports_on_familyMember` of type `[StatementImport!]!`
+  """
+  statementImports_on_familyMember: [StatementImport_Data!]
+  """
   ✨ Generated from Field `FamilyMember`.`transactions_on_familyMember` of type `[Transaction!]!`
   """
   transactions_on_familyMember: [Transaction_Data!]
@@ -1287,6 +1297,10 @@ input FamilyMember_Filter {
   ✨ Generated from Field `FamilyMember`.`relationship` of type `String`
   """
   relationship: String_Filter
+  """
+  ✨ Generated from Field `FamilyMember`.`statementImports_on_familyMember` of type `[StatementImport!]!`
+  """
+  statementImports_on_familyMember: StatementImport_ListFilter
   """
   ✨ Generated from Field `FamilyMember`.`transactions_on_familyMember` of type `[Transaction!]!`
   """
@@ -1767,6 +1781,601 @@ input Feature_Order {
   ✨ Generated from Field `Feature`.`createdAt_max` of type `Timestamp`
   """
   createdAt_max: OrderDirection
+}
+"""
+✨ Generated data input type for table 'StatementImport'. It includes all necessary fields for creating or upserting rows into table.
+"""
+input StatementImport_Data {
+  """
+  ✨ Generated from Field `StatementImport`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `StatementImport`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `StatementImport`.`familyMemberId` of type `UUID!`
+  """
+  familyMemberId: UUID
+  """
+  ✨ `_expr` server value variant of `familyMemberId` (✨ Generated from Field `StatementImport`.`familyMemberId` of type `UUID!`)
+  """
+  familyMemberId_expr: UUID_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `StatementImport`.`userId` of type `UUID!`
+  """
+  userId: UUID
+  """
+  ✨ `_expr` server value variant of `userId` (✨ Generated from Field `StatementImport`.`userId` of type `UUID!`)
+  """
+  userId_expr: UUID_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `StatementImport`.`familyMember` of type `FamilyMember!`
+  """
+  familyMember: FamilyMember_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `StatementImport`.`user` of type `User!`
+  """
+  user: User_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `StatementImport`.`accountLabel` of type `String!`
+  """
+  accountLabel: String
+  """
+  ✨ `_expr` server value variant of `accountLabel` (✨ Generated from Field `StatementImport`.`accountLabel` of type `String!`)
+  """
+  accountLabel_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `StatementImport`.`contentKey` of type `String`
+  """
+  contentKey: String
+  """
+  ✨ `_expr` server value variant of `contentKey` (✨ Generated from Field `StatementImport`.`contentKey` of type `String`)
+  """
+  contentKey_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `StatementImport`.`createdAt` of type `Timestamp!`
+  """
+  createdAt: Timestamp
+  """
+  ✨ `_expr` server value variant of `createdAt` (✨ Generated from Field `StatementImport`.`createdAt` of type `Timestamp!`)
+  """
+  createdAt_expr: Timestamp_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_time` server value variant of `createdAt` (✨ Generated from Field `StatementImport`.`createdAt` of type `Timestamp!`)
+  """
+  createdAt_time: Timestamp_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `createdAt` (✨ Generated from Field `StatementImport`.`createdAt` of type `Timestamp!`)
+  """
+  createdAt_update: [Timestamp_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `StatementImport`.`earliestOccurredOn` of type `Date`
+  """
+  earliestOccurredOn: Date
+  """
+  ✨ `_date` server value variant of `earliestOccurredOn` (✨ Generated from Field `StatementImport`.`earliestOccurredOn` of type `Date`)
+  """
+  earliestOccurredOn_date: Date_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_expr` server value variant of `earliestOccurredOn` (✨ Generated from Field `StatementImport`.`earliestOccurredOn` of type `Date`)
+  """
+  earliestOccurredOn_expr: Date_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `earliestOccurredOn` (✨ Generated from Field `StatementImport`.`earliestOccurredOn` of type `Date`)
+  """
+  earliestOccurredOn_update: [Date_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `StatementImport`.`filename` of type `String!`
+  """
+  filename: String
+  """
+  ✨ `_expr` server value variant of `filename` (✨ Generated from Field `StatementImport`.`filename` of type `String!`)
+  """
+  filename_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `StatementImport`.`importedRowCount` of type `Int!`
+  """
+  importedRowCount: Int
+  """
+  ✨ `_expr` server value variant of `importedRowCount` (✨ Generated from Field `StatementImport`.`importedRowCount` of type `Int!`)
+  """
+  importedRowCount_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `importedRowCount` (✨ Generated from Field `StatementImport`.`importedRowCount` of type `Int!`)
+  """
+  importedRowCount_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `StatementImport`.`latestOccurredOn` of type `Date`
+  """
+  latestOccurredOn: Date
+  """
+  ✨ `_date` server value variant of `latestOccurredOn` (✨ Generated from Field `StatementImport`.`latestOccurredOn` of type `Date`)
+  """
+  latestOccurredOn_date: Date_Relative @fdc_forbiddenInVariables
+  """
+  ✨ `_expr` server value variant of `latestOccurredOn` (✨ Generated from Field `StatementImport`.`latestOccurredOn` of type `Date`)
+  """
+  latestOccurredOn_expr: Date_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `latestOccurredOn` (✨ Generated from Field `StatementImport`.`latestOccurredOn` of type `Date`)
+  """
+  latestOccurredOn_update: [Date_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `StatementImport`.`rowCount` of type `Int!`
+  """
+  rowCount: Int
+  """
+  ✨ `_expr` server value variant of `rowCount` (✨ Generated from Field `StatementImport`.`rowCount` of type `Int!`)
+  """
+  rowCount_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `rowCount` (✨ Generated from Field `StatementImport`.`rowCount` of type `Int!`)
+  """
+  rowCount_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `StatementImport`.`skippedRowCount` of type `Int!`
+  """
+  skippedRowCount: Int
+  """
+  ✨ `_expr` server value variant of `skippedRowCount` (✨ Generated from Field `StatementImport`.`skippedRowCount` of type `Int!`)
+  """
+  skippedRowCount_expr: Int_Expr @fdc_forbiddenInVariables
+  """
+  ✨ `_update` server value variant of `skippedRowCount` (✨ Generated from Field `StatementImport`.`skippedRowCount` of type `Int!`)
+  """
+  skippedRowCount_update: [Int_Update!] @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `StatementImport`.`transactions_on_statementImport` of type `[Transaction!]!`
+  """
+  transactions_on_statementImport: [Transaction_Data!]
+}
+"""
+✨ Generated filter input type for table 'StatementImport'. This input allows filtering objects using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input StatementImport_Filter {
+  """
+  Apply multiple filter conditions using `AND` logic.
+  """
+  _and: [StatementImport_Filter!]
+  """
+  Negate the result of the provided filter condition.
+  """
+  _not: StatementImport_Filter
+  """
+  Apply multiple filter conditions using `OR` logic.
+  """
+  _or: [StatementImport_Filter!]
+  """
+  ✨ Generated from Field `StatementImport`.`id` of type `UUID!`
+  """
+  id: UUID_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`familyMemberId` of type `UUID!`
+  """
+  familyMemberId: UUID_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`userId` of type `UUID!`
+  """
+  userId: UUID_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`familyMember` of type `FamilyMember!`
+  """
+  familyMember: FamilyMember_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`user` of type `User!`
+  """
+  user: User_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`accountLabel` of type `String!`
+  """
+  accountLabel: String_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`contentKey` of type `String`
+  """
+  contentKey: String_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`createdAt` of type `Timestamp!`
+  """
+  createdAt: Timestamp_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`earliestOccurredOn` of type `Date`
+  """
+  earliestOccurredOn: Date_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`filename` of type `String!`
+  """
+  filename: String_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`importedRowCount` of type `Int!`
+  """
+  importedRowCount: Int_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`latestOccurredOn` of type `Date`
+  """
+  latestOccurredOn: Date_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`rowCount` of type `Int!`
+  """
+  rowCount: Int_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`skippedRowCount` of type `Int!`
+  """
+  skippedRowCount: Int_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`transactions_on_statementImport` of type `[Transaction!]!`
+  """
+  transactions_on_statementImport: Transaction_ListFilter
+}
+"""
+✨ Generated first-row input type for table 'StatementImport'. This input selects the first row matching the filter criteria, ordered according to the specified conditions.
+"""
+input StatementImport_FirstRow {
+  """
+  Order the result by the specified fields.
+  """
+  orderBy: [StatementImport_Order!]
+  """
+  Filters rows based on the specified conditions.
+  """
+  where: StatementImport_Filter
+}
+"""
+✨ Generated having input type for table 'StatementImport'. This input allows you to filter groups during aggregate queries using various conditions. Use `_or`, `_and`, and `_not` to compose complex filters.
+"""
+input StatementImport_Having {
+  """
+  Apply multiple Having conditions using `AND` logic.
+  """
+  _and: [StatementImport_Having!]
+  """
+  Whether to apply DISTINCT to the aggregate function.
+  """
+  _distinct: Boolean
+  """
+  Negate the result of the provided Having condition.
+  """
+  _not: StatementImport_Having
+  """
+  Apply multiple Having conditions using `OR` logic.
+  """
+  _or: [StatementImport_Having!]
+  """
+  ✨ Generated from Field `StatementImport`.`_count` of type `Int!`
+  """
+  _count: Int_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`accountLabel_count` of type `Int!`
+  """
+  accountLabel_count: Int_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`contentKey_count` of type `Int!`
+  """
+  contentKey_count: Int_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`createdAt_count` of type `Int!`
+  """
+  createdAt_count: Int_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`earliestOccurredOn_count` of type `Int!`
+  """
+  earliestOccurredOn_count: Int_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`familyMemberId_count` of type `Int!`
+  """
+  familyMemberId_count: Int_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`filename_count` of type `Int!`
+  """
+  filename_count: Int_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`id_count` of type `Int!`
+  """
+  id_count: Int_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`importedRowCount_count` of type `Int!`
+  """
+  importedRowCount_count: Int_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`latestOccurredOn_count` of type `Int!`
+  """
+  latestOccurredOn_count: Int_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`rowCount_count` of type `Int!`
+  """
+  rowCount_count: Int_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`skippedRowCount_count` of type `Int!`
+  """
+  skippedRowCount_count: Int_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`userId_count` of type `Int!`
+  """
+  userId_count: Int_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`importedRowCount_sum` of type `Int`
+  """
+  importedRowCount_sum: Int_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`rowCount_sum` of type `Int`
+  """
+  rowCount_sum: Int_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`skippedRowCount_sum` of type `Int`
+  """
+  skippedRowCount_sum: Int_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`importedRowCount_avg` of type `Float`
+  """
+  importedRowCount_avg: Float_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`rowCount_avg` of type `Float`
+  """
+  rowCount_avg: Float_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`skippedRowCount_avg` of type `Float`
+  """
+  skippedRowCount_avg: Float_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`createdAt_min` of type `Timestamp`
+  """
+  createdAt_min: Timestamp_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`earliestOccurredOn_min` of type `Date`
+  """
+  earliestOccurredOn_min: Date_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`importedRowCount_min` of type `Int`
+  """
+  importedRowCount_min: Int_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`latestOccurredOn_min` of type `Date`
+  """
+  latestOccurredOn_min: Date_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`rowCount_min` of type `Int`
+  """
+  rowCount_min: Int_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`skippedRowCount_min` of type `Int`
+  """
+  skippedRowCount_min: Int_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`createdAt_max` of type `Timestamp`
+  """
+  createdAt_max: Timestamp_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`earliestOccurredOn_max` of type `Date`
+  """
+  earliestOccurredOn_max: Date_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`importedRowCount_max` of type `Int`
+  """
+  importedRowCount_max: Int_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`latestOccurredOn_max` of type `Date`
+  """
+  latestOccurredOn_max: Date_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`rowCount_max` of type `Int`
+  """
+  rowCount_max: Int_Filter
+  """
+  ✨ Generated from Field `StatementImport`.`skippedRowCount_max` of type `Int`
+  """
+  skippedRowCount_max: Int_Filter
+}
+"""
+✨ Generated key input type for table 'StatementImport'. It represents the primary key fields used to uniquely identify a row in the table.
+"""
+input StatementImport_Key {
+  """
+  ✨ Generated from Field `StatementImport`.`id` of type `UUID!`
+  """
+  id: UUID
+  """
+  ✨ `_expr` server value variant of `id` (✨ Generated from Field `StatementImport`.`id` of type `UUID!`)
+  """
+  id_expr: UUID_Expr @fdc_forbiddenInVariables
+}
+"""
+✨ Generated list filter input type for table 'StatementImport'. This input applies filtering logic based on the count or existence of related objects that matches certain criteria.
+"""
+input StatementImport_ListFilter {
+  """
+  The desired number of objects that match the condition (defaults to at least one).
+  """
+  count: Int_Filter = {gt:0}
+  """
+  Condition of the related objects to filter for.
+  """
+  exist: StatementImport_Filter
+}
+"""
+✨ Generated order input type for table 'StatementImport'. This input defines the sorting order of rows in query results based on one or more fields.
+"""
+input StatementImport_Order {
+  """
+  ✨ Generated from Field `StatementImport`.`id` of type `UUID!`
+  """
+  id: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`familyMemberId` of type `UUID!`
+  """
+  familyMemberId: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`userId` of type `UUID!`
+  """
+  userId: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`familyMember` of type `FamilyMember!`
+  """
+  familyMember: FamilyMember_Order
+  """
+  ✨ Generated from Field `StatementImport`.`user` of type `User!`
+  """
+  user: User_Order
+  """
+  ✨ Generated from Field `StatementImport`.`accountLabel` of type `String!`
+  """
+  accountLabel: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`contentKey` of type `String`
+  """
+  contentKey: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`createdAt` of type `Timestamp!`
+  """
+  createdAt: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`earliestOccurredOn` of type `Date`
+  """
+  earliestOccurredOn: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`filename` of type `String!`
+  """
+  filename: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`importedRowCount` of type `Int!`
+  """
+  importedRowCount: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`latestOccurredOn` of type `Date`
+  """
+  latestOccurredOn: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`rowCount` of type `Int!`
+  """
+  rowCount: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`skippedRowCount` of type `Int!`
+  """
+  skippedRowCount: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`_count` of type `Int!`
+  """
+  _count: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`accountLabel_count` of type `Int!`
+  """
+  accountLabel_count: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`contentKey_count` of type `Int!`
+  """
+  contentKey_count: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`createdAt_count` of type `Int!`
+  """
+  createdAt_count: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`earliestOccurredOn_count` of type `Int!`
+  """
+  earliestOccurredOn_count: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`familyMemberId_count` of type `Int!`
+  """
+  familyMemberId_count: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`filename_count` of type `Int!`
+  """
+  filename_count: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`id_count` of type `Int!`
+  """
+  id_count: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`importedRowCount_count` of type `Int!`
+  """
+  importedRowCount_count: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`latestOccurredOn_count` of type `Int!`
+  """
+  latestOccurredOn_count: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`rowCount_count` of type `Int!`
+  """
+  rowCount_count: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`skippedRowCount_count` of type `Int!`
+  """
+  skippedRowCount_count: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`userId_count` of type `Int!`
+  """
+  userId_count: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`importedRowCount_sum` of type `Int`
+  """
+  importedRowCount_sum: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`rowCount_sum` of type `Int`
+  """
+  rowCount_sum: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`skippedRowCount_sum` of type `Int`
+  """
+  skippedRowCount_sum: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`importedRowCount_avg` of type `Float`
+  """
+  importedRowCount_avg: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`rowCount_avg` of type `Float`
+  """
+  rowCount_avg: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`skippedRowCount_avg` of type `Float`
+  """
+  skippedRowCount_avg: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`createdAt_min` of type `Timestamp`
+  """
+  createdAt_min: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`earliestOccurredOn_min` of type `Date`
+  """
+  earliestOccurredOn_min: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`importedRowCount_min` of type `Int`
+  """
+  importedRowCount_min: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`latestOccurredOn_min` of type `Date`
+  """
+  latestOccurredOn_min: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`rowCount_min` of type `Int`
+  """
+  rowCount_min: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`skippedRowCount_min` of type `Int`
+  """
+  skippedRowCount_min: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`createdAt_max` of type `Timestamp`
+  """
+  createdAt_max: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`earliestOccurredOn_max` of type `Date`
+  """
+  earliestOccurredOn_max: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`importedRowCount_max` of type `Int`
+  """
+  importedRowCount_max: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`latestOccurredOn_max` of type `Date`
+  """
+  latestOccurredOn_max: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`rowCount_max` of type `Int`
+  """
+  rowCount_max: OrderDirection
+  """
+  ✨ Generated from Field `StatementImport`.`skippedRowCount_max` of type `Int`
+  """
+  skippedRowCount_max: OrderDirection
 }
 """
 ✨ Generated data input type for table 'Theme'. It includes all necessary fields for creating or upserting rows into table.
@@ -2336,6 +2945,14 @@ input Transaction_Data {
   """
   familyMemberId_expr: UUID_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Transaction`.`statementImportId` of type `UUID`
+  """
+  statementImportId: UUID
+  """
+  ✨ `_expr` server value variant of `statementImportId` (✨ Generated from Field `Transaction`.`statementImportId` of type `UUID`)
+  """
+  statementImportId_expr: UUID_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Transaction`.`userId` of type `UUID!`
   """
   userId: UUID
@@ -2351,6 +2968,10 @@ input Transaction_Data {
   ✨ Generated from Field `Transaction`.`familyMember` of type `FamilyMember!`
   """
   familyMember: FamilyMember_Key @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Transaction`.`statementImport` of type `StatementImport`
+  """
+  statementImport: StatementImport_Key @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Transaction`.`user` of type `User!`
   """
@@ -2399,6 +3020,22 @@ input Transaction_Data {
   ✨ `_expr` server value variant of `direction` (✨ Generated from Field `Transaction`.`direction` of type `String!`)
   """
   direction_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Transaction`.`importKey` of type `String`
+  """
+  importKey: String
+  """
+  ✨ `_expr` server value variant of `importKey` (✨ Generated from Field `Transaction`.`importKey` of type `String`)
+  """
+  importKey_expr: String_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Transaction`.`importRef` of type `String`
+  """
+  importRef: String
+  """
+  ✨ `_expr` server value variant of `importRef` (✨ Generated from Field `Transaction`.`importRef` of type `String`)
+  """
+  importRef_expr: String_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `Transaction`.`merchant` of type `String`
   """
@@ -2501,6 +3138,10 @@ input Transaction_Filter {
   """
   familyMemberId: UUID_Filter
   """
+  ✨ Generated from Field `Transaction`.`statementImportId` of type `UUID`
+  """
+  statementImportId: UUID_Filter
+  """
   ✨ Generated from Field `Transaction`.`userId` of type `UUID!`
   """
   userId: UUID_Filter
@@ -2512,6 +3153,10 @@ input Transaction_Filter {
   ✨ Generated from Field `Transaction`.`familyMember` of type `FamilyMember!`
   """
   familyMember: FamilyMember_Filter
+  """
+  ✨ Generated from Field `Transaction`.`statementImport` of type `StatementImport`
+  """
+  statementImport: StatementImport_Filter
   """
   ✨ Generated from Field `Transaction`.`user` of type `User!`
   """
@@ -2532,6 +3177,14 @@ input Transaction_Filter {
   ✨ Generated from Field `Transaction`.`direction` of type `String!`
   """
   direction: String_Filter
+  """
+  ✨ Generated from Field `Transaction`.`importKey` of type `String`
+  """
+  importKey: String_Filter
+  """
+  ✨ Generated from Field `Transaction`.`importRef` of type `String`
+  """
+  importRef: String_Filter
   """
   ✨ Generated from Field `Transaction`.`merchant` of type `String`
   """
@@ -2627,6 +3280,14 @@ input Transaction_Having {
   """
   id_count: Int_Filter
   """
+  ✨ Generated from Field `Transaction`.`importKey_count` of type `Int!`
+  """
+  importKey_count: Int_Filter
+  """
+  ✨ Generated from Field `Transaction`.`importRef_count` of type `Int!`
+  """
+  importRef_count: Int_Filter
+  """
   ✨ Generated from Field `Transaction`.`merchant_count` of type `Int!`
   """
   merchant_count: Int_Filter
@@ -2650,6 +3311,10 @@ input Transaction_Having {
   ✨ Generated from Field `Transaction`.`source_count` of type `Int!`
   """
   source_count: Int_Filter
+  """
+  ✨ Generated from Field `Transaction`.`statementImportId_count` of type `Int!`
+  """
+  statementImportId_count: Int_Filter
   """
   ✨ Generated from Field `Transaction`.`status_count` of type `Int!`
   """
@@ -2742,6 +3407,10 @@ input Transaction_Order {
   """
   familyMemberId: OrderDirection
   """
+  ✨ Generated from Field `Transaction`.`statementImportId` of type `UUID`
+  """
+  statementImportId: OrderDirection
+  """
   ✨ Generated from Field `Transaction`.`userId` of type `UUID!`
   """
   userId: OrderDirection
@@ -2753,6 +3422,10 @@ input Transaction_Order {
   ✨ Generated from Field `Transaction`.`familyMember` of type `FamilyMember!`
   """
   familyMember: FamilyMember_Order
+  """
+  ✨ Generated from Field `Transaction`.`statementImport` of type `StatementImport`
+  """
+  statementImport: StatementImport_Order
   """
   ✨ Generated from Field `Transaction`.`user` of type `User!`
   """
@@ -2773,6 +3446,14 @@ input Transaction_Order {
   ✨ Generated from Field `Transaction`.`direction` of type `String!`
   """
   direction: OrderDirection
+  """
+  ✨ Generated from Field `Transaction`.`importKey` of type `String`
+  """
+  importKey: OrderDirection
+  """
+  ✨ Generated from Field `Transaction`.`importRef` of type `String`
+  """
+  importRef: OrderDirection
   """
   ✨ Generated from Field `Transaction`.`merchant` of type `String`
   """
@@ -2834,6 +3515,14 @@ input Transaction_Order {
   """
   id_count: OrderDirection
   """
+  ✨ Generated from Field `Transaction`.`importKey_count` of type `Int!`
+  """
+  importKey_count: OrderDirection
+  """
+  ✨ Generated from Field `Transaction`.`importRef_count` of type `Int!`
+  """
+  importRef_count: OrderDirection
+  """
   ✨ Generated from Field `Transaction`.`merchant_count` of type `Int!`
   """
   merchant_count: OrderDirection
@@ -2857,6 +3546,10 @@ input Transaction_Order {
   ✨ Generated from Field `Transaction`.`source_count` of type `Int!`
   """
   source_count: OrderDirection
+  """
+  ✨ Generated from Field `Transaction`.`statementImportId_count` of type `Int!`
+  """
+  statementImportId_count: OrderDirection
   """
   ✨ Generated from Field `Transaction`.`status_count` of type `Int!`
   """
@@ -2995,6 +3688,10 @@ input User_Data {
   """
   familyMembers_on_user: [FamilyMember_Data!]
   """
+  ✨ Generated from Field `User`.`statementImports_on_user` of type `[StatementImport!]!`
+  """
+  statementImports_on_user: [StatementImport_Data!]
+  """
   ✨ Generated from Field `User`.`transactions_on_user` of type `[Transaction!]!`
   """
   transactions_on_user: [Transaction_Data!]
@@ -3071,6 +3768,10 @@ input User_Filter {
   ✨ Generated from Field `User`.`familyMembers_on_user` of type `[FamilyMember!]!`
   """
   familyMembers_on_user: FamilyMember_ListFilter
+  """
+  ✨ Generated from Field `User`.`statementImports_on_user` of type `[StatementImport!]!`
+  """
+  statementImports_on_user: StatementImport_ListFilter
   """
   ✨ Generated from Field `User`.`transactions_on_user` of type `[Transaction!]!`
   """

@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, Dropdown } from "@heroui/react";
-import { LayoutColumns, Plus } from "@gravity-ui/icons";
+import { ArrowUpFromSquare, LayoutColumns, Plus } from "@gravity-ui/icons";
 import { addMonths, monthLabel } from "@/lib/monthRange";
 import type { MonthKey } from "@/lib/monthRange";
 
@@ -27,6 +27,8 @@ interface RecordsTableControlsProps {
   onSelectedColumnsChange: (keys: Set<string>) => void;
   onAdd?: () => void;
   addLabel?: string;
+  /** Opens the statement importer. Omitted when this account can't write. */
+  onImport?: () => void;
 }
 
 export function RecordsTableControls({
@@ -37,6 +39,7 @@ export function RecordsTableControls({
   onSelectedColumnsChange,
   onAdd,
   addLabel = "Add",
+  onImport,
 }: RecordsTableControlsProps) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 p-4">
@@ -94,6 +97,15 @@ export function RecordsTableControls({
             </Dropdown.Menu>
           </Dropdown.Popover>
         </Dropdown>
+
+        {/* Import sits beside Add, not in Settings, because it is the same
+            act: putting transactions into the ledger. One is typed, the other
+            is a file. */}
+        {onImport && (
+          <Button size="sm" variant="outline" onPress={onImport} aria-label="Import a statement">
+            <ArrowUpFromSquare width={16} height={16} aria-hidden /> Import CSV
+          </Button>
+        )}
 
         {onAdd && (
           <Button size="sm" onPress={onAdd} aria-label={addLabel}>

@@ -154,6 +154,34 @@ function updateTransactionClearCategory(dcOrVarsOrOptions, varsOrOptions, option
 }
 exports.updateTransactionClearCategory = updateTransactionClearCategory;
 
+function createStatementImport(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('CreateStatementImport', inputVars, inputOpts);
+}
+exports.createStatementImport = createStatementImport;
+
+function finalizeStatementImport(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('FinalizeStatementImport', inputVars, inputOpts);
+}
+exports.finalizeStatementImport = finalizeStatementImport;
+
+function deleteStatementImportRows(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('DeleteStatementImportRows', inputVars, inputOpts);
+}
+exports.deleteStatementImportRows = deleteStatementImportRows;
+
+function deleteStatementImport(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('DeleteStatementImport', inputVars, inputOpts);
+}
+exports.deleteStatementImport = deleteStatementImport;
+
 function markTransactionPosted(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
@@ -314,6 +342,27 @@ function listMyTransactionsByDateRange(dcOrVarsOrOptions, varsOrOptions, options
   return dcInstance.executeQuery('ListMyTransactionsByDateRange', inputVars, inputOpts);
 }
 exports.listMyTransactionsByDateRange = listMyTransactionsByDateRange;
+
+function listMyStatementImports(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, false);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListMyStatementImports', inputVars, inputOpts);
+}
+exports.listMyStatementImports = listMyStatementImports;
+
+function listMyImportedInRange(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListMyImportedInRange', inputVars, inputOpts);
+}
+exports.listMyImportedInRange = listMyImportedInRange;
+
+function listMyImportedKeys(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListMyImportedKeys', inputVars, inputOpts);
+}
+exports.listMyImportedKeys = listMyImportedKeys;
 
 function getFamilyByInviteCode(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);

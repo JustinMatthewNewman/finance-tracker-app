@@ -11,8 +11,19 @@
 // second table would be a second thing to forget. See the note on
 // Transaction.source in dataconnect/schema/schema.gql.
 
-/** How the row got here. */
-export const TRANSACTION_SOURCES = ["MANUAL", "FORECAST"] as const;
+/**
+ * How the row got here — provenance, and nothing else.
+ *
+ * "MANUAL"   — somebody typed it, and it happened.
+ * "FORECAST" — somebody typed it, and it is expected.
+ * "IMPORT"   — read out of a bank statement CSV, and it happened.
+ *
+ * IMPORT IS NOT A THIRD KIND OF MONEY. It sits beside MANUAL, not beside
+ * FORECAST: an imported row is an actual, POSTED, counted in every real-money
+ * total exactly like a typed one. Nothing that totals money may branch on this
+ * list — see isProjected() below for why that has to stay true.
+ */
+export const TRANSACTION_SOURCES = ["MANUAL", "FORECAST", "IMPORT"] as const;
 export type TransactionSource = (typeof TRANSACTION_SOURCES)[number];
 
 /** Whether the money has actually moved. */
@@ -59,7 +70,26 @@ export function isProjected(txn: { status: TransactionStatus }): boolean {
   return txn.status === "FORECASTED";
 }
 
-/** The status a row should carry given how it was entered. */
+/**
+ * Whether this row came out of a bank statement rather than being typed.
+ *
+ * Reads `source`, which is the one question `source` is allowed to answer. This
+ * exists for labelling — an "Imported" chip, a "delete everything from that
+ * statement" control — and deliberately not for arithmetic: an imported row is
+ * real money and every total must treat it as such.
+ */
+export function isImported(txn: { source: TransactionSource }): boolean {
+  return txn.source === "IMPORT";
+}
+
+/**
+ * The status a row should carry given how it was entered.
+ *
+ * FORECAST is the only source that means "hasn't happened yet", so it is the
+ * only one that maps to FORECASTED. MANUAL and IMPORT are both actuals. Note
+ * this is the status a row STARTS with, not one to recompute later: a projection
+ * that has been received is POSTED while its source stays FORECAST.
+ */
 export function statusForSource(source: TransactionSource): TransactionStatus {
   return source === "FORECAST" ? "FORECASTED" : "POSTED";
 }

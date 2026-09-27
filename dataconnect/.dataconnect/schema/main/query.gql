@@ -99,6 +99,25 @@ extend type Query {
     first: Feature_FirstRow
   ): Feature @fdc_generated(from: "Feature", purpose: QUERY_SINGLE)
   """
+  ✨ Look up a single `StatementImport` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  statementImport(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: StatementImport_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: StatementImport_FirstRow
+  ): StatementImport @fdc_generated(from: "StatementImport", purpose: QUERY_SINGLE)
+  """
   ✨ Look up a single `Theme` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
   """
   theme(
@@ -406,6 +425,40 @@ extend type Query {
     """
     having: Feature_Having
   ): [Feature!]! @fdc_generated(from: "Feature", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `StatementImport` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  statementImports(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: StatementImport_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [StatementImport_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: StatementImport_Having
+  ): [StatementImport!]! @fdc_generated(from: "StatementImport", purpose: QUERY_MULTIPLE)
   """
   ✨ List `Theme` objects in the table and return selected fields, optionally filtered by `where` conditions
   """

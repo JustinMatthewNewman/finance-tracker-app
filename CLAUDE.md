@@ -46,6 +46,59 @@ Next.js 16 App Router · React 19 · TypeScript · Tailwind v4 · HeroUI v3 ·
   `schema.gql`. Anything totalling real money must branch on `status`, never
   on `source`: marking a projection as received leaves `source: "FORECAST"`
   so its provenance survives.
+- **An imported row is an ACTUAL, and `source` is only provenance.**
+  A statement CSV writes `source: "IMPORT"`, `status: "POSTED"` — IMPORT sits
+  beside MANUAL, never beside FORECAST. Nothing that totals money may branch on
+  `source`; the happened/expected split runs entirely through `status`.
+- **Re-importing is safe because of `@unique` columns, not because of a read.**
+  `StatementImport.contentKey` catches the same file; `Transaction.importKey`
+  catches the same line. The pre-flight reads in `useTransactionImport.ts` only
+  turn the common case into a count instead of an error — two imports racing both
+  see a clean slate, and the constraint is what stops the loser doubling a month
+  of spending. Don't "optimize" either constraint away.
+- **A fingerprint cannot catch a pending charge that has since settled, and that
+  is the commonest real duplicate.** Wells Fargo reports one transaction twice in
+  two different memo formats, usually on different dates and sometimes for
+  different amounts. `Transaction.importRef` — the bank's own reference, present
+  on settled rows and absent on pending ones — is what resolves it, and
+  `lib/importReconcile.ts` is where the whole decision lives. It is pure on
+  purpose: what a re-upload does is testable without a database.
+- **Two references that are both present and DIFFERENT prove two separate
+  transactions.** That check is what keeps two same-price shops at one shop in
+  one week from being reported as a duplicate. Don't drop it when tuning the
+  matcher.
+- **The `probable` tier NEVER skips a row on its own.** It cannot tell a settled
+  pending charge from a second identical purchase, so it reports and a person
+  decides; `runImport` skips only the keys the caller passes in. Defaulting these
+  to skipped silently drops real transactions, which is worse than a visible
+  duplicate — a ledger missing a row is wrong in a way nobody reconciles against.
+- **`importRef` is deliberately not `@unique`.** It is absent on exactly the rows
+  that need matching most, and an amount that legitimately changes between
+  pending and settled must reach a person rather than be refused outright.
+- **Matching is count-aware, and that is what protects legitimate duplicates.**
+  Every stored row can be claimed by at most one incoming row. Two identical
+  coffees on one afternoon are two rows: a re-upload matches two and imports
+  neither, and a third a month later is correctly new.
+- **A second upload of an identical file passes `contentKey: undefined`.** Not a
+  way around the `@unique` — it is what makes first-wins correct. Re-running a
+  half-finished import is the documented fix for it, and sending the digest again
+  refuses the header row and strands the retry.
+- **Removing an import is two mutations, in order: rows, then header.**
+  `Transaction.statementImport` is nullable, so Data Connect makes it
+  `ON DELETE SET NULL` — deleting the header first clears the pointer on every
+  row instead of removing them, and then only the importKeys can find them.
+- **`transaction_insertMany` is unreachable from the client.** The generator
+  rejects `_Data` list variables for both SDKs, so an import is
+  `CreateTransaction` per row. The batch mutation and its `@auth(expr:)` guard
+  over `vars.rows` are in git history if that ever changes; see the "Statement
+  import" section in `mutations.gql`.
+- **A `deleteMany`'s where-clause IS its guard.** No guard query can enumerate
+  what a filter will match, so `DeleteStatementImportRows` repeats the
+  `auth.uid` predicate inline beside the id. Dropping it does not throw — a
+  housemate deletes your statement instead. Note `mustFail` is the wrong
+  assertion for these in `verify:guards`: a `deleteMany` whose filter excludes
+  everything *succeeds* having deleted nothing, so the test asserts the rows
+  survived.
 - **Money is an integer.** Minor units only; every conversion goes through
   `lib/money.ts`. Never `parseFloat(x) * 100`. The per-major divisor comes
   from `Intl` because JPY has no minor unit.
@@ -88,8 +141,10 @@ Next.js 16 App Router · React 19 · TypeScript · Tailwind v4 · HeroUI v3 ·
 
 **Plaid.** Removed entirely — tables, columns and mutations — rather than left
 as unreachable scaffolding. When it lands it writes `Transaction` rows with
-`source: "PLAID"` alongside the manual and projected ones, which is what the
-one-table decision above is for. Nothing here anticipates it beyond that.
+`source: "PLAID"` alongside the manual, projected and imported ones, which is
+what the one-table decision above is for. Nothing here anticipates it beyond
+that — though the CSV importer now occupies the same slot with
+`source: "IMPORT"`, so the shape is no longer hypothetical.
 
 **An admin UI.** `ListUsers`, `ListUserTypes` and `SetUserType` are kept
 because the tier system they serve is kept (README documents `SetUserType` as
@@ -130,9 +185,13 @@ throw, it permits, and that is indistinguishable from success everywhere else.
 - `app/(app)/` — everything behind the navbar. Its layout renders `Navbar` and
   `OnboardingGate`. The navbar is deliberately NOT in the root layout.
 - `app/(onboarding)/` — the chrome-free half, for accounts with no household
-  yet. Route groups, not a `usePathname()` check inside `Navbar`.
+  yet. Route groups, not a `usePathname()` check inside `Navbar`. There is no
+  navbar here, so sign-out lives in `OnboardingFlow`'s own `Shell` — and it has
+  to redirect by hand, because `OnboardingGate` is in the `(app)` layout and does
+  not run on these routes.
 - `app/(app)/household/` — the one content page
-- `components/Finance/` — sidebar detail, transaction table, breakdown, form
+- `components/Finance/` — sidebar detail, transaction table, breakdown, form,
+  and the statement-import dialog
 - `components/Onboarding/` — the join-or-create flow, and the redirect gate
 - `components/Family/` — the household panel in Settings: roster, invite code,
   join queue
@@ -145,8 +204,20 @@ throw, it permits, and that is indistinguishable from success everywhere else.
   Income/Expenses/Calendar. Call once per page; it owns a `useFamilyMembers()`.
 - `hooks/useFamily.ts` — the household, for Settings. Call once per page.
 - `hooks/useOnboarding.ts` — join requests and household creation.
+- `hooks/useTransactionImport.ts` — the write half of the CSV importer:
+  `planImport()` decides what an upload would do and writes nothing;
+  `runImport()` writes the header row, then its transactions, then the counts.
 - `lib/money.ts`, `lib/monthRange.ts`, `lib/entityColor.ts` — domain rules
 - `lib/inviteCode.ts` — invite codes are a capability, not an id: CSPRNG only
 - `lib/familyStatus.ts` — the four join-request states
 - `lib/transactionKind.ts` — projected vs. actual (`source`, `status`)
 - `lib/recurrence.ts` — repeat intervals, end dates, month-clamped expansion
+- `lib/wellsFargoCsv.ts` — the read half of the CSV importer, and the only
+  place a bank export is interpreted. Pure: no auth, no network, no DOM, so the
+  whole mapping is tested against `transaction_data.example/`.
+- `lib/importReconcile.ts` — what a re-uploaded, overlapping statement actually
+  adds. Also pure, for the same reason. Its three tiers and the reason the last
+  one only ever reports are documented at the top of the file.
+- `transaction_data/` — gitignored, for your own real statement exports.
+  `transaction_data.example/` holds the committed fake ones the tests read;
+  never commit a real statement.

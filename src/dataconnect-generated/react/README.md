@@ -28,6 +28,9 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*ListTransactionsByFamilyMember*](#listtransactionsbyfamilymember)
   - [*ListMyTransactions*](#listmytransactions)
   - [*ListMyTransactionsByDateRange*](#listmytransactionsbydaterange)
+  - [*ListMyStatementImports*](#listmystatementimports)
+  - [*ListMyImportedInRange*](#listmyimportedinrange)
+  - [*ListMyImportedKeys*](#listmyimportedkeys)
   - [*GetFamilyByInviteCode*](#getfamilybyinvitecode)
   - [*GetMyFamilyDetail*](#getmyfamilydetail)
   - [*GetMyJoinRequests*](#getmyjoinrequests)
@@ -54,6 +57,10 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*CreateTransaction*](#createtransaction)
   - [*UpdateTransaction*](#updatetransaction)
   - [*UpdateTransactionClearCategory*](#updatetransactionclearcategory)
+  - [*CreateStatementImport*](#createstatementimport)
+  - [*FinalizeStatementImport*](#finalizestatementimport)
+  - [*DeleteStatementImportRows*](#deletestatementimportrows)
+  - [*DeleteStatementImport*](#deletestatementimport)
   - [*MarkTransactionPosted*](#marktransactionposted)
   - [*MarkTransactionProjected*](#marktransactionprojected)
   - [*DeleteTransaction*](#deletetransaction)
@@ -1213,6 +1220,300 @@ export default function ListMyTransactionsByDateRangeComponent() {
   const dataConnect = getDataConnect(connectorConfig);
   const options = { staleTime: 5 * 1000 };
   const query = useListMyTransactionsByDateRange(dataConnect, listMyTransactionsByDateRangeVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.transactions);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## ListMyStatementImports
+You can execute the `ListMyStatementImports` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useListMyStatementImports(dc: DataConnect, vars?: ListMyStatementImportsVariables, options?: useDataConnectQueryOptions<ListMyStatementImportsData>): UseDataConnectQueryResult<ListMyStatementImportsData, ListMyStatementImportsVariables>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useListMyStatementImports(vars?: ListMyStatementImportsVariables, options?: useDataConnectQueryOptions<ListMyStatementImportsData>): UseDataConnectQueryResult<ListMyStatementImportsData, ListMyStatementImportsVariables>;
+```
+
+### Variables
+The `ListMyStatementImports` Query has an optional argument of type `ListMyStatementImportsVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface ListMyStatementImportsVariables {
+  limit?: number | null;
+  offset?: number | null;
+}
+```
+### Return Type
+Recall that calling the `ListMyStatementImports` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `ListMyStatementImports` Query is of type `ListMyStatementImportsData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface ListMyStatementImportsData {
+  statementImports: ({
+    id: UUIDString;
+    accountLabel: string;
+    filename: string;
+    contentKey?: string | null;
+    rowCount: number;
+    importedRowCount: number;
+    skippedRowCount: number;
+    earliestOccurredOn?: DateString | null;
+    latestOccurredOn?: DateString | null;
+    createdAt: TimestampString;
+    familyMember: {
+      id: UUIDString;
+      name: string;
+    } & FamilyMember_Key;
+    user: {
+      id: UUIDString;
+      username: string;
+    } & User_Key;
+  } & StatementImport_Key)[];
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `ListMyStatementImports`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, ListMyStatementImportsVariables } from '@financeconnect/generated';
+import { useListMyStatementImports } from '@financeconnect/generated/react'
+
+export default function ListMyStatementImportsComponent() {
+  // The `useListMyStatementImports` Query hook has an optional argument of type `ListMyStatementImportsVariables`:
+  const listMyStatementImportsVars: ListMyStatementImportsVariables = {
+    limit: ..., // optional
+    offset: ..., // optional
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useListMyStatementImports(listMyStatementImportsVars);
+  // Variables can be defined inline as well.
+  const query = useListMyStatementImports({ limit: ..., offset: ..., });
+  // Since all variables are optional for this Query, you can omit the `ListMyStatementImportsVariables` argument.
+  // (as long as you don't want to provide any `options`!)
+  const query = useListMyStatementImports();
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useListMyStatementImports(dataConnect, listMyStatementImportsVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useListMyStatementImports(listMyStatementImportsVars, options);
+  // If you'd like to provide options without providing any variables, you must
+  // pass `undefined` where you would normally pass the variables.
+  const query = useListMyStatementImports(undefined, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useListMyStatementImports(dataConnect, listMyStatementImportsVars /** or undefined */, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.statementImports);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## ListMyImportedInRange
+You can execute the `ListMyImportedInRange` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useListMyImportedInRange(dc: DataConnect, vars: ListMyImportedInRangeVariables, options?: useDataConnectQueryOptions<ListMyImportedInRangeData>): UseDataConnectQueryResult<ListMyImportedInRangeData, ListMyImportedInRangeVariables>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useListMyImportedInRange(vars: ListMyImportedInRangeVariables, options?: useDataConnectQueryOptions<ListMyImportedInRangeData>): UseDataConnectQueryResult<ListMyImportedInRangeData, ListMyImportedInRangeVariables>;
+```
+
+### Variables
+The `ListMyImportedInRange` Query requires an argument of type `ListMyImportedInRangeVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface ListMyImportedInRangeVariables {
+  startDate: DateString;
+  endDate: DateString;
+  limit?: number | null;
+  offset?: number | null;
+}
+```
+### Return Type
+Recall that calling the `ListMyImportedInRange` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `ListMyImportedInRange` Query is of type `ListMyImportedInRangeData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface ListMyImportedInRangeData {
+  transactions: ({
+    id: UUIDString;
+    importKey?: string | null;
+    importRef?: string | null;
+    occurredOn: DateString;
+    amountMinor: number;
+    direction: string;
+    merchant?: string | null;
+  } & Transaction_Key)[];
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `ListMyImportedInRange`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, ListMyImportedInRangeVariables } from '@financeconnect/generated';
+import { useListMyImportedInRange } from '@financeconnect/generated/react'
+
+export default function ListMyImportedInRangeComponent() {
+  // The `useListMyImportedInRange` Query hook requires an argument of type `ListMyImportedInRangeVariables`:
+  const listMyImportedInRangeVars: ListMyImportedInRangeVariables = {
+    startDate: ..., 
+    endDate: ..., 
+    limit: ..., // optional
+    offset: ..., // optional
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useListMyImportedInRange(listMyImportedInRangeVars);
+  // Variables can be defined inline as well.
+  const query = useListMyImportedInRange({ startDate: ..., endDate: ..., limit: ..., offset: ..., });
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useListMyImportedInRange(dataConnect, listMyImportedInRangeVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useListMyImportedInRange(listMyImportedInRangeVars, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useListMyImportedInRange(dataConnect, listMyImportedInRangeVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.transactions);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## ListMyImportedKeys
+You can execute the `ListMyImportedKeys` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useListMyImportedKeys(dc: DataConnect, vars: ListMyImportedKeysVariables, options?: useDataConnectQueryOptions<ListMyImportedKeysData>): UseDataConnectQueryResult<ListMyImportedKeysData, ListMyImportedKeysVariables>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useListMyImportedKeys(vars: ListMyImportedKeysVariables, options?: useDataConnectQueryOptions<ListMyImportedKeysData>): UseDataConnectQueryResult<ListMyImportedKeysData, ListMyImportedKeysVariables>;
+```
+
+### Variables
+The `ListMyImportedKeys` Query requires an argument of type `ListMyImportedKeysVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface ListMyImportedKeysVariables {
+  importKeys: string[];
+  limit?: number | null;
+  offset?: number | null;
+}
+```
+### Return Type
+Recall that calling the `ListMyImportedKeys` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `ListMyImportedKeys` Query is of type `ListMyImportedKeysData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface ListMyImportedKeysData {
+  transactions: ({
+    id: UUIDString;
+    importKey?: string | null;
+  } & Transaction_Key)[];
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `ListMyImportedKeys`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, ListMyImportedKeysVariables } from '@financeconnect/generated';
+import { useListMyImportedKeys } from '@financeconnect/generated/react'
+
+export default function ListMyImportedKeysComponent() {
+  // The `useListMyImportedKeys` Query hook requires an argument of type `ListMyImportedKeysVariables`:
+  const listMyImportedKeysVars: ListMyImportedKeysVariables = {
+    importKeys: ..., 
+    limit: ..., // optional
+    offset: ..., // optional
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useListMyImportedKeys(listMyImportedKeysVars);
+  // Variables can be defined inline as well.
+  const query = useListMyImportedKeys({ importKeys: ..., limit: ..., offset: ..., });
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useListMyImportedKeys(dataConnect, listMyImportedKeysVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useListMyImportedKeys(listMyImportedKeysVars, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useListMyImportedKeys(dataConnect, listMyImportedKeysVars, options);
 
   // Then, you can render your component dynamically based on the status of the Query.
   if (query.isPending) {
@@ -3400,6 +3701,9 @@ export interface CreateTransactionVariables {
   categoryName?: string | null;
   source?: string | null;
   status?: string | null;
+  importKey?: string | null;
+  importRef?: string | null;
+  statementImportId?: UUIDString | null;
 }
 ```
 ### Return Type
@@ -3463,10 +3767,13 @@ export default function CreateTransactionComponent() {
     categoryName: ..., // optional
     source: ..., // optional
     status: ..., // optional
+    importKey: ..., // optional
+    importRef: ..., // optional
+    statementImportId: ..., // optional
   };
   mutation.mutate(createTransactionVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ userId: ..., familyMemberId: ..., amountMinor: ..., direction: ..., occurredOn: ..., createdAt: ..., description: ..., merchant: ..., method: ..., recurrence: ..., recurrenceEndsOn: ..., categoryName: ..., source: ..., status: ..., });
+  mutation.mutate({ userId: ..., familyMemberId: ..., amountMinor: ..., direction: ..., occurredOn: ..., createdAt: ..., description: ..., merchant: ..., method: ..., recurrence: ..., recurrenceEndsOn: ..., categoryName: ..., source: ..., status: ..., importKey: ..., importRef: ..., statementImportId: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -3716,6 +4023,404 @@ export default function UpdateTransactionClearCategoryComponent() {
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
     console.log(mutation.data.transaction_update);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## CreateStatementImport
+You can execute the `CreateStatementImport` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useCreateStatementImport(options?: useDataConnectMutationOptions<CreateStatementImportData, FirebaseError, CreateStatementImportVariables>): UseDataConnectMutationResult<CreateStatementImportData, CreateStatementImportVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useCreateStatementImport(dc: DataConnect, options?: useDataConnectMutationOptions<CreateStatementImportData, FirebaseError, CreateStatementImportVariables>): UseDataConnectMutationResult<CreateStatementImportData, CreateStatementImportVariables>;
+```
+
+### Variables
+The `CreateStatementImport` Mutation requires an argument of type `CreateStatementImportVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface CreateStatementImportVariables {
+  statementImportId: UUIDString;
+  userId: UUIDString;
+  familyMemberId: UUIDString;
+  accountLabel: string;
+  filename: string;
+  contentKey?: string | null;
+  rowCount: number;
+  createdAt: TimestampString;
+}
+```
+### Return Type
+Recall that calling the `CreateStatementImport` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `CreateStatementImport` Mutation is of type `CreateStatementImportData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface CreateStatementImportData {
+  statementImport_insert: StatementImport_Key;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `CreateStatementImport`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, CreateStatementImportVariables } from '@financeconnect/generated';
+import { useCreateStatementImport } from '@financeconnect/generated/react'
+
+export default function CreateStatementImportComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useCreateStatementImport();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useCreateStatementImport(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useCreateStatementImport(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useCreateStatementImport(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useCreateStatementImport` Mutation requires an argument of type `CreateStatementImportVariables`:
+  const createStatementImportVars: CreateStatementImportVariables = {
+    statementImportId: ..., 
+    userId: ..., 
+    familyMemberId: ..., 
+    accountLabel: ..., 
+    filename: ..., 
+    contentKey: ..., // optional
+    rowCount: ..., 
+    createdAt: ..., 
+  };
+  mutation.mutate(createStatementImportVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ statementImportId: ..., userId: ..., familyMemberId: ..., accountLabel: ..., filename: ..., contentKey: ..., rowCount: ..., createdAt: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(createStatementImportVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.statementImport_insert);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## FinalizeStatementImport
+You can execute the `FinalizeStatementImport` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useFinalizeStatementImport(options?: useDataConnectMutationOptions<FinalizeStatementImportData, FirebaseError, FinalizeStatementImportVariables>): UseDataConnectMutationResult<FinalizeStatementImportData, FinalizeStatementImportVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useFinalizeStatementImport(dc: DataConnect, options?: useDataConnectMutationOptions<FinalizeStatementImportData, FirebaseError, FinalizeStatementImportVariables>): UseDataConnectMutationResult<FinalizeStatementImportData, FinalizeStatementImportVariables>;
+```
+
+### Variables
+The `FinalizeStatementImport` Mutation requires an argument of type `FinalizeStatementImportVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface FinalizeStatementImportVariables {
+  statementImportId: UUIDString;
+  importedRowCount: number;
+  skippedRowCount: number;
+  earliestOccurredOn?: DateString | null;
+  latestOccurredOn?: DateString | null;
+}
+```
+### Return Type
+Recall that calling the `FinalizeStatementImport` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `FinalizeStatementImport` Mutation is of type `FinalizeStatementImportData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface FinalizeStatementImportData {
+  statementImport_update?: StatementImport_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `FinalizeStatementImport`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, FinalizeStatementImportVariables } from '@financeconnect/generated';
+import { useFinalizeStatementImport } from '@financeconnect/generated/react'
+
+export default function FinalizeStatementImportComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useFinalizeStatementImport();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useFinalizeStatementImport(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useFinalizeStatementImport(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useFinalizeStatementImport(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useFinalizeStatementImport` Mutation requires an argument of type `FinalizeStatementImportVariables`:
+  const finalizeStatementImportVars: FinalizeStatementImportVariables = {
+    statementImportId: ..., 
+    importedRowCount: ..., 
+    skippedRowCount: ..., 
+    earliestOccurredOn: ..., // optional
+    latestOccurredOn: ..., // optional
+  };
+  mutation.mutate(finalizeStatementImportVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ statementImportId: ..., importedRowCount: ..., skippedRowCount: ..., earliestOccurredOn: ..., latestOccurredOn: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(finalizeStatementImportVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.statementImport_update);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## DeleteStatementImportRows
+You can execute the `DeleteStatementImportRows` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useDeleteStatementImportRows(options?: useDataConnectMutationOptions<DeleteStatementImportRowsData, FirebaseError, DeleteStatementImportRowsVariables>): UseDataConnectMutationResult<DeleteStatementImportRowsData, DeleteStatementImportRowsVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useDeleteStatementImportRows(dc: DataConnect, options?: useDataConnectMutationOptions<DeleteStatementImportRowsData, FirebaseError, DeleteStatementImportRowsVariables>): UseDataConnectMutationResult<DeleteStatementImportRowsData, DeleteStatementImportRowsVariables>;
+```
+
+### Variables
+The `DeleteStatementImportRows` Mutation requires an argument of type `DeleteStatementImportRowsVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface DeleteStatementImportRowsVariables {
+  statementImportId: UUIDString;
+}
+```
+### Return Type
+Recall that calling the `DeleteStatementImportRows` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `DeleteStatementImportRows` Mutation is of type `DeleteStatementImportRowsData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface DeleteStatementImportRowsData {
+  transaction_deleteMany: number;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `DeleteStatementImportRows`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, DeleteStatementImportRowsVariables } from '@financeconnect/generated';
+import { useDeleteStatementImportRows } from '@financeconnect/generated/react'
+
+export default function DeleteStatementImportRowsComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useDeleteStatementImportRows();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useDeleteStatementImportRows(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useDeleteStatementImportRows(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useDeleteStatementImportRows(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useDeleteStatementImportRows` Mutation requires an argument of type `DeleteStatementImportRowsVariables`:
+  const deleteStatementImportRowsVars: DeleteStatementImportRowsVariables = {
+    statementImportId: ..., 
+  };
+  mutation.mutate(deleteStatementImportRowsVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ statementImportId: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(deleteStatementImportRowsVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.transaction_deleteMany);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## DeleteStatementImport
+You can execute the `DeleteStatementImport` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useDeleteStatementImport(options?: useDataConnectMutationOptions<DeleteStatementImportData, FirebaseError, DeleteStatementImportVariables>): UseDataConnectMutationResult<DeleteStatementImportData, DeleteStatementImportVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useDeleteStatementImport(dc: DataConnect, options?: useDataConnectMutationOptions<DeleteStatementImportData, FirebaseError, DeleteStatementImportVariables>): UseDataConnectMutationResult<DeleteStatementImportData, DeleteStatementImportVariables>;
+```
+
+### Variables
+The `DeleteStatementImport` Mutation requires an argument of type `DeleteStatementImportVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface DeleteStatementImportVariables {
+  statementImportId: UUIDString;
+}
+```
+### Return Type
+Recall that calling the `DeleteStatementImport` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `DeleteStatementImport` Mutation is of type `DeleteStatementImportData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface DeleteStatementImportData {
+  statementImport_delete?: StatementImport_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `DeleteStatementImport`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, DeleteStatementImportVariables } from '@financeconnect/generated';
+import { useDeleteStatementImport } from '@financeconnect/generated/react'
+
+export default function DeleteStatementImportComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useDeleteStatementImport();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useDeleteStatementImport(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useDeleteStatementImport(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useDeleteStatementImport(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useDeleteStatementImport` Mutation requires an argument of type `DeleteStatementImportVariables`:
+  const deleteStatementImportVars: DeleteStatementImportVariables = {
+    statementImportId: ..., 
+  };
+  mutation.mutate(deleteStatementImportVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ statementImportId: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(deleteStatementImportVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.statementImport_delete);
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }
