@@ -9,6 +9,10 @@ import { useBackgroundOpacity } from '@/context/BackgroundOpacityContext'
 import { useCardStyle } from '@/context/CardStyleContext'
 import { useBorders } from '@/context/BordersContext'
 import { useSquareCorners } from '@/context/SquareCornersContext'
+import { useCalendarView } from '@/context/CalendarViewContext'
+import { useInternalTransfers } from '@/context/InternalTransfersContext'
+import { usePrivacyMode } from '@/context/PrivacyModeContext'
+import { useInternalTransferSync } from '@/hooks/useInternalTransferSync'
 import { useCategoryColorsSetting } from '@/context/CategoryColorsContext'
 import { useUserSettings } from '@/context/UserSettingsContext'
 import FamilyPanel from '@/components/Family/FamilyPanel'
@@ -41,6 +45,16 @@ function SettingsCard() {
   const { cardOpacity, setCardOpacity, cardBlur, setCardBlur } = useCardStyle()
   const { bordersEnabled, setBordersEnabled } = useBorders()
   const { squareCorners, setSquareCorners } = useSquareCorners()
+  const { hideWeekends, setHideWeekends } = useCalendarView();
+  const { showInternalTransfers, setShowInternalTransfers } = useInternalTransfers();
+  const { privacyMode, setPrivacyMode } = usePrivacyMode();
+  const {
+    resync: resyncTransfers,
+    running: transferSyncRunning,
+    progress: transferSyncProgress,
+    outcome: transferSyncOutcome,
+    error: transferSyncError,
+  } = useInternalTransferSync();
   const { categoryColorsEnabled, setCategoryColorsEnabled } = useCategoryColorsSetting()
   const { externalAccountLinkTemplate, currencyCode, refetch: refetchUserSettings } = useUserSettings()
   const selectTemplateMutation = useSelectMyExternalAccountLinkTemplate()
@@ -320,6 +334,126 @@ function SettingsCard() {
             isSelected={squareCorners}
             onChange={setSquareCorners}
             aria-label="Square corners"
+          >
+            <Switch.Content>
+              <Switch.Control>
+                <Switch.Thumb />
+              </Switch.Control>
+            </Switch.Content>
+          </Switch>
+        </div>
+
+        <div className="mt-3 flex items-center justify-between gap-4 rounded-lg bg-default-100 p-3">
+          <div>
+            <p className="text-sm font-medium text-foreground">Hide amounts</p>
+            <p className="text-xs text-foreground/60">
+              Replaces every figure with dots, for a shared screen or a screenshot. There is a
+              quicker toggle for this in the navbar. It hides amounts from somebody looking at
+              the screen — it is not a password, and anyone with the device can switch it off.
+            </p>
+          </div>
+          <Switch isSelected={privacyMode} onChange={setPrivacyMode} aria-label="Hide amounts">
+            <Switch.Content>
+              <Switch.Control>
+                <Switch.Thumb />
+              </Switch.Control>
+            </Switch.Content>
+          </Switch>
+        </div>
+
+        <div className="mt-3 flex items-center justify-between gap-4 rounded-lg bg-default-100 p-3">
+          <div>
+            <p className="text-sm font-medium text-foreground">Count internal transfers</p>
+            {/* The one preference here that changes a figure rather than an
+                appearance, so the description says what it does to the numbers
+                rather than what it looks like. */}
+            <p className="text-xs text-foreground/60">
+              Whether money you move around inside your household — between your own accounts,
+              or between people in it — counts as income and spending. Each transfer is a real
+              credit and a real debit, so counting them adds the same amount to both sides, and
+              a household that sweeps money into savings looks like it earns and spends far more
+              than it does. If only one of the two accounts is imported, counting it also makes
+              your net wrong, because money that just moved looks like money spent.
+            </p>
+          </div>
+          <Switch
+            isSelected={showInternalTransfers}
+            onChange={setShowInternalTransfers}
+            aria-label="Count internal transfers"
+          >
+            <Switch.Content>
+              <Switch.Control>
+                <Switch.Thumb />
+              </Switch.Control>
+            </Switch.Content>
+          </Switch>
+        </div>
+
+        {/* THE BACKFILL, and the reason it has a button rather than running
+            automatically: both flags are read off the statement memo, which the
+            importer does not keep, so a row imported before those columns existed
+            has neither set. That was 592 rows out of 1952 in a real household —
+            enough that the toggle above looked broken, because there was nothing
+            flagged for it to hide. It is also the repair path for adding or
+            renaming a household member, since a payment to somebody only becomes
+            internal once they are in the roster. */}
+        <div className="mt-3 rounded-lg bg-default-100 p-3">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-medium text-foreground">Re-check internal transfers</p>
+              <p className="text-xs text-foreground/60">
+                Looks at every imported transaction again and works out which ones just move money
+                around inside your household — between your own accounts, or between people in it.
+                Run this after importing statements from before this feature existed, or after
+                adding someone to your household.
+              </p>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              isDisabled={transferSyncRunning}
+              onPress={() => void resyncTransfers().catch(() => {})}
+            >
+              {transferSyncRunning ? "Checking…" : "Re-check"}
+            </Button>
+          </div>
+
+          {transferSyncProgress && (
+            <p className="mt-2 text-xs text-foreground/60 tabular-nums">
+              Updating {transferSyncProgress.done} of {transferSyncProgress.total}…
+            </p>
+          )}
+          {transferSyncError && <p className="mt-2 text-xs text-danger">{transferSyncError}</p>}
+          {transferSyncOutcome && !transferSyncRunning && (
+            <p className="mt-2 text-xs text-foreground/60">
+              Checked {transferSyncOutcome.scanned} imported transaction
+              {transferSyncOutcome.scanned === 1 ? "" : "s"}:{" "}
+              {transferSyncOutcome.flaggedToUser} between your own accounts,{" "}
+              {transferSyncOutcome.flaggedToFamily} within the household
+              {transferSyncOutcome.unflagged > 0 && `, ${transferSyncOutcome.unflagged} no longer internal`}
+              {transferSyncOutcome.failures > 0 && `, ${transferSyncOutcome.failures} could not be updated`}
+              .{" "}
+              {transferSyncOutcome.flaggedToUser +
+                transferSyncOutcome.flaggedToFamily +
+                transferSyncOutcome.unflagged ===
+                0 && "Nothing needed changing."}
+            </p>
+          )}
+        </div>
+
+        <div className="mt-3 flex items-center justify-between gap-4 rounded-lg bg-default-100 p-3">
+          <div>
+            <p className="text-sm font-medium text-foreground">Hide weekends on the calendar</p>
+            <p className="text-xs text-foreground/60">
+              Drops Saturday and Sunday from the calendar grid, leaving five wider columns.
+              Weekend transactions still exist and still count in every total — only the
+              columns go.
+            </p>
+          </div>
+          <Switch
+            isSelected={hideWeekends}
+            onChange={setHideWeekends}
+            aria-label="Hide weekends on the calendar"
           >
             <Switch.Content>
               <Switch.Control>

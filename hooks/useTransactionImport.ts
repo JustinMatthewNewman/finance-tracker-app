@@ -25,6 +25,7 @@ import type {
   ListMyStatementImportsVariables,
 } from "@/src/dataconnect-generated";
 import { fetchAllPages } from "@/lib/dataconnectPagination";
+import { isInternal } from "@/lib/internalTransfers";
 import {
   reconcileStatement,
   SETTLE_WINDOW_DAYS,
@@ -150,6 +151,15 @@ export interface ImportOutcome {
 export interface PlanOptions {
   accountLabel: string;
   filename: string;
+  /**
+   * Everybody in the household, so a Zelle payment to one of them is recognized
+   * as internal at import time rather than only on a later re-check.
+   *
+   * Passed in rather than read here: this hook deliberately owns no
+   * useFamilyMembers() of its own — that hook holds state in useState, so a
+   * second instance drifts from the page's (see its own note).
+   */
+  householdNames?: readonly string[];
   /** Guess a category per row from its merchant. */
   categorize: boolean;
   /** Leave transfers between the person's own Wells Fargo accounts out. */
@@ -244,7 +254,11 @@ export function useTransactionImport() {
     async (text: string, opts: PlanOptions): Promise<ImportPlan> => {
       if (!userId) throw new Error("User profile not found");
 
-      const parsed = parseWellsFargoCsv(text, { currency, categorize: opts.categorize });
+      const parsed = parseWellsFargoCsv(text, {
+        currency,
+        categorize: opts.categorize,
+        householdNames: opts.householdNames ?? [],
+      });
       const contentKey = await statementContentKey(userId, text);
 
       // Read the list fresh rather than trusting what is in state: the dialog may
@@ -253,10 +267,10 @@ export function useTransactionImport() {
       const duplicateOf = known.find((i) => i.contentKey === contentKey && i.isMine) ?? null;
 
       const candidates = opts.excludeInternalTransfers
-        ? parsed.rows.filter((r) => !r.isInternalTransfer)
+        ? parsed.rows.filter((r) => !isInternal(r))
         : parsed.rows;
       const excludedTransfers = opts.excludeInternalTransfers
-        ? parsed.rows.filter((r) => r.isInternalTransfer)
+        ? parsed.rows.filter((r) => isInternal(r))
         : [];
 
       // ── What is already here ──
@@ -484,6 +498,12 @@ export function useTransactionImport() {
                 // lets the NEXT upload recognize this row even if its memo is
                 // rewritten when it settles — see Transaction.importRef.
                 importRef: row.statementRef ?? undefined,
+                // Stored now because the memo they were decided from is not
+                // kept, so the question could never be asked again. This is what
+                // makes the "count internal transfers" toggle work after the
+                // fact rather than only at import time.
+                isInternalToUser: row.isInternalToUser,
+                isInternalToFamily: row.isInternalToFamily,
                 statementImportId,
               } as CreateTransactionVariables);
               written++;

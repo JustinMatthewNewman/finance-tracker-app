@@ -23,6 +23,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*ListMyTransactionsByDateRange*](#listmytransactionsbydaterange)
   - [*ListMyStatementImports*](#listmystatementimports)
   - [*ListMyImportedInRange*](#listmyimportedinrange)
+  - [*ListMyClassifiableTransactions*](#listmyclassifiabletransactions)
   - [*ListMyImportedKeys*](#listmyimportedkeys)
   - [*GetFamilyByInviteCode*](#getfamilybyinvitecode)
   - [*GetMyFamilyDetail*](#getmyfamilydetail)
@@ -40,6 +41,9 @@ This README will guide you through the process of using the generated JavaScript
   - [*SelectMySquareCorners*](#selectmysquarecorners)
   - [*SelectMyBordersEnabled*](#selectmybordersenabled)
   - [*SelectMyCategoryColorsEnabled*](#selectmycategorycolorsenabled)
+  - [*SelectMyHideWeekends*](#selectmyhideweekends)
+  - [*SelectMyShowInternalTransfers*](#selectmyshowinternaltransfers)
+  - [*SelectMyPrivacyMode*](#selectmyprivacymode)
   - [*SelectMyCurrency*](#selectmycurrency)
   - [*CreateFamilyMember*](#createfamilymember)
   - [*UpdateFamilyMember*](#updatefamilymember)
@@ -54,6 +58,7 @@ This README will guide you through the process of using the generated JavaScript
   - [*FinalizeStatementImport*](#finalizestatementimport)
   - [*DeleteStatementImportRows*](#deletestatementimportrows)
   - [*DeleteStatementImport*](#deletestatementimport)
+  - [*SetTransactionInternalFlags*](#settransactioninternalflags)
   - [*MarkTransactionPosted*](#marktransactionposted)
   - [*MarkTransactionProjected*](#marktransactionprojected)
   - [*DeleteTransaction*](#deletetransaction)
@@ -264,6 +269,9 @@ export interface GetMyUserData {
       categoryColorsEnabled?: boolean | null;
       squareCorners?: boolean | null;
       currencyCode?: string | null;
+      hideWeekends?: boolean | null;
+      showInternalTransfers?: boolean | null;
+      privacyMode?: boolean | null;
       colorScheme?: {
         id: UUIDString;
         name: string;
@@ -1092,6 +1100,8 @@ export interface ListTransactionsByFamilyMemberData {
     recurrenceEndsOn?: DateString | null;
     source: string;
     status: string;
+    isInternalToUser?: boolean | null;
+    isInternalToFamily?: boolean | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -1233,6 +1243,8 @@ export interface ListMyTransactionsData {
     recurrenceEndsOn?: DateString | null;
     source: string;
     status: string;
+    isInternalToUser?: boolean | null;
+    isInternalToFamily?: boolean | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -1378,6 +1390,8 @@ export interface ListMyTransactionsByDateRangeData {
     recurrenceEndsOn?: DateString | null;
     source: string;
     status: string;
+    isInternalToUser?: boolean | null;
+    isInternalToFamily?: boolean | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -1712,6 +1726,128 @@ const ref = listMyImportedInRangeRef({ startDate: ..., endDate: ..., limit: ...,
 // You can also pass in a `DataConnect` instance to the `QueryRef` function.
 const dataConnect = getDataConnect(connectorConfig);
 const ref = listMyImportedInRangeRef(dataConnect, listMyImportedInRangeVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.transactions);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.transactions);
+});
+```
+
+## ListMyClassifiableTransactions
+You can execute the `ListMyClassifiableTransactions` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+listMyClassifiableTransactions(vars?: ListMyClassifiableTransactionsVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyClassifiableTransactionsData, ListMyClassifiableTransactionsVariables>;
+
+interface ListMyClassifiableTransactionsRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars?: ListMyClassifiableTransactionsVariables): QueryRef<ListMyClassifiableTransactionsData, ListMyClassifiableTransactionsVariables>;
+}
+export const listMyClassifiableTransactionsRef: ListMyClassifiableTransactionsRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+listMyClassifiableTransactions(dc: DataConnect, vars?: ListMyClassifiableTransactionsVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyClassifiableTransactionsData, ListMyClassifiableTransactionsVariables>;
+
+interface ListMyClassifiableTransactionsRef {
+  ...
+  (dc: DataConnect, vars?: ListMyClassifiableTransactionsVariables): QueryRef<ListMyClassifiableTransactionsData, ListMyClassifiableTransactionsVariables>;
+}
+export const listMyClassifiableTransactionsRef: ListMyClassifiableTransactionsRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the listMyClassifiableTransactionsRef:
+```typescript
+const name = listMyClassifiableTransactionsRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `ListMyClassifiableTransactions` query has an optional argument of type `ListMyClassifiableTransactionsVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface ListMyClassifiableTransactionsVariables {
+  limit?: number | null;
+  offset?: number | null;
+}
+```
+### Return Type
+Recall that executing the `ListMyClassifiableTransactions` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `ListMyClassifiableTransactionsData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface ListMyClassifiableTransactionsData {
+  transactions: ({
+    id: UUIDString;
+    merchant?: string | null;
+    method?: string | null;
+    isInternalToUser?: boolean | null;
+    isInternalToFamily?: boolean | null;
+  } & Transaction_Key)[];
+}
+```
+### Using `ListMyClassifiableTransactions`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, listMyClassifiableTransactions, ListMyClassifiableTransactionsVariables } from '@financeconnect/generated';
+
+// The `ListMyClassifiableTransactions` query has an optional argument of type `ListMyClassifiableTransactionsVariables`:
+const listMyClassifiableTransactionsVars: ListMyClassifiableTransactionsVariables = {
+  limit: ..., // optional
+  offset: ..., // optional
+};
+
+// Call the `listMyClassifiableTransactions()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await listMyClassifiableTransactions(listMyClassifiableTransactionsVars);
+// Variables can be defined inline as well.
+const { data } = await listMyClassifiableTransactions({ limit: ..., offset: ..., });
+// Since all variables are optional for this query, you can omit the `ListMyClassifiableTransactionsVariables` argument.
+const { data } = await listMyClassifiableTransactions();
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await listMyClassifiableTransactions(dataConnect, listMyClassifiableTransactionsVars);
+
+console.log(data.transactions);
+
+// Or, you can use the `Promise` API.
+listMyClassifiableTransactions(listMyClassifiableTransactionsVars).then((response) => {
+  const data = response.data;
+  console.log(data.transactions);
+});
+```
+
+### Using `ListMyClassifiableTransactions`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, listMyClassifiableTransactionsRef, ListMyClassifiableTransactionsVariables } from '@financeconnect/generated';
+
+// The `ListMyClassifiableTransactions` query has an optional argument of type `ListMyClassifiableTransactionsVariables`:
+const listMyClassifiableTransactionsVars: ListMyClassifiableTransactionsVariables = {
+  limit: ..., // optional
+  offset: ..., // optional
+};
+
+// Call the `listMyClassifiableTransactionsRef()` function to get a reference to the query.
+const ref = listMyClassifiableTransactionsRef(listMyClassifiableTransactionsVars);
+// Variables can be defined inline as well.
+const ref = listMyClassifiableTransactionsRef({ limit: ..., offset: ..., });
+// Since all variables are optional for this query, you can omit the `ListMyClassifiableTransactionsVariables` argument.
+const ref = listMyClassifiableTransactionsRef();
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = listMyClassifiableTransactionsRef(dataConnect, listMyClassifiableTransactionsVars);
 
 // Call `executeQuery()` on the reference to execute the query.
 // You can use the `await` keyword to wait for the promise to resolve.
@@ -2234,6 +2370,8 @@ export interface ListMyRecurringProjectionsData {
     recurrenceEndsOn?: DateString | null;
     source: string;
     status: string;
+    isInternalToUser?: boolean | null;
+    isInternalToFamily?: boolean | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -3555,6 +3693,333 @@ executeMutation(ref).then((response) => {
 });
 ```
 
+## SelectMyHideWeekends
+You can execute the `SelectMyHideWeekends` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+selectMyHideWeekends(vars: SelectMyHideWeekendsVariables): MutationPromise<SelectMyHideWeekendsData, SelectMyHideWeekendsVariables>;
+
+interface SelectMyHideWeekendsRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SelectMyHideWeekendsVariables): MutationRef<SelectMyHideWeekendsData, SelectMyHideWeekendsVariables>;
+}
+export const selectMyHideWeekendsRef: SelectMyHideWeekendsRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+selectMyHideWeekends(dc: DataConnect, vars: SelectMyHideWeekendsVariables): MutationPromise<SelectMyHideWeekendsData, SelectMyHideWeekendsVariables>;
+
+interface SelectMyHideWeekendsRef {
+  ...
+  (dc: DataConnect, vars: SelectMyHideWeekendsVariables): MutationRef<SelectMyHideWeekendsData, SelectMyHideWeekendsVariables>;
+}
+export const selectMyHideWeekendsRef: SelectMyHideWeekendsRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the selectMyHideWeekendsRef:
+```typescript
+const name = selectMyHideWeekendsRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `SelectMyHideWeekends` mutation requires an argument of type `SelectMyHideWeekendsVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface SelectMyHideWeekendsVariables {
+  hideWeekends: boolean;
+}
+```
+### Return Type
+Recall that executing the `SelectMyHideWeekends` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `SelectMyHideWeekendsData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface SelectMyHideWeekendsData {
+  userSetting_update?: UserSetting_Key | null;
+}
+```
+### Using `SelectMyHideWeekends`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, selectMyHideWeekends, SelectMyHideWeekendsVariables } from '@financeconnect/generated';
+
+// The `SelectMyHideWeekends` mutation requires an argument of type `SelectMyHideWeekendsVariables`:
+const selectMyHideWeekendsVars: SelectMyHideWeekendsVariables = {
+  hideWeekends: ..., 
+};
+
+// Call the `selectMyHideWeekends()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await selectMyHideWeekends(selectMyHideWeekendsVars);
+// Variables can be defined inline as well.
+const { data } = await selectMyHideWeekends({ hideWeekends: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await selectMyHideWeekends(dataConnect, selectMyHideWeekendsVars);
+
+console.log(data.userSetting_update);
+
+// Or, you can use the `Promise` API.
+selectMyHideWeekends(selectMyHideWeekendsVars).then((response) => {
+  const data = response.data;
+  console.log(data.userSetting_update);
+});
+```
+
+### Using `SelectMyHideWeekends`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, selectMyHideWeekendsRef, SelectMyHideWeekendsVariables } from '@financeconnect/generated';
+
+// The `SelectMyHideWeekends` mutation requires an argument of type `SelectMyHideWeekendsVariables`:
+const selectMyHideWeekendsVars: SelectMyHideWeekendsVariables = {
+  hideWeekends: ..., 
+};
+
+// Call the `selectMyHideWeekendsRef()` function to get a reference to the mutation.
+const ref = selectMyHideWeekendsRef(selectMyHideWeekendsVars);
+// Variables can be defined inline as well.
+const ref = selectMyHideWeekendsRef({ hideWeekends: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = selectMyHideWeekendsRef(dataConnect, selectMyHideWeekendsVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.userSetting_update);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.userSetting_update);
+});
+```
+
+## SelectMyShowInternalTransfers
+You can execute the `SelectMyShowInternalTransfers` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+selectMyShowInternalTransfers(vars: SelectMyShowInternalTransfersVariables): MutationPromise<SelectMyShowInternalTransfersData, SelectMyShowInternalTransfersVariables>;
+
+interface SelectMyShowInternalTransfersRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SelectMyShowInternalTransfersVariables): MutationRef<SelectMyShowInternalTransfersData, SelectMyShowInternalTransfersVariables>;
+}
+export const selectMyShowInternalTransfersRef: SelectMyShowInternalTransfersRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+selectMyShowInternalTransfers(dc: DataConnect, vars: SelectMyShowInternalTransfersVariables): MutationPromise<SelectMyShowInternalTransfersData, SelectMyShowInternalTransfersVariables>;
+
+interface SelectMyShowInternalTransfersRef {
+  ...
+  (dc: DataConnect, vars: SelectMyShowInternalTransfersVariables): MutationRef<SelectMyShowInternalTransfersData, SelectMyShowInternalTransfersVariables>;
+}
+export const selectMyShowInternalTransfersRef: SelectMyShowInternalTransfersRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the selectMyShowInternalTransfersRef:
+```typescript
+const name = selectMyShowInternalTransfersRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `SelectMyShowInternalTransfers` mutation requires an argument of type `SelectMyShowInternalTransfersVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface SelectMyShowInternalTransfersVariables {
+  showInternalTransfers: boolean;
+}
+```
+### Return Type
+Recall that executing the `SelectMyShowInternalTransfers` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `SelectMyShowInternalTransfersData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface SelectMyShowInternalTransfersData {
+  userSetting_update?: UserSetting_Key | null;
+}
+```
+### Using `SelectMyShowInternalTransfers`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, selectMyShowInternalTransfers, SelectMyShowInternalTransfersVariables } from '@financeconnect/generated';
+
+// The `SelectMyShowInternalTransfers` mutation requires an argument of type `SelectMyShowInternalTransfersVariables`:
+const selectMyShowInternalTransfersVars: SelectMyShowInternalTransfersVariables = {
+  showInternalTransfers: ..., 
+};
+
+// Call the `selectMyShowInternalTransfers()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await selectMyShowInternalTransfers(selectMyShowInternalTransfersVars);
+// Variables can be defined inline as well.
+const { data } = await selectMyShowInternalTransfers({ showInternalTransfers: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await selectMyShowInternalTransfers(dataConnect, selectMyShowInternalTransfersVars);
+
+console.log(data.userSetting_update);
+
+// Or, you can use the `Promise` API.
+selectMyShowInternalTransfers(selectMyShowInternalTransfersVars).then((response) => {
+  const data = response.data;
+  console.log(data.userSetting_update);
+});
+```
+
+### Using `SelectMyShowInternalTransfers`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, selectMyShowInternalTransfersRef, SelectMyShowInternalTransfersVariables } from '@financeconnect/generated';
+
+// The `SelectMyShowInternalTransfers` mutation requires an argument of type `SelectMyShowInternalTransfersVariables`:
+const selectMyShowInternalTransfersVars: SelectMyShowInternalTransfersVariables = {
+  showInternalTransfers: ..., 
+};
+
+// Call the `selectMyShowInternalTransfersRef()` function to get a reference to the mutation.
+const ref = selectMyShowInternalTransfersRef(selectMyShowInternalTransfersVars);
+// Variables can be defined inline as well.
+const ref = selectMyShowInternalTransfersRef({ showInternalTransfers: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = selectMyShowInternalTransfersRef(dataConnect, selectMyShowInternalTransfersVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.userSetting_update);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.userSetting_update);
+});
+```
+
+## SelectMyPrivacyMode
+You can execute the `SelectMyPrivacyMode` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+selectMyPrivacyMode(vars: SelectMyPrivacyModeVariables): MutationPromise<SelectMyPrivacyModeData, SelectMyPrivacyModeVariables>;
+
+interface SelectMyPrivacyModeRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SelectMyPrivacyModeVariables): MutationRef<SelectMyPrivacyModeData, SelectMyPrivacyModeVariables>;
+}
+export const selectMyPrivacyModeRef: SelectMyPrivacyModeRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+selectMyPrivacyMode(dc: DataConnect, vars: SelectMyPrivacyModeVariables): MutationPromise<SelectMyPrivacyModeData, SelectMyPrivacyModeVariables>;
+
+interface SelectMyPrivacyModeRef {
+  ...
+  (dc: DataConnect, vars: SelectMyPrivacyModeVariables): MutationRef<SelectMyPrivacyModeData, SelectMyPrivacyModeVariables>;
+}
+export const selectMyPrivacyModeRef: SelectMyPrivacyModeRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the selectMyPrivacyModeRef:
+```typescript
+const name = selectMyPrivacyModeRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `SelectMyPrivacyMode` mutation requires an argument of type `SelectMyPrivacyModeVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface SelectMyPrivacyModeVariables {
+  privacyMode: boolean;
+}
+```
+### Return Type
+Recall that executing the `SelectMyPrivacyMode` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `SelectMyPrivacyModeData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface SelectMyPrivacyModeData {
+  userSetting_update?: UserSetting_Key | null;
+}
+```
+### Using `SelectMyPrivacyMode`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, selectMyPrivacyMode, SelectMyPrivacyModeVariables } from '@financeconnect/generated';
+
+// The `SelectMyPrivacyMode` mutation requires an argument of type `SelectMyPrivacyModeVariables`:
+const selectMyPrivacyModeVars: SelectMyPrivacyModeVariables = {
+  privacyMode: ..., 
+};
+
+// Call the `selectMyPrivacyMode()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await selectMyPrivacyMode(selectMyPrivacyModeVars);
+// Variables can be defined inline as well.
+const { data } = await selectMyPrivacyMode({ privacyMode: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await selectMyPrivacyMode(dataConnect, selectMyPrivacyModeVars);
+
+console.log(data.userSetting_update);
+
+// Or, you can use the `Promise` API.
+selectMyPrivacyMode(selectMyPrivacyModeVars).then((response) => {
+  const data = response.data;
+  console.log(data.userSetting_update);
+});
+```
+
+### Using `SelectMyPrivacyMode`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, selectMyPrivacyModeRef, SelectMyPrivacyModeVariables } from '@financeconnect/generated';
+
+// The `SelectMyPrivacyMode` mutation requires an argument of type `SelectMyPrivacyModeVariables`:
+const selectMyPrivacyModeVars: SelectMyPrivacyModeVariables = {
+  privacyMode: ..., 
+};
+
+// Call the `selectMyPrivacyModeRef()` function to get a reference to the mutation.
+const ref = selectMyPrivacyModeRef(selectMyPrivacyModeVars);
+// Variables can be defined inline as well.
+const ref = selectMyPrivacyModeRef({ privacyMode: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = selectMyPrivacyModeRef(dataConnect, selectMyPrivacyModeVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.userSetting_update);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.userSetting_update);
+});
+```
+
 ## SelectMyCurrency
 You can execute the `SelectMyCurrency` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
 ```typescript
@@ -4418,6 +4883,8 @@ export interface CreateTransactionVariables {
   source?: string | null;
   status?: string | null;
   importKey?: string | null;
+  isInternalToUser?: boolean | null;
+  isInternalToFamily?: boolean | null;
   importRef?: string | null;
   statementImportId?: UUIDString | null;
 }
@@ -4454,6 +4921,8 @@ const createTransactionVars: CreateTransactionVariables = {
   source: ..., // optional
   status: ..., // optional
   importKey: ..., // optional
+  isInternalToUser: ..., // optional
+  isInternalToFamily: ..., // optional
   importRef: ..., // optional
   statementImportId: ..., // optional
 };
@@ -4462,7 +4931,7 @@ const createTransactionVars: CreateTransactionVariables = {
 // You can use the `await` keyword to wait for the promise to resolve.
 const { data } = await createTransaction(createTransactionVars);
 // Variables can be defined inline as well.
-const { data } = await createTransaction({ userId: ..., familyMemberId: ..., amountMinor: ..., direction: ..., occurredOn: ..., createdAt: ..., description: ..., merchant: ..., method: ..., recurrence: ..., recurrenceEndsOn: ..., categoryName: ..., source: ..., status: ..., importKey: ..., importRef: ..., statementImportId: ..., });
+const { data } = await createTransaction({ userId: ..., familyMemberId: ..., amountMinor: ..., direction: ..., occurredOn: ..., createdAt: ..., description: ..., merchant: ..., method: ..., recurrence: ..., recurrenceEndsOn: ..., categoryName: ..., source: ..., status: ..., importKey: ..., isInternalToUser: ..., isInternalToFamily: ..., importRef: ..., statementImportId: ..., });
 
 // You can also pass in a `DataConnect` instance to the action shortcut function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -4500,6 +4969,8 @@ const createTransactionVars: CreateTransactionVariables = {
   source: ..., // optional
   status: ..., // optional
   importKey: ..., // optional
+  isInternalToUser: ..., // optional
+  isInternalToFamily: ..., // optional
   importRef: ..., // optional
   statementImportId: ..., // optional
 };
@@ -4507,7 +4978,7 @@ const createTransactionVars: CreateTransactionVariables = {
 // Call the `createTransactionRef()` function to get a reference to the mutation.
 const ref = createTransactionRef(createTransactionVars);
 // Variables can be defined inline as well.
-const ref = createTransactionRef({ userId: ..., familyMemberId: ..., amountMinor: ..., direction: ..., occurredOn: ..., createdAt: ..., description: ..., merchant: ..., method: ..., recurrence: ..., recurrenceEndsOn: ..., categoryName: ..., source: ..., status: ..., importKey: ..., importRef: ..., statementImportId: ..., });
+const ref = createTransactionRef({ userId: ..., familyMemberId: ..., amountMinor: ..., direction: ..., occurredOn: ..., createdAt: ..., description: ..., merchant: ..., method: ..., recurrence: ..., recurrenceEndsOn: ..., categoryName: ..., source: ..., status: ..., importKey: ..., isInternalToUser: ..., isInternalToFamily: ..., importRef: ..., statementImportId: ..., });
 
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
@@ -5273,6 +5744,121 @@ console.log(data.statementImport_delete);
 executeMutation(ref).then((response) => {
   const data = response.data;
   console.log(data.statementImport_delete);
+});
+```
+
+## SetTransactionInternalFlags
+You can execute the `SetTransactionInternalFlags` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+setTransactionInternalFlags(vars: SetTransactionInternalFlagsVariables): MutationPromise<SetTransactionInternalFlagsData, SetTransactionInternalFlagsVariables>;
+
+interface SetTransactionInternalFlagsRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SetTransactionInternalFlagsVariables): MutationRef<SetTransactionInternalFlagsData, SetTransactionInternalFlagsVariables>;
+}
+export const setTransactionInternalFlagsRef: SetTransactionInternalFlagsRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+setTransactionInternalFlags(dc: DataConnect, vars: SetTransactionInternalFlagsVariables): MutationPromise<SetTransactionInternalFlagsData, SetTransactionInternalFlagsVariables>;
+
+interface SetTransactionInternalFlagsRef {
+  ...
+  (dc: DataConnect, vars: SetTransactionInternalFlagsVariables): MutationRef<SetTransactionInternalFlagsData, SetTransactionInternalFlagsVariables>;
+}
+export const setTransactionInternalFlagsRef: SetTransactionInternalFlagsRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the setTransactionInternalFlagsRef:
+```typescript
+const name = setTransactionInternalFlagsRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `SetTransactionInternalFlags` mutation requires an argument of type `SetTransactionInternalFlagsVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface SetTransactionInternalFlagsVariables {
+  transactionId: UUIDString;
+  isInternalToUser: boolean;
+  isInternalToFamily: boolean;
+}
+```
+### Return Type
+Recall that executing the `SetTransactionInternalFlags` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `SetTransactionInternalFlagsData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface SetTransactionInternalFlagsData {
+  transaction_update?: Transaction_Key | null;
+}
+```
+### Using `SetTransactionInternalFlags`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, setTransactionInternalFlags, SetTransactionInternalFlagsVariables } from '@financeconnect/generated';
+
+// The `SetTransactionInternalFlags` mutation requires an argument of type `SetTransactionInternalFlagsVariables`:
+const setTransactionInternalFlagsVars: SetTransactionInternalFlagsVariables = {
+  transactionId: ..., 
+  isInternalToUser: ..., 
+  isInternalToFamily: ..., 
+};
+
+// Call the `setTransactionInternalFlags()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await setTransactionInternalFlags(setTransactionInternalFlagsVars);
+// Variables can be defined inline as well.
+const { data } = await setTransactionInternalFlags({ transactionId: ..., isInternalToUser: ..., isInternalToFamily: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await setTransactionInternalFlags(dataConnect, setTransactionInternalFlagsVars);
+
+console.log(data.transaction_update);
+
+// Or, you can use the `Promise` API.
+setTransactionInternalFlags(setTransactionInternalFlagsVars).then((response) => {
+  const data = response.data;
+  console.log(data.transaction_update);
+});
+```
+
+### Using `SetTransactionInternalFlags`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, setTransactionInternalFlagsRef, SetTransactionInternalFlagsVariables } from '@financeconnect/generated';
+
+// The `SetTransactionInternalFlags` mutation requires an argument of type `SetTransactionInternalFlagsVariables`:
+const setTransactionInternalFlagsVars: SetTransactionInternalFlagsVariables = {
+  transactionId: ..., 
+  isInternalToUser: ..., 
+  isInternalToFamily: ..., 
+};
+
+// Call the `setTransactionInternalFlagsRef()` function to get a reference to the mutation.
+const ref = setTransactionInternalFlagsRef(setTransactionInternalFlagsVars);
+// Variables can be defined inline as well.
+const ref = setTransactionInternalFlagsRef({ transactionId: ..., isInternalToUser: ..., isInternalToFamily: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = setTransactionInternalFlagsRef(dataConnect, setTransactionInternalFlagsVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.transaction_update);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.transaction_update);
 });
 ```
 

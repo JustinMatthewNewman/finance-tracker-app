@@ -1,12 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { QueryFetchPolicy } from "firebase/data-connect";
 import { useAuth } from "./useAuth";
 import { useUserSettings } from "@/context/UserSettingsContext";
 import { listMyTransactions } from "@/src/dataconnect-generated";
 import type { ListMyTransactionsData, ListMyTransactionsVariables } from "@/src/dataconnect-generated";
 import { fetchAllPages } from "@/lib/dataconnectPagination";
+import { EMPTY_TOKENS, isInternal, resolveInternalTransfers } from "@/lib/internalTransfers";
+import { useInternalTransfers } from "@/context/InternalTransfersContext";
 import { type Transaction, toTransaction } from "./useTransactions";
 
 /**
@@ -23,6 +25,7 @@ import { type Transaction, toTransaction } from "./useTransactions";
  */
 export function useMyTransactions() {
   const { user } = useAuth();
+  const { showInternalTransfers } = useInternalTransfers();
   const { userId: myUserId } = useUserSettings();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
@@ -61,5 +64,51 @@ export function useMyTransactions() {
     refetch();
   }, [refetch]);
 
-  return { transactions, loading, error, refetch };
+  /**
+   * The rows a screen should render, with hidden transfers removed.
+   *
+   * Beside the unfiltered list rather than replacing it: `transactions` is what
+   * exists, `visible` is what the household asked to see. The sidebar's per-member
+   * subtotals read this, so they agree with the figures on every other page —
+   * without it the toggle changed the main panel while the sidebar beside it went
+   * on counting transfers.
+   */
+  /**
+   * Which rows are internal transfers, decided NOW rather than read off the
+   * stored columns — see resolveInternalTransfers.
+   *
+   * No roster here (this hook deliberately owns no useFamilyMembers(); see the
+   * once-per-page caveat on it), so the name-matching pass cannot run. The
+   * own-account prefix and the leg pairing both work without one, which is the
+   * bulk of it; a Zelle payment named after a housemate is caught on the pages
+   * that do hold a roster, and by the stored flags once the re-check has run.
+   */
+  const internalById = useMemo(
+    () =>
+      resolveInternalTransfers(
+        transactions.map((txn) => ({
+          id: txn.id,
+          familyMemberId: txn.familyMemberId,
+          direction: txn.direction,
+          amountMinor: txn.amountMinor,
+          occurredOn: txn.occurredOn,
+          merchant: txn.merchant,
+          method: txn.method,
+          isInternalToUser: txn.isInternalToUser,
+          isInternalToFamily: txn.isInternalToFamily,
+        })),
+        EMPTY_TOKENS
+      ),
+    [transactions]
+  );
+
+  const visible = useMemo(
+    () =>
+      showInternalTransfers
+        ? transactions
+        : transactions.filter((t) => !isInternal(internalById.get(t.id) ?? {})),
+    [transactions, showInternalTransfers, internalById]
+  );
+
+  return { transactions, visible, showInternalTransfers, loading, error, refetch };
 }

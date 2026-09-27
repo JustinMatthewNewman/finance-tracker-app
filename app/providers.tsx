@@ -13,6 +13,9 @@ import { CardStyleProvider } from "@/context/CardStyleContext";
 import { BordersProvider } from "@/context/BordersContext";
 import { CategoryColorsProvider } from "@/context/CategoryColorsContext";
 import { SquareCornersProvider } from "@/context/SquareCornersContext";
+import { CalendarViewProvider } from "@/context/CalendarViewContext";
+import { InternalTransfersProvider } from "@/context/InternalTransfersContext";
+import { PrivacyModeProvider } from "@/context/PrivacyModeContext";
 import { ThemeProvider } from "next-themes";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -45,6 +48,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
                       <ThemeSelectionProvider>
                         <CategoriesProvider>
                           <CategoryColorsProvider>
+                            {/* All three read their stored value from
+                                UserSettingsProvider's single GetMyUser, so they
+                                belong below it — see the note on this file. */}
+                            <CalendarViewProvider>
+                            <InternalTransfersProvider>
+                            <PrivacyModeProvider>
                             <SidebarProvider>
                               <SelectedFamilyMemberProvider>
                                 <DbThemeApplier />
@@ -52,6 +61,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
                                 {children}
                               </SelectedFamilyMemberProvider>
                             </SidebarProvider>
+                            </PrivacyModeProvider>
+                            </InternalTransfersProvider>
+                            </CalendarViewProvider>
                           </CategoryColorsProvider>
                         </CategoriesProvider>
                       </ThemeSelectionProvider>

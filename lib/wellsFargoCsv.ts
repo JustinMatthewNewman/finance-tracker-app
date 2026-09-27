@@ -37,6 +37,7 @@
 // beside what will be written, so the mapping is visible before it is
 // committed rather than discovered afterwards. Nothing is dropped silently.
 
+import { classifyInternalTransfer, nameTokens } from "./internalTransfers";
 import { type CurrencyCode, DEFAULT_CURRENCY, type Direction, type Minor, parseAmountToMinor } from "./money";
 
 /** One row of the statement, exactly as the file had it. */
@@ -88,17 +89,20 @@ export interface ParsedStatementRow {
   /** A guessed category name, or null when nothing matched confidently. */
   categoryName: string | null;
   /**
-   * Whether this is money moving between the account holder's own Wells Fargo
-   * accounts rather than money entering or leaving the household.
+   * Whether this row shuffles money inside the household rather than moving it
+   * in or out, and which of the two kinds it is.
    *
-   * Flagged rather than filtered, because which of those two a person wants is
-   * genuinely a preference: the pair of rows is real, and dropping them makes
-   * the balance stop reconciling against the statement — but keeping them
-   * inflates both income and spending by the same amount, every time money is
-   * shuffled into savings. The import dialog offers the choice; this only says
-   * which rows it applies to.
+   * Flagged rather than filtered, because which a person wants is genuinely a
+   * preference: the pair of rows is real, and dropping them makes the balance stop
+   * reconciling against the statement — but keeping them inflates both income and
+   * spending by the same amount every time money is shuffled. The import dialog
+   * offers the choice; this only says which rows it applies to.
+   *
+   * Classified by lib/internalTransfers.ts, so import and the later re-check use
+   * one implementation and cannot disagree about the same row.
    */
-  isInternalTransfer: boolean;
+  isInternalToUser: boolean;
+  isInternalToFamily: boolean;
   /**
    * Identity for this row WITHIN this file, and the thing that makes
    * re-importing an overlapping statement safe.
@@ -399,19 +403,6 @@ export function extractStatementRef(description: string): string | null {
   return null;
 }
 
-/**
- * Money shuffled between the account holder's own Wells Fargo accounts.
- *
- * "ONLINE TRANSFER" is Wells Fargo's own prefix for exactly that, and nothing
- * else: Zelle, external transfers and card-network money movement each carry a
- * different prefix. Matching on the prefix rather than on account nicknames
- * ("PLATINUM SAVINGS") is what keeps this working for somebody whose accounts
- * are named differently.
- */
-export function isInternalTransfer(description: string): boolean {
-  return /^ONLINE TRANSFER\b/i.test(squash(description));
-}
-
 // ─── Categories ─────────────────────────────────────────────────────────────
 
 /**
@@ -491,6 +482,14 @@ export interface ParseStatementOptions {
   currency?: CurrencyCode;
   /** Whether to guess categories. Off leaves every row uncategorized. */
   categorize?: boolean;
+  /**
+   * Names of everybody in the household, for spotting a transfer to one of them.
+   *
+   * Empty means no row can be internal-to-family, which is the correct answer
+   * rather than a degraded one: with no roster there is nobody for the money to
+   * have gone to. See lib/internalTransfers.ts.
+   */
+  householdNames?: readonly string[];
 }
 
 /**
@@ -506,8 +505,10 @@ function looksLikeHeader(fields: string[]): boolean {
 
 export function parseWellsFargoCsv(
   text: string,
-  { currency = DEFAULT_CURRENCY, categorize = true }: ParseStatementOptions = {}
+  { currency = DEFAULT_CURRENCY, categorize = true, householdNames = [] }: ParseStatementOptions = {}
 ): ParsedStatement {
+  // Built once for the file rather than per row.
+  const householdTokens = nameTokens(householdNames);
   const rows: ParsedStatementRow[] = [];
   const skipped: SkippedStatementRow[] = [];
   // How many rows with an identical (day, signed amount, memo) have been seen,
@@ -561,7 +562,10 @@ export function parseWellsFargoCsv(
       categoryName: categorize
         ? guessCategory(merchant, signed.direction, squash(raw.description))
         : null,
-      isInternalTransfer: isInternalTransfer(raw.description),
+      ...classifyInternalTransfer(
+        { merchant, method: inferMethod(raw.description, raw.checkNumber), memo: raw.description },
+        householdTokens
+      ),
       fingerprint: `${triple}|${ordinal}`,
       raw,
     });

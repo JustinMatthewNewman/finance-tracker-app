@@ -14,9 +14,7 @@ import { useTransactions, type Transaction, type TransactionInput } from "@/hook
 import {
   DEFAULT_CURRENCY,
   type Direction,
-  formatMoney,
   isCurrencyCode,
-  sumTotals,
 } from "@/lib/money";
 import {
   addMonths,
@@ -25,9 +23,11 @@ import {
   monthRange,
   relativeMonthLabel,
 } from "@/lib/monthRange";
+import { ledgerTotals } from "@/lib/ledgerTotals";
 import { TransactionTable } from "./TransactionTable";
 import { CategoryBreakdown } from "./CategoryBreakdown";
 import { TransactionForm } from "./TransactionForm";
+import { usePrivacyMode } from "@/context/PrivacyModeContext";
 
 interface MemberDetailLayoutProps {
   showBreakdown?: boolean;
@@ -35,6 +35,12 @@ interface MemberDetailLayoutProps {
 }
 
 function MemberDetailLayout({ showBreakdown = false, onToggleBreakdown }: MemberDetailLayoutProps) {
+  // Amounts go through formatAmount rather than formatMoney, so privacy
+  // mode covers them. A figure that bypassed it would stay legible with the
+  // toggle on, and a screen that hides most of its numbers is worse than one
+  // that hides none — the person believes they are covered.
+  const { formatAmount } = usePrivacyMode();
+
   const { isOpen, toggle: toggleSidebar } = useSidebar();
   const { bordersEnabled } = useBorders();
   const { selectedFamilyMemberId, setSelectedFamilyMemberId, focusTransactionId, setFocusTransactionId } =
@@ -53,9 +59,9 @@ function MemberDetailLayout({ showBreakdown = false, onToggleBreakdown }: Member
     selfMemberId,
   } = useFamilyMembers();
 
-  const { transactions: allTransactions, refetch: refetchAll } = useMyTransactions();
+  const { visible: allTransactions, refetch: refetchAll } = useMyTransactions();
   const {
-    transactions,
+    visible: transactions,
     loading,
     error,
     createTransaction,
@@ -110,7 +116,19 @@ function MemberDetailLayout({ showBreakdown = false, onToggleBreakdown }: Member
     [transactions, range.startDate, range.endDate]
   );
 
-  const totals = useMemo(() => sumTotals(visible), [visible]);
+  // From the shared module, so this panel's figures are the same arithmetic as
+  // the Calendar's and the ledgers'. sumTotals() nets projections into the same
+  // bucket as actuals, which is exactly the blending lib/ledgerTotals.ts exists
+  // to prevent.
+  const ledger = useMemo(() => ledgerTotals(visible), [visible]);
+  const totals = useMemo(
+    () => ({
+      incomeMinor: ledger.in.actualMinor,
+      expenseMinor: ledger.out.actualMinor,
+      netMinor: ledger.netMinor,
+    }),
+    [ledger]
+  );
 
   // A search result may point at a transaction outside the month currently
   // shown, in which case selecting it would land on an empty panel and look
@@ -230,9 +248,12 @@ function MemberDetailLayout({ showBreakdown = false, onToggleBreakdown }: Member
                   <h2 className="truncate text-lg font-semibold text-foreground">
                     {selectedMember?.name ?? "No one selected"}
                   </h2>
-                  {selectedMember?.relationship && (
+                  {/* The derived label — see lib/householdRole.ts. The stored
+                      column says "Self" on every account's own row, which is
+                      true of at most one of them for any given viewer. */}
+                  {selectedMember?.relationshipLabel && (
                     <span className="shrink-0 rounded-full bg-default px-2 py-0.5 text-xs text-foreground/60">
-                      {selectedMember.relationship}
+                      {selectedMember.relationshipLabel}
                     </span>
                   )}
                 </div>
@@ -307,11 +328,11 @@ function MemberDetailLayout({ showBreakdown = false, onToggleBreakdown }: Member
                 <div className="flex items-center gap-4 text-sm tabular-nums">
                   <div className="flex flex-col items-end">
                     <span className="text-xs text-foreground/50">In</span>
-                    <span className="text-success">{formatMoney(totals.incomeMinor, currency)}</span>
+                    <span className="text-success">{formatAmount(totals.incomeMinor, currency)}</span>
                   </div>
                   <div className="flex flex-col items-end">
                     <span className="text-xs text-foreground/50">Out</span>
-                    <span className="text-foreground">{formatMoney(totals.expenseMinor, currency)}</span>
+                    <span className="text-foreground">{formatAmount(totals.expenseMinor, currency)}</span>
                   </div>
                   <div className="flex flex-col items-end">
                     <span className="text-xs text-foreground/50">Net</span>
@@ -326,7 +347,7 @@ function MemberDetailLayout({ showBreakdown = false, onToggleBreakdown }: Member
                       }
                     >
                       {totals.netMinor > 0 ? "+" : totals.netMinor < 0 ? "−" : ""}
-                      {formatMoney(Math.abs(totals.netMinor), currency)}
+                      {formatAmount(Math.abs(totals.netMinor), currency)}
                     </span>
                   </div>
                 </div>

@@ -5,7 +5,8 @@ import { Chip, Table } from "@heroui/react";
 import { useBorders } from "@/context/BordersContext";
 import { useCategoryColorsSetting } from "@/context/CategoryColorsContext";
 import { effectiveColor, rowTint } from "@/lib/entityColor";
-import { type CurrencyCode, DEFAULT_CURRENCY, formatMoney, type Minor } from "@/lib/money";
+import { type CurrencyCode, DEFAULT_CURRENCY, type Minor } from "@/lib/money";
+import { usePrivacyMode } from "@/context/PrivacyModeContext";
 
 // The grouped records table ported from Finance Manager Pro's Income and
 // Expense tabs.
@@ -62,6 +63,12 @@ export function RecordsTable<T>({
   totalsColumnKey,
   rowKey,
 }: RecordsTableProps<T>) {
+  // Amounts go through formatAmount rather than formatMoney, so privacy
+  // mode covers them. A figure that bypassed it would stay legible with the
+  // toggle on, and a screen that hides most of its numbers is worse than one
+  // that hides none — the person believes they are covered.
+  const { formatAmount } = usePrivacyMode();
+
   const { bordersEnabled } = useBorders();
   const { categoryColorsEnabled } = useCategoryColorsSetting();
 
@@ -153,7 +160,7 @@ export function RecordsTable<T>({
                             }
                           >
                             <span className="font-semibold tabular-nums">
-                              {formatMoney(group.totalMinor, currency)}
+                              {formatAmount(group.totalMinor, currency)}
                             </span>
                           </Chip>
                         ) : null}
@@ -179,7 +186,7 @@ export function RecordsTable<T>({
                   ) : col.key === totalsKey ? (
                     <Chip size="md" color="accent">
                       <span className="font-bold tabular-nums">
-                        {formatMoney(grandTotalMinor, currency)}
+                        {formatAmount(grandTotalMinor, currency)}
                       </span>
                     </Chip>
                   ) : null}

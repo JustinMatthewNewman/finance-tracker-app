@@ -33,6 +33,8 @@ import type { FeatureName } from "@/lib/features";
 import { loginWithGoogle, logout } from "@/lib/auth";
 import { isPopupDismissal } from "@/lib/authErrors";
 import { GlobalSearch } from "@/components/Search/GlobalSearch";
+import { usePrivacyMode } from "@/context/PrivacyModeContext";
+import { useInternalTransfers } from "@/context/InternalTransfersContext";
 import { usePerformanceMode } from "@/context/PerformanceModeContext";
 
 // ─────────────────────────────────────────────
@@ -87,6 +89,34 @@ const SunIcon = ({ size = 18 }: { size?: number }) => (
 const MoonIcon = ({ size = 18 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+  </svg>
+);
+
+// Inline like the two above, rather than from @gravity-ui/icons, so the whole
+// navbar's iconography is one stroke weight and one viewBox.
+const EyeIcon = ({ size = 18 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+);
+
+const EyeSlashIcon = ({ size = 18 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+    <line x1="2" y1="2" x2="22" y2="22" />
+  </svg>
+);
+
+const ShuffleIcon = ({ size = 18 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M16 3h5v5" />
+    <path d="M4 20 21 3" />
+    <path d="M21 16v5h-5" />
+    <path d="M15 15l6 6" />
+    <path d="M4 4l5 5" />
   </svg>
 );
 
@@ -554,6 +584,8 @@ export default function AppNavbar() {
           <div className="flex shrink-0 items-center gap-3">
             {showUtilityPill ? (
               <div className="flex items-center gap-1 rounded-full border border-border p-1">
+                {user && <InternalTransfersToggle />}
+                {user && <PrivacyToggle />}
                 <ThemeToggle />
                 <span className="h-4 w-px bg-border" aria-hidden />
                 <AuthSection
@@ -565,6 +597,8 @@ export default function AppNavbar() {
               </div>
             ) : (
               <>
+                {user && <InternalTransfersToggle />}
+                {user && <PrivacyToggle />}
                 <ThemeToggle />
                 <AuthSection
                   user={user}
@@ -652,6 +686,77 @@ export default function AppNavbar() {
 // ─────────────────────────────────────────────
 // Theme Toggle
 // ─────────────────────────────────────────────
+
+/**
+ * Hide every amount on screen.
+ *
+ * IN THE NAVBAR, not only in Settings, because of when it is wanted: somebody
+ * walks up, or a screen is about to be shared. A preference three clicks deep is
+ * the wrong shape for that — it has to be reachable in the moment, from whatever
+ * page is open.
+ *
+ * Only rendered for a signed-in account: there are no amounts on the landing
+ * page to hide, and a toggle there would write a preference for nobody.
+ *
+ * See lib/privacy.ts for what this does and does not protect. It is a defence
+ * against a glance, not a boundary.
+ */
+function PrivacyToggle() {
+  const { privacyMode, setPrivacyMode } = usePrivacyMode();
+
+  return (
+    <Button
+      size="sm"
+      variant="ghost"
+      isIconOnly
+      // The label states what pressing it DOES, while the icon shows the current
+      // state — a control whose name changed with its state would be read out
+      // differently on each press.
+      aria-label={privacyMode ? "Show amounts" : "Hide amounts"}
+      aria-pressed={privacyMode}
+      onPress={() => setPrivacyMode(!privacyMode)}
+    >
+      {privacyMode ? <EyeSlashIcon size={14} /> : <EyeIcon size={14} />}
+    </Button>
+  );
+}
+
+/**
+ * Whether money shuffled inside the household counts as income and spending.
+ *
+ * IN THE NAVBAR, not on one page, because it is not a property of one screen. It
+ * changes the figures on Income, Expenses, the Calendar, a day's detail and the
+ * household panel simultaneously — a control that lived on the calendar implied
+ * it only applied there, which is exactly the wrong thing to imply about
+ * something that moves every total in the app.
+ *
+ * THE ONE TOGGLE IN THIS NAVBAR THAT CHANGES A NUMBER rather than an appearance,
+ * so it gets a visible label rather than a bare icon, and the label states the
+ * CURRENT state rather than the action: "is it on?" has to be answerable at a
+ * glance before any figure on screen can be trusted.
+ */
+function InternalTransfersToggle() {
+  const { showInternalTransfers, setShowInternalTransfers } = useInternalTransfers();
+
+  return (
+    <Button
+      size="sm"
+      variant={showInternalTransfers ? "ghost" : "secondary"}
+      aria-pressed={!showInternalTransfers}
+      aria-label={
+        showInternalTransfers
+          ? "Stop counting transfers inside your household"
+          : "Count transfers inside your household"
+      }
+      onPress={() => setShowInternalTransfers(!showInternalTransfers)}
+    >
+      <ShuffleIcon size={14} />
+      <span className="hidden sm:inline">
+        {showInternalTransfers ? "Transfers counted" : "Transfers ignored"}
+      </span>
+    </Button>
+  );
+}
 
 function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();

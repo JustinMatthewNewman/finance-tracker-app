@@ -112,15 +112,31 @@ export function occurrencesInRange(
     return rule.occurredOn >= rangeStart && rule.occurredOn <= rangeEnd ? [rule.occurredOn] : [];
   }
 
+  // An end date BEFORE the start is not a rule that produces nothing — it is a
+  // rule with a bad end date, and the difference matters because of how the
+  // caller uses this. hooks/useHouseholdMonth.ts drops every rule row from its
+  // range-query results and re-derives them from this function, so a rule that
+  // expands to zero occurrences DISAPPEARS FROM THE LEDGER ENTIRELY while still
+  // sitting in the database. Money silently vanishing is the worst failure this
+  // file could have, so a series always keeps at least its first occurrence.
+  //
+  // The form will not create one (see TransactionForm's endsBeforeItStarts), but
+  // nothing in the database prevents it: `recurrenceEndsOn` has no CHECK
+  // constraint against `occurredOn`, so a hand-edited row, an older client or a
+  // future importer can produce this state.
+  const endsOn =
+    rule.recurrenceEndsOn && rule.recurrenceEndsOn < rule.occurredOn
+      ? rule.occurredOn
+      : rule.recurrenceEndsOn;
+
   // A rule that starts after the range, or stopped before it, contributes
   // nothing — checked before any date arithmetic.
   if (rule.occurredOn > rangeEnd) return [];
-  if (rule.recurrenceEndsOn && rule.recurrenceEndsOn < rangeStart) return [];
+  if (endsOn && endsOn < rangeStart) return [];
 
   // The last day an occurrence may land on: whichever of the range's end and
   // the rule's own end comes first.
-  const hardEnd =
-    rule.recurrenceEndsOn && rule.recurrenceEndsOn < rangeEnd ? rule.recurrenceEndsOn : rangeEnd;
+  const hardEnd = endsOn && endsOn < rangeEnd ? endsOn : rangeEnd;
 
   const anchor = fromDateString(rule.occurredOn);
   const out: string[] = [];

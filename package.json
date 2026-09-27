@@ -9,6 +9,8 @@
     "lint": "eslint",
     "emulators": "firebase emulators:start",
     "seed": "node scripts/seed.mjs",
+    "seed:prod": "node scripts/seed.mjs --production",
+    "seed:prod:dry": "node scripts/seed.mjs --production --dry-run",
     "make-env": "node scripts/make-env.mjs",
     "dataconnect:generate": "firebase dataconnect:sdk:generate",
     "verify:guards": "node scripts/verify-guards.mjs",

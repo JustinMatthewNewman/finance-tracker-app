@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { QueryFetchPolicy } from "firebase/data-connect";
 import { useAuth } from "./useAuth";
 import { useUserSettings } from "@/context/UserSettingsContext";
 import { useCategories } from "@/context/CategoriesContext";
+import { useInternalTransfers } from "@/context/InternalTransfersContext";
 import {
   useCreateTransaction,
   useUpdateTransaction,
@@ -22,6 +23,7 @@ import type {
 } from "@/src/dataconnect-generated";
 import { fetchAllPages } from "@/lib/dataconnectPagination";
 import { normalizeHexColor } from "@/lib/entityColor";
+import { EMPTY_TOKENS, isInternal, resolveInternalTransfers } from "@/lib/internalTransfers";
 import { type Direction, type Minor, normalizeDirection } from "@/lib/money";
 import {
   type TransactionSource,
@@ -83,6 +85,22 @@ export interface Transaction {
   seriesStartsOn: string | null;
   source: TransactionSource;
   status: TransactionStatus;
+  /**
+   * Money shuffled between one account holder's OWN accounts — their checking to
+   * their savings. Never income or spending for anybody.
+   */
+  isInternalToUser: boolean;
+  /**
+   * Money moved between two people INSIDE the household. Real for each of them
+   * individually; nothing at household level, where the two legs cancel.
+   *
+   * Both flags are set from the statement memo and stored because the memo is
+   * not — see the two columns on Transaction in schema.gql, and
+   * lib/internalTransfers.ts for how they are decided. Read by
+   * lib/ledgerTotals.ts when the household has chosen not to count transfers, the
+   * one display preference in the app that changes a total.
+   */
+  isInternalToFamily: boolean;
   createdAt: string;
   familyMemberId: string;
   familyMemberName: string;
@@ -113,6 +131,8 @@ export interface TransactionInput {
   recurrenceEndsOn?: string | null;
   source?: TransactionSource;
   status?: TransactionStatus;
+  isInternalToUser?: boolean;
+  isInternalToFamily?: boolean;
   /** Category name, or null/"" for uncategorized. Created if it doesn't exist. */
   categoryName?: string | null;
 }
@@ -150,6 +170,10 @@ export function toTransaction(row: Row, myUserId?: string | null): Transaction {
     // somewhere defined. See lib/transactionKind.ts.
     source: toTransactionSource(row.source),
     status: toTransactionStatus(row.status),
+    // Nullable in the database and null on every row written before these
+    // columns existed. Coerced to false, the direction that hides nothing.
+    isInternalToUser: row.isInternalToUser ?? false,
+    isInternalToFamily: row.isInternalToFamily ?? false,
     createdAt: row.createdAt,
     familyMemberId: row.familyMember.id,
     familyMemberName: row.familyMember.name,
@@ -196,6 +220,11 @@ export function useTransactions(familyMemberId: string | null) {
   const { user } = useAuth();
   const { userId: myUserId } = useUserSettings();
   const { ensureCategoriesExist } = useCategories();
+  // The household page reads through here, so it has to honour the same
+  // preference every other screen does. Leaving it out was a real gap: the
+  // toggle changed the Income, Expenses and Calendar figures while the member
+  // detail panel went on counting transfers, so the two disagreed.
+  const { showInternalTransfers } = useInternalTransfers();
 
   const createMutation = useCreateTransaction();
   const updateMutation = useUpdateTransaction();
@@ -273,6 +302,8 @@ export function useTransactions(familyMemberId: string | null) {
         categoryName: categoryName ?? undefined,
         source: data.source || "MANUAL",
         status: data.status || statusForSource(data.source ?? "MANUAL"),
+        isInternalToUser: data.isInternalToUser ?? undefined,
+        isInternalToFamily: data.isInternalToFamily ?? undefined,
       } as CreateTransactionVariables);
 
       await refetch();
@@ -333,8 +364,55 @@ export function useTransactions(familyMemberId: string | null) {
     [deleteMutation, refetch]
   );
 
+  /**
+   * The rows a screen should render, with hidden transfers removed.
+   *
+   * Exposed beside the unfiltered list rather than replacing it, because the two
+   * have different jobs: `transactions` is what exists, `visible` is what the
+   * household has asked to see. Anything totalling money must use the same one it
+   * lists, or the figure and the table disagree.
+   */
+  /**
+   * Which rows are internal transfers, decided NOW rather than read off the
+   * stored columns — see resolveInternalTransfers.
+   *
+   * No roster here (this hook deliberately owns no useFamilyMembers(); see the
+   * once-per-page caveat on it), so the name-matching pass cannot run. The
+   * own-account prefix and the leg pairing both work without one, which is the
+   * bulk of it; a Zelle payment named after a housemate is caught on the pages
+   * that do hold a roster, and by the stored flags once the re-check has run.
+   */
+  const internalById = useMemo(
+    () =>
+      resolveInternalTransfers(
+        transactions.map((txn) => ({
+          id: txn.id,
+          familyMemberId: txn.familyMemberId,
+          direction: txn.direction,
+          amountMinor: txn.amountMinor,
+          occurredOn: txn.occurredOn,
+          merchant: txn.merchant,
+          method: txn.method,
+          isInternalToUser: txn.isInternalToUser,
+          isInternalToFamily: txn.isInternalToFamily,
+        })),
+        EMPTY_TOKENS
+      ),
+    [transactions]
+  );
+
+  const visible = useMemo(
+    () =>
+      showInternalTransfers
+        ? transactions
+        : transactions.filter((t) => !isInternal(internalById.get(t.id) ?? {})),
+    [transactions, showInternalTransfers, internalById]
+  );
+
   return {
     transactions,
+    visible,
+    showInternalTransfers,
     loading,
     error,
     refetch,

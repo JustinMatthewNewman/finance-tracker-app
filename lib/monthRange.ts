@@ -168,3 +168,34 @@ export function buildMonthGrid(key: MonthKey): MonthGridDay[] {
   }
   return days;
 }
+
+/** Saturday and Sunday, by Date#getDay(). */
+const WEEKEND_DAYS = new Set([0, 6]);
+
+export function isWeekend(date: Date): boolean {
+  return WEEKEND_DAYS.has(date.getDay());
+}
+
+/**
+ * The calendar grid with Saturday and Sunday removed.
+ *
+ * A VIEW FILTER AND NOTHING ELSE. Weekend transactions still exist and still
+ * count in every total — the grid simply stops drawing those two columns, which
+ * is why this returns days to RENDER and takes no part in any sum. A total
+ * computed from this list would silently drop a weekend's money, and somebody
+ * reconciling against their bank would find the app short with nothing on screen
+ * to explain it. See `sumDays` in lib/ledgerTotals.ts, which is given the month's
+ * days rather than the grid's.
+ *
+ * Returning the full grid unchanged when `hide` is false keeps the caller free of
+ * a conditional, and means the five- and seven-column paths are the same code.
+ */
+export function visibleGridDays(days: readonly MonthGridDay[], hide: boolean): MonthGridDay[] {
+  return hide ? days.filter((d) => !isWeekend(d.date)) : [...days];
+}
+
+/** Monday-first weekday labels, minus the weekend when it is hidden. */
+export function weekdayLabels(hideWeekends: boolean): string[] {
+  const all = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  return hideWeekends ? all.slice(0, 5) : all;
+}

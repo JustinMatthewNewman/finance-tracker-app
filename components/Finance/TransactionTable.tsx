@@ -8,11 +8,11 @@ import { effectiveColor, rowAccent, rowTint } from "@/lib/entityColor";
 import {
   type CurrencyCode,
   DEFAULT_CURRENCY,
-  formatMoney,
   sumTotals,
 } from "@/lib/money";
 import { formatDayHeading, groupByDay } from "@/lib/monthRange";
 import type { Transaction } from "@/hooks/useTransactions";
+import { usePrivacyMode } from "@/context/PrivacyModeContext";
 
 interface TransactionTableProps {
   transactions: Transaction[];
@@ -33,6 +33,12 @@ export function TransactionTable({
   onEdit,
   onDelete,
 }: TransactionTableProps) {
+  // Amounts go through formatAmount rather than formatMoney, so privacy
+  // mode covers them. A figure that bypassed it would stay legible with the
+  // toggle on, and a screen that hides most of its numbers is worse than one
+  // that hides none — the person believes they are covered.
+  const { formatAmount } = usePrivacyMode();
+
   const { categoryColorsEnabled } = useCategoryColorsSetting();
 
   // Grouped once per change (O(n)) instead of re-filtering the full array once
@@ -75,11 +81,11 @@ export function TransactionTable({
                 </span>
                 <span className="flex items-center gap-3 text-xs tabular-nums">
                   {totals.incomeMinor > 0 && (
-                    <span className="text-success">+{formatMoney(totals.incomeMinor, currency)}</span>
+                    <span className="text-success">+{formatAmount(totals.incomeMinor, currency)}</span>
                   )}
                   {totals.expenseMinor > 0 && (
                     <span className="text-foreground/70">
-                      −{formatMoney(totals.expenseMinor, currency)}
+                      −{formatAmount(totals.expenseMinor, currency)}
                     </span>
                   )}
                 </span>
@@ -139,7 +145,7 @@ export function TransactionTable({
                       }`}
                     >
                       {txn.direction === "INCOME" ? "+" : "−"}
-                      {formatMoney(txn.amountMinor, currency)}
+                      {formatAmount(txn.amountMinor, currency)}
                     </span>
 
                     <Dropdown>

@@ -15,12 +15,12 @@ import {
   type CurrencyCode,
   DEFAULT_CURRENCY,
   type Direction,
-  formatMoney,
   formatPercent,
   shareOf,
 } from "@/lib/money";
 import type { Transaction } from "@/hooks/useTransactions";
 import { DonutChart } from "./DonutChart";
+import { usePrivacyMode } from "@/context/PrivacyModeContext";
 
 interface CategoryBreakdownProps {
   transactions: Transaction[];
@@ -48,6 +48,12 @@ export function CategoryBreakdown({
   onDirectionChange,
   currency = DEFAULT_CURRENCY,
 }: CategoryBreakdownProps) {
+  // Amounts go through formatAmount rather than formatMoney, so privacy
+  // mode covers them. A figure that bypassed it would stay legible with the
+  // toggle on, and a screen that hides most of its numbers is worse than one
+  // that hides none — the person believes they are covered.
+  const { formatAmount } = usePrivacyMode();
+
   const { bordersEnabled } = useBorders();
   const { categoryColorsEnabled } = useCategoryColorsSetting();
 
@@ -155,7 +161,7 @@ export function CategoryBreakdown({
               data={slices}
               size={160}
               thickness={34}
-              centerLabel={formatMoney(totalMinor, currency)}
+              centerLabel={formatAmount(totalMinor, currency)}
               centerSubLabel={direction === "INCOME" ? "earned" : "spent"}
             />
           </div>
@@ -193,7 +199,7 @@ export function CategoryBreakdown({
                   </div>
                   <div className="flex shrink-0 flex-col items-end">
                     <span className="text-sm tabular-nums text-foreground">
-                      {formatMoney(row.totalMinor, currency)}
+                      {formatAmount(row.totalMinor, currency)}
                     </span>
                     <span className="text-xs tabular-nums text-foreground/50">
                       {formatPercent(share)}
