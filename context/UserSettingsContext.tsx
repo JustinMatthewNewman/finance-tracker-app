@@ -28,6 +28,9 @@ type UserSettingsState = {
   categoryColorsEnabled: boolean | null;
   squareCorners: boolean | null;
   currencyCode: string | null;
+  hideWeekends: boolean | null;
+  showInternalTransfers: boolean | null;
+  privacyMode: boolean | null;
 };
 
 type UserSettingsContextType = UserSettingsState & {
@@ -59,6 +62,9 @@ const EMPTY_STATE: UserSettingsState = {
   categoryColorsEnabled: null,
   squareCorners: null,
   currencyCode: null,
+  hideWeekends: null,
+  showInternalTransfers: null,
+  privacyMode: null,
 };
 
 const UserSettingsContext = createContext<UserSettingsContextType | null>(null);
@@ -105,6 +111,11 @@ export function UserSettingsProvider({ children }: { children: React.ReactNode }
         categoryColorsEnabled: settings?.categoryColorsEnabled ?? true,
         squareCorners: settings?.squareCorners ?? false,
         currencyCode: settings?.currencyCode ?? DEFAULT_CURRENCY,
+        hideWeekends: settings?.hideWeekends ?? false,
+        // Defaults TRUE — the transfers are on the statement, so counting them
+        // is the unsurprising reading. See UserSetting.showInternalTransfers.
+        showInternalTransfers: settings?.showInternalTransfers ?? true,
+        privacyMode: settings?.privacyMode ?? false,
       });
     } finally {
       setLoading(false);

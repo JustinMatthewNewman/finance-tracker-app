@@ -178,3 +178,38 @@ describe("toRecurrence", () => {
     expect(toRecurrence(null)).toBeNull();
   });
 });
+
+describe("a rule whose end date precedes its start", () => {
+  // Not a hypothetical: `recurrenceEndsOn` has no CHECK constraint against
+  // `occurredOn`, and hooks/useHouseholdMonth.ts drops every rule row from its
+  // range results and re-derives it from occurrencesInRange. A rule that
+  // expanded to nothing therefore vanished from the ledger while still sitting
+  // in the database — money disappearing off the screen with no trace.
+  const broken = {
+    occurredOn: "2026-09-15",
+    recurrence: "MONTHLY",
+    recurrenceEndsOn: "2026-09-01",
+  };
+
+  it("still yields its first occurrence rather than nothing", () => {
+    expect(occurrencesInRange(broken, "2026-09-01", "2026-09-30")).toEqual(["2026-09-15"]);
+  });
+
+  it("yields exactly one — the bad end date still stops the series", () => {
+    expect(occurrencesInRange(broken, "2026-01-01", "2027-12-31")).toEqual(["2026-09-15"]);
+  });
+
+  it("yields nothing for a range that genuinely excludes that day", () => {
+    expect(occurrencesInRange(broken, "2026-10-01", "2026-10-31")).toEqual([]);
+    expect(occurrencesInRange(broken, "2026-08-01", "2026-08-31")).toEqual([]);
+  });
+
+  it("leaves a well-formed rule completely alone", () => {
+    const fine = { occurredOn: "2026-09-15", recurrence: "MONTHLY", recurrenceEndsOn: "2026-11-30" };
+    expect(occurrencesInRange(fine, "2026-09-01", "2026-12-31")).toEqual([
+      "2026-09-15",
+      "2026-10-15",
+      "2026-11-15",
+    ]);
+  });
+});

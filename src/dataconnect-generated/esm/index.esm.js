@@ -142,6 +142,42 @@ export function selectMyCategoryColorsEnabled(dcOrVars, vars) {
   return executeMutation(selectMyCategoryColorsEnabledRef(dcInstance, inputVars));
 }
 
+export const selectMyHideWeekendsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'SelectMyHideWeekends', inputVars);
+}
+selectMyHideWeekendsRef.operationName = 'SelectMyHideWeekends';
+
+export function selectMyHideWeekends(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(selectMyHideWeekendsRef(dcInstance, inputVars));
+}
+
+export const selectMyShowInternalTransfersRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'SelectMyShowInternalTransfers', inputVars);
+}
+selectMyShowInternalTransfersRef.operationName = 'SelectMyShowInternalTransfers';
+
+export function selectMyShowInternalTransfers(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(selectMyShowInternalTransfersRef(dcInstance, inputVars));
+}
+
+export const selectMyPrivacyModeRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'SelectMyPrivacyMode', inputVars);
+}
+selectMyPrivacyModeRef.operationName = 'SelectMyPrivacyMode';
+
+export function selectMyPrivacyMode(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(selectMyPrivacyModeRef(dcInstance, inputVars));
+}
+
 export const selectMyCurrencyRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
@@ -308,6 +344,18 @@ deleteStatementImportRef.operationName = 'DeleteStatementImport';
 export function deleteStatementImport(dcOrVars, vars) {
   const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
   return executeMutation(deleteStatementImportRef(dcInstance, inputVars));
+}
+
+export const setTransactionInternalFlagsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'SetTransactionInternalFlags', inputVars);
+}
+setTransactionInternalFlagsRef.operationName = 'SetTransactionInternalFlags';
+
+export function setTransactionInternalFlags(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(setTransactionInternalFlagsRef(dcInstance, inputVars));
 }
 
 export const markTransactionPostedRef = (dcOrVars, vars) => {
@@ -621,6 +669,19 @@ export function listMyImportedInRange(dcOrVars, varsOrOptions, options) {
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(listMyImportedInRangeRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const listMyClassifiableTransactionsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'ListMyClassifiableTransactions', inputVars);
+}
+listMyClassifiableTransactionsRef.operationName = 'ListMyClassifiableTransactions';
+
+export function listMyClassifiableTransactions(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, false);
+  return executeQuery(listMyClassifiableTransactionsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
 export const listMyImportedKeysRef = (dcOrVars, vars) => {

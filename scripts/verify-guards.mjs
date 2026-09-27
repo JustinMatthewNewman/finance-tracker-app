@@ -623,7 +623,102 @@ await mustPass("the same line can be imported again once the upload is gone",
     merchant: "MERIDIAN CAPITAL PAYROLL", source: "IMPORT", status: "POSTED", importKey,
   }));
 
-console.log("\n\x1b[1m14 · sync-user repairs an account missing either row\x1b[0m");
+console.log("\n\x1b[1m14 · The new display preferences are per-account\x1b[0m");
+// Pattern 1 throughout — no id at all, so the row is chosen by the verified
+// token and there is nothing for a caller to tamper with. What must hold is that
+// one account's toggle never lands on another's row, which is the failure the
+// nested `first: { where: ... }` prevents.
+await mustPass("alice hides weekends", mutate(alice.token, "SelectMyHideWeekends", { hideWeekends: true }));
+await mustPass("alice stops counting internal transfers",
+  mutate(alice.token, "SelectMyShowInternalTransfers", { showInternalTransfers: false }));
+await mustPass("alice hides amounts", mutate(alice.token, "SelectMyPrivacyMode", { privacyMode: true }));
+
+const alicePrefs = (await query(alice.token, "GetMyUser")).data?.user?.userSetting;
+alicePrefs?.hideWeekends === true && alicePrefs?.showInternalTransfers === false && alicePrefs?.privacyMode === true
+  ? ok("all three persisted for alice")
+  : bad("a preference did not persist", JSON.stringify(alicePrefs));
+
+// The silent-failure class this app has been bitten by before: a
+// userSetting_update matching zero rows REPORTS SUCCESS. So "it saved" is not
+// evidence that it saved to the right row — erin's has to be checked too.
+const erinPrefs = (await query(erin.token, "GetMyUser")).data?.user?.userSetting;
+erinPrefs?.hideWeekends === false && erinPrefs?.showInternalTransfers === true && erinPrefs?.privacyMode === false
+  ? ok("...and erin (same household) is untouched, on the column defaults")
+  : bad("LEAK: alice's preferences reached erin's settings row", JSON.stringify(erinPrefs));
+
+console.log("\n\x1b[1m15 · An imported row carries its transfer flag and reference\x1b[0m");
+// Both are written only by the importer and read back by the reconciler and the
+// totals. A column that silently failed to round-trip would not throw — the
+// toggle would just appear to do nothing, and duplicate detection would quietly
+// lose its best evidence.
+const flaggedKey = `${alice.id}|CHECKING|2026-09-20|-250000|ONLINE TRANSFER TO SAVINGS|0`;
+await mustPass("alice imports an internal transfer", mutate(alice.token, "CreateTransaction", {
+  userId: alice.id, familyMemberId: memberId, amountMinor: 250000, direction: "EXPENSE",
+  occurredOn: "2026-09-20", createdAt: new Date().toISOString(),
+  merchant: "ONLINE TRANSFER TO SAVINGS", source: "IMPORT", status: "POSTED",
+  importKey: flaggedKey, importRef: "IB99999999",
+  isInternalToUser: true, isInternalToFamily: false,
+}));
+const flagged = (await query(alice.token, "ListMyImportedInRange", {
+  startDate: "2026-09-20", endDate: "2026-09-20",
+})).data?.transactions?.find((t) => t.importKey === flaggedKey);
+flagged?.importRef === "IB99999999"
+  ? ok("the bank reference round-trips")
+  : bad("importRef did not round-trip", JSON.stringify(flagged));
+const flaggedRange = (await query(alice.token, "ListMyTransactionsByDateRange", {
+  startDate: "2026-09-20", endDate: "2026-09-20",
+})).data?.transactions?.find((t) => t.merchant === "ONLINE TRANSFER TO SAVINGS");
+flaggedRange?.isInternalToUser === true && flaggedRange?.isInternalToFamily === false
+  ? ok("the internal-transfer flags round-trip to the reads the pages use")
+  : bad("the internal-transfer flags did not round-trip", JSON.stringify(flaggedRange));
+// A hand-entered row must NOT be flagged, or the toggle would hide real money.
+await mustPass("alice types an ordinary expense", mutate(alice.token, "CreateTransaction", {
+  userId: alice.id, familyMemberId: memberId, amountMinor: 1234, direction: "EXPENSE",
+  occurredOn: "2026-09-20", createdAt: new Date().toISOString(), description: "Typed, not a transfer",
+}));
+const typedRow = (await query(alice.token, "ListMyTransactionsByDateRange", {
+  startDate: "2026-09-20", endDate: "2026-09-20",
+})).data?.transactions?.find((t) => t.description === "Typed, not a transfer");
+typedRow?.isInternalToUser === false && typedRow?.isInternalToFamily === false
+  ? ok("...and a hand-entered row defaults to neither kind of transfer")
+  : bad("a typed row was flagged as an internal transfer", JSON.stringify(typedRow));
+
+// The reclassify write, which is what backfills rows imported before these
+// columns existed. It takes a row id, so it needs pattern 2 like every other
+// id-taking mutation — and it is reachable from the browser, so an unguarded
+// version would let any account relabel a housemate's transactions.
+const classifiable = (await query(alice.token, "ListMyClassifiableTransactions", {}))
+  .data?.transactions ?? [];
+classifiable.some((t) => t.id === flaggedRange?.id)
+  ? ok("alice's imported rows come back classifiable")
+  : bad("ListMyClassifiableTransactions missed an imported row", JSON.stringify(classifiable).slice(0, 200));
+const erinClassifiable = (await query(erin.token, "ListMyClassifiableTransactions", {}))
+  .data?.transactions ?? [];
+erinClassifiable.length === 0
+  ? ok("...and erin (same household) gets none of them, since this decides writes")
+  : bad("ListMyClassifiableTransactions widened to the household", JSON.stringify(erinClassifiable).slice(0, 200));
+
+await mustFail("erin reclassifies alice's transaction",
+  mutate(erin.token, "SetTransactionInternalFlags", {
+    transactionId: flaggedRange.id, isInternalToUser: false, isInternalToFamily: false,
+  }));
+await mustFail("carol reclassifies alice's transaction",
+  mutate(carol.token, "SetTransactionInternalFlags", {
+    transactionId: flaggedRange.id, isInternalToUser: false, isInternalToFamily: false,
+  }));
+await mustPass("alice reclassifies her own as a family transfer",
+  mutate(alice.token, "SetTransactionInternalFlags", {
+    transactionId: flaggedRange.id, isInternalToUser: false, isInternalToFamily: true,
+  }));
+const reclassified = (await query(alice.token, "ListMyTransactionsByDateRange", {
+  startDate: "2026-09-20", endDate: "2026-09-20",
+})).data?.transactions?.find((t) => sameId(t.id, flaggedRange.id));
+reclassified?.isInternalToFamily === true && reclassified?.isInternalToUser === false
+  ? ok("...and both columns moved together")
+  : bad("reclassify did not write both columns", JSON.stringify(reclassified));
+
+console.log("\n\x1b[1m16 · sync-user repairs an account missing either row\x1b[0m");
+
 // The repair path for accounts created before settings and self entries were
 // made alongside the User. It lives in a Next route rather than the
 // connector, so this needs the app running; set APP_URL to include it.

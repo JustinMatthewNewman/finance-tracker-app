@@ -177,6 +177,33 @@ mutation SelectMyCategoryColorsEnabled($categoryColorsEnabled: Boolean!) @auth(l
   )
 }
 
+# Calendar view preference: drop Saturday and Sunday from the grid. A VIEW
+# setting — weekend rows still exist and still count. See UserSetting.hideWeekends.
+mutation SelectMyHideWeekends($hideWeekends: Boolean!) @auth(level: USER) {
+  userSetting_update(
+    first: { where: { user: { googleUid: { eq_expr: "auth.uid" } } } }
+    data: { hideWeekends: $hideWeekends }
+  )
+}
+
+# Whether transfers between the household's own accounts count as income and
+# spending. See UserSetting.showInternalTransfers.
+mutation SelectMyShowInternalTransfers($showInternalTransfers: Boolean!) @auth(level: USER) {
+  userSetting_update(
+    first: { where: { user: { googleUid: { eq_expr: "auth.uid" } } } }
+    data: { showInternalTransfers: $showInternalTransfers }
+  )
+}
+
+# Replace every amount on screen with dots. Not a security boundary — see
+# UserSetting.privacyMode.
+mutation SelectMyPrivacyMode($privacyMode: Boolean!) @auth(level: USER) {
+  userSetting_update(
+    first: { where: { user: { googleUid: { eq_expr: "auth.uid" } } } }
+    data: { privacyMode: $privacyMode }
+  )
+}
+
 mutation SelectMyCurrency($currencyCode: String!) @auth(level: USER) {
   userSetting_update(
     first: { where: { user: { googleUid: { eq_expr: "auth.uid" } } } }
@@ -358,6 +385,11 @@ mutation CreateTransaction(
   # statement line becoming two rows. See Transaction.importKey in schema.gql
   # and the section on imports below.
   $importKey: String
+  # Whether this row shuffles money inside the household rather than moving it in
+  # or out. Set by the importer from the statement memo; see the two columns on
+  # Transaction in schema.gql for why they must be stored and why there are two.
+  $isInternalToUser: Boolean
+  $isInternalToFamily: Boolean
   # The bank's own reference for the transaction, where the memo carried one.
   # Set only by the importer. Not guarded and not unique — it is evidence for
   # duplicate detection, not identity. See Transaction.importRef in schema.gql.
@@ -412,6 +444,8 @@ mutation CreateTransaction(
     status: $status
     importKey: $importKey
     importRef: $importRef
+    isInternalToUser: $isInternalToUser
+    isInternalToFamily: $isInternalToFamily
     statementImportId: $statementImportId
   })
 }
@@ -644,6 +678,43 @@ mutation DeleteStatementImport($statementImportId: UUID!) @auth(level: USER) @tr
     }
   }
   statementImport_delete(id: $statementImportId)
+}
+
+# Corrects one row's internal-transfer flags.
+#
+# WHY THIS IS NEEDED AT ALL, rather than the flags being settled at import: both
+# are decided from the statement memo, and the answer can change afterwards
+# without the row changing. A Zelle payment to Sarah only becomes internal once
+# Sarah is in the household roster, and stops being internal if she leaves. And
+# every row imported before these columns existed has neither flag set — which is
+# not a hypothetical: it was 592 rows in a real household, and it made the whole
+# "ignore internal transfers" toggle look broken because there was nothing
+# flagged for it to hide.
+#
+# Pattern 2, like every other id-taking mutation here. Writing ONLY these two
+# columns, deliberately: this is a correction to a classification, and a mutation
+# that could also move the amount or the date would be a second, unguarded edit
+# path into a transaction.
+mutation SetTransactionInternalFlags(
+  $transactionId: UUID!
+  $isInternalToUser: Boolean!
+  $isInternalToFamily: Boolean!
+) @auth(level: USER) @transaction {
+  query @redact {
+    transaction(key: { id: $transactionId }) {
+      id
+      user @check(
+        expr: "this != null && this.googleUid == auth.uid"
+        message: "Not authorized to modify this transaction"
+      ) {
+        googleUid
+      }
+    }
+  }
+  transaction_update(id: $transactionId, data: {
+    isInternalToUser: $isInternalToUser
+    isInternalToFamily: $isInternalToFamily
+  })
 }
 
 # ─────────────────────────────────────────────────────────────────────────────

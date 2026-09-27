@@ -99,6 +99,78 @@ Next.js 16 App Router · React 19 · TypeScript · Tailwind v4 · HeroUI v3 ·
   assertion for these in `verify:guards`: a `deleteMany` whose filter excludes
   everything *succeeds* having deleted nothing, so the test asserts the rows
   survived.
+- **Every in/out figure comes from `lib/ledgerTotals.ts`.** These sums were
+  written inline in three components and had to agree; a wrong total does not
+  throw, it just shows a number nobody can account for. `ledgerTotals`,
+  `totalsByDay` and `sumDays` are pure and heavily tested — add a figure there,
+  not in a component.
+- **`sumDays` takes the days to count, on purpose.** The calendar grid pads with
+  adjacent months and can have the weekend hidden; a month total must be given
+  the MONTH's days. Summing the whole map, or the rendered grid, leaks an
+  adjacent month's money or drops a weekend's.
+- **Hiding weekends is a VIEW filter and must never reach a total.**
+  `visibleGridDays` returns days to render and takes no part in any sum. A total
+  computed from it would silently lose a weekend's spending, and somebody
+  reconciling against their bank would find the app short with nothing on screen
+  to explain it.
+- **Ignoring internal transfers DOES change totals — so any screen applying it
+  must say so.** It is the one preference that moves a figure, which is why its
+  toggle is in the NAVBAR: it changes Income, Expenses, Calendar, a day's detail
+  and the household panel at once, and a control on one page implied it applied
+  only there. Every place that applies it renders `excludedTransferCount`, because
+  a total that omits rows the table below it lists is unreconcilable by hand.
+- **Internal-transfer flags are RESOLVED AT READ TIME, not read off the columns.**
+  `resolveInternalTransfers()` is what every list calls: stored flags win when set,
+  else the memo, else pairing the two legs. Display must never wait on the stored
+  value — a household that imported before those columns existed has none of them
+  set, and the toggle then silently does nothing, which is what happened (1,062
+  transfers unflagged). The columns are the durable record; this is the live answer.
+- **Pairing is how an anonymous transfer is caught.** "CASH APP" and "VENMO" memos
+  name nobody, so `classifyInternalTransfer` cannot place them — but when both
+  accounts are imported the transfer is in the data twice, once per member.
+  `pairTransfers()` requires opposite directions, identical amounts, a close date
+  and BOTH sides looking like a transfer; that last condition is what stops a card
+  purchase pairing with a paycheque. Same member → internal to user; different
+  members → internal to family.
+- **Excluding transfers changes the NET only where a leg is missing.** With both
+  accounts imported the legs cancel and only in/out move. With one imported,
+  counting it reports money as having left the household when it did not, so
+  excluding it corrects the net — $3,980 on real data. Do not repeat the older
+  claim that the net is identical either way; it is not.
+- **There are TWO internal-transfer flags, and they answer different questions.**
+  `isInternalToUser` is one account holder's own accounts; `isInternalToFamily` is
+  two people inside the household. Both leave household totals together (the legs
+  cancel), and keeping them apart is what makes "who paid whom inside this
+  household" answerable later. `isInternal()` in `lib/internalTransfers.ts` is the
+  "either kind" test every total uses.
+- **Both flags are stored because the memo they come from is not**, and
+  `lib/internalTransfers.ts` therefore classifies from the STORED `merchant` and
+  `method` as well as from a raw memo. That is load-bearing, not a convenience:
+  `extractMerchant` leaves the "ONLINE TRANSFER" prefix intact, which is the only
+  reason rows imported before these columns existed can be repaired at all.
+- **Every screen must filter and total the SAME list.** `useTransactions`,
+  `useMyTransactions` and `useHouseholdMonth` each expose `transactions` (what
+  exists) beside `visible` (what the household asked to see). Totalling one while
+  listing the other is how a figure and its table come to disagree — which they
+  did, on the household page, until `visible` existed there.
+- **A classification can be right today and wrong tomorrow**, so
+  `SetTransactionInternalFlags` + the re-check in Settings exist. A Zelle payment
+  to Sarah is only internal once Sarah is in the roster. `reclassify()` returns
+  only rows that would change, in both directions, so it is idempotent and a
+  member leaving does not hide their payments forever.
+- **Amounts render through `usePrivacyMode().formatAmount`, never `formatMoney`
+  directly.** A component that formats money itself is one the hide-amounts
+  toggle silently misses, and a screen that hides eleven figures out of twelve is
+  worse than one that hides none — the person believes they are covered.
+- **A roster label is derived per viewer, never the stored `relationship`.**
+  `CreateUserFromGoogle` stamps "Self" on every account's own row, so two
+  accounts in one household both claimed it. "Self" is a fact about who is
+  looking; see `lib/householdRole.ts`.
+- **A recurring rule always yields at least its first occurrence.**
+  `recurrenceEndsOn` has no CHECK against `occurredOn`, and
+  `useHouseholdMonth` drops every rule row from its range results and re-derives
+  it from `occurrencesInRange` — so a rule that expanded to nothing VANISHED from
+  the ledger while still sitting in the database.
 - **Money is an integer.** Minor units only; every conversion goes through
   `lib/money.ts`. Never `parseFloat(x) * 100`. The per-major divisor comes
   from `Intl` because JPY has no minor unit.
@@ -126,6 +198,12 @@ Next.js 16 App Router · React 19 · TypeScript · Tailwind v4 · HeroUI v3 ·
   `userSetting_update(first: {where: ...})` matching zero rows *reports
   success* — which is how every preference in the app silently failed to
   persist for every account until it was fixed.
+- **`npm run seed` is the ONLY thing that creates the colour schemes, and it
+  refuses to touch a real project.** That is why themes did not work in
+  production — the rows had never been written there, so `ListColorSchemes`
+  returned nothing and `DbThemeApplier` removed every override. `npm run seed:prod`
+  is the deliberate path (see the script's header); `npm run seed:prod:dry`
+  exercises the guards without writing, and is the one to reach for.
 - **Run `npm run verify:guards` after touching `.gql`.** Nothing else covers
   the authorization boundary; vitest cannot reach it.
 - **Feature flags are rendering hints.** Re-check server-side with
@@ -190,6 +268,8 @@ throw, it permits, and that is indistinguishable from success everywhere else.
   to redirect by hand, because `OnboardingGate` is in the `(app)` layout and does
   not run on these routes.
 - `app/(app)/household/` — the one content page
+- `app/(app)/calendar/[day]/` — one day's detail. A ROUTE, not a panel: a day is
+  something people link to, send to a housemate and reach with the back button.
 - `components/Finance/` — sidebar detail, transaction table, breakdown, form,
   and the statement-import dialog
 - `components/Onboarding/` — the join-or-create flow, and the redirect gate
@@ -200,6 +280,7 @@ throw, it permits, and that is indistinguishable from success everywhere else.
 - `components/Utilities/ListBoxComponent.tsx` — the household sidebar
 - `context/` — one provider per persisted preference, all fed by the single
   `GetMyUser` fetch in `UserSettingsContext`. Keep new ones below it.
+  `PrivacyModeContext` also owns `formatAmount`, which every amount goes through.
 - `hooks/useHouseholdMonth.ts` — one month of the whole household, for
   Income/Expenses/Calendar. Call once per page; it owns a `useFamilyMembers()`.
 - `hooks/useFamily.ts` — the household, for Settings. Call once per page.
@@ -212,6 +293,14 @@ throw, it permits, and that is indistinguishable from success everywhere else.
 - `lib/familyStatus.ts` — the four join-request states
 - `lib/transactionKind.ts` — projected vs. actual (`source`, `status`)
 - `lib/recurrence.ts` — repeat intervals, end dates, month-clamped expansion
+- `lib/ledgerTotals.ts` — every in/out figure in the app, and the four decisions
+  behind them. Pure.
+- `lib/householdRole.ts` — what to call a person in the roster, per viewer
+- `lib/internalTransfers.ts` — which rows only shuffle money inside the
+  household, and which of the two kinds. Pure; classifies from stored fields so
+  old rows are repairable.
+- `hooks/useInternalTransferSync.ts` — the re-check/backfill. Call once per page.
+- `lib/privacy.ts` — masking amounts. Not a security boundary; says so.
 - `lib/wellsFargoCsv.ts` — the read half of the CSV importer, and the only
   place a bank export is interpreted. Pure: no auth, no network, no DOM, so the
   whole mapping is tested against `transaction_data.example/`.

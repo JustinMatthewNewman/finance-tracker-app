@@ -14,7 +14,8 @@ import { TransactionForm } from "@/components/Finance/TransactionForm";
 import { ImportStatementDialog } from "@/components/Finance/ImportStatementDialog";
 import { ruleRowOf, type Transaction, type TransactionInput } from "@/hooks/useTransactions";
 import { RECURRENCE_LABELS, toRecurrence } from "@/lib/recurrence";
-import { DEFAULT_CURRENCY, formatMoney, isCurrencyCode, type Direction } from "@/lib/money";
+import { DEFAULT_CURRENCY, isCurrencyCode, type Direction } from "@/lib/money";
+import { usePrivacyMode } from "@/context/PrivacyModeContext";
 import { currentMonthKey, formatDayHeading, type MonthKey } from "@/lib/monthRange";
 import { normalizeHexColor } from "@/lib/entityColor";
 
@@ -74,6 +75,10 @@ export function LedgerPage({
   const router = useRouter();
   const { bordersEnabled } = useBorders();
   const { currencyCode } = useUserSettings();
+  // Every amount on this page goes through formatAmount, never formatMoney
+  // directly — a figure that bypassed it would stay legible with privacy mode on,
+  // and a screen that hides most of its numbers is worse than one that hides none.
+  const { formatAmount } = usePrivacyMode();
 
   const [monthKey, setMonthKey] = useState<MonthKey>(currentMonthKey);
   const [selectedColumns, setSelectedColumns] = useState<Set<string>>(new Set(DEFAULT_COLUMNS));
@@ -84,10 +89,10 @@ export function LedgerPage({
   const [actionError, setActionError] = useState<string | null>(null);
 
   const {
-    income,
-    expenses,
-    incomeTotals,
-    expenseTotals,
+    visibleIncome,
+    visibleExpenses,
+    totals: monthTotals,
+    showInternalTransfers,
     familyMembers,
     myMembers,
     loading,
@@ -105,8 +110,10 @@ export function LedgerPage({
   }, [user, authLoading, router]);
 
   const currency = isCurrencyCode(currencyCode) ? currencyCode : DEFAULT_CURRENCY;
-  const rows = direction === "INCOME" ? income : expenses;
-  const totals = direction === "INCOME" ? incomeTotals : expenseTotals;
+  // The visible* lists and `totals` apply the same internal-transfer filter, so
+  // the figures in the header always describe exactly the rows in the table.
+  const rows = direction === "INCOME" ? visibleIncome : visibleExpenses;
+  const side = direction === "INCOME" ? monthTotals.in : monthTotals.out;
 
   const colorByMember = useMemo(() => {
     const map = new Map<string, string | null>();
@@ -158,7 +165,7 @@ export function LedgerPage({
         key: "amount",
         label: "Amount",
         numeric: true,
-        render: (r) => formatMoney(r.amountMinor, currency),
+        render: (r) => formatAmount(r.amountMinor, currency),
       },
       occurredOn: {
         key: "occurredOn",
@@ -272,7 +279,7 @@ export function LedgerPage({
     // Driven by ALL_COLUMNS rather than by the Set, so on-screen order is the
     // declared one and doesn't shuffle with the order boxes were ticked.
     return ALL_COLUMNS.filter((c) => selectedColumns.has(c.key)).map((c) => defs[c.key]);
-  }, [selectedColumns, currency, postedLabel, markLabel, busyId, markPosted, markProjected, remove]);
+  }, [selectedColumns, currency, formatAmount, postedLabel, markLabel, busyId, markPosted, markProjected, remove]);
 
   if (authLoading) {
     return (
@@ -306,23 +313,33 @@ export function LedgerPage({
                 <div>
                   <div className="text-xs text-foreground/50">{postedLabel}</div>
                   <div className={`text-lg font-semibold tabular-nums ${accentClass}`}>
-                    {formatMoney(totals.postedMinor, currency)}
+                    {formatAmount(side.actualMinor, currency)}
                   </div>
                 </div>
                 <div>
                   <div className="text-xs text-foreground/50">Projected</div>
                   <div className="text-lg font-semibold tabular-nums text-warning">
-                    {formatMoney(totals.projectedMinor, currency)}
+                    {formatAmount(side.projectedMinor, currency)}
                   </div>
                 </div>
                 <div>
                   <div className="text-xs text-foreground/50">Expected total</div>
                   <div className="text-lg font-semibold tabular-nums text-foreground">
-                    {formatMoney(totals.expectedMinor, currency)}
+                    {formatAmount(side.expectedMinor, currency)}
                   </div>
                 </div>
               </div>
             </div>
+            {/* A total that silently omits rows the table below it lists is
+                unreconcilable by hand — which is the one thing somebody does when
+                they distrust a ledger. So when transfers are hidden, the figures
+                say so. */}
+            {!showInternalTransfers && monthTotals.excludedTransferCount > 0 && (
+              <p className="px-4 pb-2 text-xs text-foreground/50">
+                Not counting {monthTotals.excludedTransferCount} transfer
+                {monthTotals.excludedTransferCount === 1 ? "" : "s"} between your own accounts.
+              </p>
+            )}
             <RecordsTableControls
               monthKey={monthKey}
               onMonthChange={setMonthKey}
@@ -348,7 +365,7 @@ export function LedgerPage({
               ariaLabel={`${title} records`}
               groups={groups}
               columns={columns}
-              grandTotalMinor={totals.expectedMinor}
+              grandTotalMinor={side.expectedMinor}
               currency={currency}
               groupColor={(g) => colorByMember.get(g.id) ?? null}
               rowKey={(r) => r.occurrenceKey}
@@ -365,6 +382,9 @@ export function LedgerPage({
         <ImportStatementDialog
           isOpen={isImportOpen}
           memberOptions={myMembers.map((m) => ({ id: m.id, name: m.name }))}
+          // Every member, not just the writable ones: a transfer to a housemate
+          // is internal regardless of who may edit their records.
+          householdNames={familyMembers.map((m) => m.name)}
           defaultMemberId={myMembers[0]?.id ?? null}
           onClose={() => setIsImportOpen(false)}
           onImported={() => void refetch()}

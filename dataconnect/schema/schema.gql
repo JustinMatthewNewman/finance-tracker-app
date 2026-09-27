@@ -195,6 +195,38 @@ type UserSetting @table {
   categoryColorsEnabled: Boolean @default(expr: "true")
   squareCorners: Boolean @default(expr: "false")
   currencyCode: String @default(value: "USD")
+
+  # Hide Saturday and Sunday on the calendar, dropping it to a five-column grid.
+  # For households whose money is entirely weekday-shaped (salary, direct debits)
+  # and who would rather have wider cells than two mostly-empty ones.
+  #
+  # A VIEW SETTING, NOT A FILTER. Weekend transactions still exist, still count
+  # in every total, and still appear in the ledgers — the calendar simply stops
+  # drawing those two columns. A toggle that quietly changed the month's total
+  # would be a different and much worse feature.
+  hideWeekends: Boolean @default(expr: "false")
+
+  # Whether money moved between the household's own accounts counts as income
+  # and spending.
+  #
+  # Defaults TRUE, which is the plain reading of a statement: the lines are on
+  # it. The reason to turn it off is that each transfer adds the same amount to
+  # both sides, so a household that sweeps money into savings appears to earn and
+  # spend far more than it does — the net is untouched, which is exactly why the
+  # distortion is easy to miss. See Transaction.isInternalTransfer.
+  showInternalTransfers: Boolean @default(expr: "true")
+
+  # Replace every amount on screen with dots.
+  #
+  # For working in public, sharing a screen, or a screenshot. Persisted rather
+  # than kept in component state so it survives a reload and follows the account
+  # to another device — somebody who turned it on for a reason should not have it
+  # silently off after a refresh.
+  #
+  # NOT A SECURITY BOUNDARY, and worth saying so: the amounts are still in the
+  # page, still in the network responses and still in the DOM. It defeats a
+  # person glancing over, which is what it is for.
+  privacyMode: Boolean @default(expr: "false")
   updatedAt: Timestamp! @default(expr: "request.time")
 }
 
@@ -538,6 +570,52 @@ type Transaction @table {
   # single opaque string that already contains the owner needs no second column
   # kept in step with it.
   importKey: String @unique
+
+  # ── Internal transfers: money that does not enter or leave the household ──
+  #
+  # TWO FLAGS, NOT ONE, because they answer different questions and only one of
+  # them is about a single person:
+  #
+  #   isInternalToUser   — between one account holder's OWN accounts. Their
+  #                        checking to their savings. Not income or spending for
+  #                        anybody, at any level.
+  #   isInternalToFamily — between two people IN the household. One member paying
+  #                        another. Real money moving for each of them
+  #                        individually, and nothing at all at household level,
+  #                        where the two legs cancel.
+  #
+  # Both are excluded from household-wide totals together, and for the same
+  # reason: a transfer's two legs are a real credit and a real debit, so counting
+  # them adds the same amount to BOTH sides of the month. Where both accounts were
+  # imported the legs cancel and the net is untouched, which is what makes the
+  # distortion hard to notice at all; where only one was, counting it makes the
+  # net wrong too, because money moved into an un-imported account is reported as
+  # having left the household.
+  #
+  # Keeping them apart rather than collapsing to one boolean is what makes "who
+  # paid whom inside this household" answerable later without re-deriving it, and
+  # it is the only distinction that could ever justify a per-member view counting
+  # one and not the other.
+  #
+  # STORED, NOT DERIVED, and that is forced rather than chosen. Both are decided
+  # from the statement memo — Wells Fargo's "ONLINE TRANSFER" prefix for the
+  # first, a household member's name in a Zelle or person-to-person memo for the
+  # second — and the raw memo is deliberately not kept, only the counterparty
+  # extracted from it. Nothing could ask the question again afterwards.
+  #
+  # ...which is why lib/internalTransfers.ts classifies from the STORED merchant
+  # and method as well as from a raw memo. The prefix survives extraction
+  # ("ONLINE TRANSFER TO ..." is what `merchant` holds), so rows imported before
+  # these columns existed are still classifiable — see the re-check action in
+  # hooks/useInternalTransferSync.ts. Without that, 592 already-imported rows in
+  # a real household would have sat unflagged forever and the toggle would have
+  # looked broken.
+  #
+  # Both default false, so a hand-entered row and any row predating these columns
+  # read as ordinary money. lib/ledgerTotals.ts treats null as false — the
+  # direction that hides nothing.
+  isInternalToUser: Boolean @default(expr: "false")
+  isInternalToFamily: Boolean @default(expr: "false")
 
   # The bank's own reference for this transaction, as printed in the statement
   # memo ("S000000000000014", "REF #IB00000001"). Null for a hand-entered row,

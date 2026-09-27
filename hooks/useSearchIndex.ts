@@ -7,6 +7,8 @@ import { useMyTransactions } from "./useMyTransactions";
 import { listFamilyMembers } from "@/src/dataconnect-generated";
 import type { ListFamilyMembersData, ListFamilyMembersVariables } from "@/src/dataconnect-generated";
 import { fetchAllPages } from "@/lib/dataconnectPagination";
+import { relationshipLabel } from "@/lib/householdRole";
+import { useUserSettings } from "@/context/UserSettingsContext";
 
 export interface SearchFamilyMember {
   id: string;
@@ -20,6 +22,9 @@ export interface SearchFamilyMember {
 // category.
 export function useSearchIndex() {
   const { user } = useAuth();
+  // Needed to derive each member's label: "You" is a fact about the viewer, so
+  // it takes the caller's own user id. See lib/householdRole.ts.
+  const { userId: myUserId } = useUserSettings();
   const [familyMembers, setFamilyMembers] = useState<SearchFamilyMember[]>([]);
   const [membersLoading, setMembersLoading] = useState(false);
   const {
@@ -46,12 +51,24 @@ export function useSearchIndex() {
         {}
       );
       setFamilyMembers(
-        rows.map((row) => ({ id: row.id, name: row.name, relationship: row.relationship ?? null }))
+        // The derived label, so search results agree with the sidebar rather
+        // than showing the raw "Self" every account's own row carries. See
+        // lib/householdRole.ts.
+        rows.map((row) => ({
+          id: row.id,
+          name: row.name,
+          relationship: relationshipLabel({
+            relationship: row.relationship ?? null,
+            isSelf: !!myUserId && row.selfUser?.id === myUserId,
+            isAccountHolder: !!row.selfUser,
+            ownerUsername: row.user.username,
+          }),
+        }))
       );
     } finally {
       setMembersLoading(false);
     }
-  }, [user?.uid]);
+  }, [user?.uid, myUserId]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect

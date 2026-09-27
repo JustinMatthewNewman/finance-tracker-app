@@ -114,6 +114,8 @@ export interface CreateTransactionVariables {
   source?: string | null;
   status?: string | null;
   importKey?: string | null;
+  isInternalToUser?: boolean | null;
+  isInternalToFamily?: boolean | null;
   importRef?: string | null;
   statementImportId?: UUIDString | null;
 }
@@ -291,6 +293,9 @@ export interface GetMyUserData {
       categoryColorsEnabled?: boolean | null;
       squareCorners?: boolean | null;
       currencyCode?: string | null;
+      hideWeekends?: boolean | null;
+      showInternalTransfers?: boolean | null;
+      privacyMode?: boolean | null;
       colorScheme?: {
         id: UUIDString;
         name: string;
@@ -421,6 +426,21 @@ export interface ListFamilyMembersVariables {
   offset?: number | null;
 }
 
+export interface ListMyClassifiableTransactionsData {
+  transactions: ({
+    id: UUIDString;
+    merchant?: string | null;
+    method?: string | null;
+    isInternalToUser?: boolean | null;
+    isInternalToFamily?: boolean | null;
+  } & Transaction_Key)[];
+}
+
+export interface ListMyClassifiableTransactionsVariables {
+  limit?: number | null;
+  offset?: number | null;
+}
+
 export interface ListMyImportedInRangeData {
   transactions: ({
     id: UUIDString;
@@ -466,6 +486,8 @@ export interface ListMyRecurringProjectionsData {
     recurrenceEndsOn?: DateString | null;
     source: string;
     status: string;
+    isInternalToUser?: boolean | null;
+    isInternalToFamily?: boolean | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -532,6 +554,8 @@ export interface ListMyTransactionsByDateRangeData {
     recurrenceEndsOn?: DateString | null;
     source: string;
     status: string;
+    isInternalToUser?: boolean | null;
+    isInternalToFamily?: boolean | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -570,6 +594,8 @@ export interface ListMyTransactionsData {
     recurrenceEndsOn?: DateString | null;
     source: string;
     status: string;
+    isInternalToUser?: boolean | null;
+    isInternalToFamily?: boolean | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -606,6 +632,8 @@ export interface ListTransactionsByFamilyMemberData {
     recurrenceEndsOn?: DateString | null;
     source: string;
     status: string;
+    isInternalToUser?: boolean | null;
+    isInternalToFamily?: boolean | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -749,6 +777,14 @@ export interface SelectMyExternalAccountLinkTemplateVariables {
   externalAccountLinkTemplate?: string | null;
 }
 
+export interface SelectMyHideWeekendsData {
+  userSetting_update?: UserSetting_Key | null;
+}
+
+export interface SelectMyHideWeekendsVariables {
+  hideWeekends: boolean;
+}
+
 export interface SelectMyPerformanceModeData {
   userSetting_update?: UserSetting_Key | null;
 }
@@ -757,12 +793,38 @@ export interface SelectMyPerformanceModeVariables {
   performanceMode: boolean;
 }
 
+export interface SelectMyPrivacyModeData {
+  userSetting_update?: UserSetting_Key | null;
+}
+
+export interface SelectMyPrivacyModeVariables {
+  privacyMode: boolean;
+}
+
+export interface SelectMyShowInternalTransfersData {
+  userSetting_update?: UserSetting_Key | null;
+}
+
+export interface SelectMyShowInternalTransfersVariables {
+  showInternalTransfers: boolean;
+}
+
 export interface SelectMySquareCornersData {
   userSetting_update?: UserSetting_Key | null;
 }
 
 export interface SelectMySquareCornersVariables {
   squareCorners: boolean;
+}
+
+export interface SetTransactionInternalFlagsData {
+  transaction_update?: Transaction_Key | null;
+}
+
+export interface SetTransactionInternalFlagsVariables {
+  transactionId: UUIDString;
+  isInternalToUser: boolean;
+  isInternalToFamily: boolean;
 }
 
 export interface SetUserTypeData {
@@ -1014,6 +1076,42 @@ export const selectMyCategoryColorsEnabledRef: SelectMyCategoryColorsEnabledRef;
 export function selectMyCategoryColorsEnabled(vars: SelectMyCategoryColorsEnabledVariables): MutationPromise<SelectMyCategoryColorsEnabledData, SelectMyCategoryColorsEnabledVariables>;
 export function selectMyCategoryColorsEnabled(dc: DataConnect, vars: SelectMyCategoryColorsEnabledVariables): MutationPromise<SelectMyCategoryColorsEnabledData, SelectMyCategoryColorsEnabledVariables>;
 
+interface SelectMyHideWeekendsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SelectMyHideWeekendsVariables): MutationRef<SelectMyHideWeekendsData, SelectMyHideWeekendsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: SelectMyHideWeekendsVariables): MutationRef<SelectMyHideWeekendsData, SelectMyHideWeekendsVariables>;
+  operationName: string;
+}
+export const selectMyHideWeekendsRef: SelectMyHideWeekendsRef;
+
+export function selectMyHideWeekends(vars: SelectMyHideWeekendsVariables): MutationPromise<SelectMyHideWeekendsData, SelectMyHideWeekendsVariables>;
+export function selectMyHideWeekends(dc: DataConnect, vars: SelectMyHideWeekendsVariables): MutationPromise<SelectMyHideWeekendsData, SelectMyHideWeekendsVariables>;
+
+interface SelectMyShowInternalTransfersRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SelectMyShowInternalTransfersVariables): MutationRef<SelectMyShowInternalTransfersData, SelectMyShowInternalTransfersVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: SelectMyShowInternalTransfersVariables): MutationRef<SelectMyShowInternalTransfersData, SelectMyShowInternalTransfersVariables>;
+  operationName: string;
+}
+export const selectMyShowInternalTransfersRef: SelectMyShowInternalTransfersRef;
+
+export function selectMyShowInternalTransfers(vars: SelectMyShowInternalTransfersVariables): MutationPromise<SelectMyShowInternalTransfersData, SelectMyShowInternalTransfersVariables>;
+export function selectMyShowInternalTransfers(dc: DataConnect, vars: SelectMyShowInternalTransfersVariables): MutationPromise<SelectMyShowInternalTransfersData, SelectMyShowInternalTransfersVariables>;
+
+interface SelectMyPrivacyModeRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SelectMyPrivacyModeVariables): MutationRef<SelectMyPrivacyModeData, SelectMyPrivacyModeVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: SelectMyPrivacyModeVariables): MutationRef<SelectMyPrivacyModeData, SelectMyPrivacyModeVariables>;
+  operationName: string;
+}
+export const selectMyPrivacyModeRef: SelectMyPrivacyModeRef;
+
+export function selectMyPrivacyMode(vars: SelectMyPrivacyModeVariables): MutationPromise<SelectMyPrivacyModeData, SelectMyPrivacyModeVariables>;
+export function selectMyPrivacyMode(dc: DataConnect, vars: SelectMyPrivacyModeVariables): MutationPromise<SelectMyPrivacyModeData, SelectMyPrivacyModeVariables>;
+
 interface SelectMyCurrencyRef {
   /* Allow users to create refs without passing in DataConnect */
   (vars: SelectMyCurrencyVariables): MutationRef<SelectMyCurrencyData, SelectMyCurrencyVariables>;
@@ -1181,6 +1279,18 @@ export const deleteStatementImportRef: DeleteStatementImportRef;
 
 export function deleteStatementImport(vars: DeleteStatementImportVariables): MutationPromise<DeleteStatementImportData, DeleteStatementImportVariables>;
 export function deleteStatementImport(dc: DataConnect, vars: DeleteStatementImportVariables): MutationPromise<DeleteStatementImportData, DeleteStatementImportVariables>;
+
+interface SetTransactionInternalFlagsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: SetTransactionInternalFlagsVariables): MutationRef<SetTransactionInternalFlagsData, SetTransactionInternalFlagsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: SetTransactionInternalFlagsVariables): MutationRef<SetTransactionInternalFlagsData, SetTransactionInternalFlagsVariables>;
+  operationName: string;
+}
+export const setTransactionInternalFlagsRef: SetTransactionInternalFlagsRef;
+
+export function setTransactionInternalFlags(vars: SetTransactionInternalFlagsVariables): MutationPromise<SetTransactionInternalFlagsData, SetTransactionInternalFlagsVariables>;
+export function setTransactionInternalFlags(dc: DataConnect, vars: SetTransactionInternalFlagsVariables): MutationPromise<SetTransactionInternalFlagsData, SetTransactionInternalFlagsVariables>;
 
 interface MarkTransactionPostedRef {
   /* Allow users to create refs without passing in DataConnect */
@@ -1481,6 +1591,18 @@ export const listMyImportedInRangeRef: ListMyImportedInRangeRef;
 
 export function listMyImportedInRange(vars: ListMyImportedInRangeVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyImportedInRangeData, ListMyImportedInRangeVariables>;
 export function listMyImportedInRange(dc: DataConnect, vars: ListMyImportedInRangeVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyImportedInRangeData, ListMyImportedInRangeVariables>;
+
+interface ListMyClassifiableTransactionsRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars?: ListMyClassifiableTransactionsVariables): QueryRef<ListMyClassifiableTransactionsData, ListMyClassifiableTransactionsVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars?: ListMyClassifiableTransactionsVariables): QueryRef<ListMyClassifiableTransactionsData, ListMyClassifiableTransactionsVariables>;
+  operationName: string;
+}
+export const listMyClassifiableTransactionsRef: ListMyClassifiableTransactionsRef;
+
+export function listMyClassifiableTransactions(vars?: ListMyClassifiableTransactionsVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyClassifiableTransactionsData, ListMyClassifiableTransactionsVariables>;
+export function listMyClassifiableTransactions(dc: DataConnect, vars?: ListMyClassifiableTransactionsVariables, options?: ExecuteQueryOptions): QueryPromise<ListMyClassifiableTransactionsData, ListMyClassifiableTransactionsVariables>;
 
 interface ListMyImportedKeysRef {
   /* Allow users to create refs without passing in DataConnect */

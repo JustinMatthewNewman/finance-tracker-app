@@ -1,13 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
-  buildMonthGrid,
   addMonths,
+  buildMonthGrid,
   fromDateString,
   groupByDay,
   isSameMonth,
+  isWeekend,
   monthKeyOf,
   monthRange,
   toDateString,
+  visibleGridDays,
+  weekdayLabels,
 } from "./monthRange";
 
 describe("toDateString", () => {
@@ -191,5 +194,51 @@ describe("buildMonthGrid", () => {
       expect(new Set(keys).size).toBe(keys.length);
       expect(grid.length % 7).toBe(0);
     }
+  });
+});
+
+describe("hiding weekends", () => {
+  const grid = buildMonthGrid({ year: 2026, month: 8 }); // September 2026
+
+  it("removes exactly the Saturdays and Sundays", () => {
+    const shown = visibleGridDays(grid, true);
+    expect(shown.every((d) => ![0, 6].includes(d.date.getDay()))).toBe(true);
+    // Five columns per week, and the full grid is a whole number of weeks.
+    expect(grid.length % 7).toBe(0);
+    expect(shown.length).toBe((grid.length / 7) * 5);
+  });
+
+  it("leaves the grid untouched when not hiding", () => {
+    expect(visibleGridDays(grid, false)).toEqual(grid);
+  });
+
+  it("returns a copy, so a caller cannot mutate the source grid", () => {
+    expect(visibleGridDays(grid, false)).not.toBe(grid);
+  });
+
+  it("keeps the padding days it does not remove", () => {
+    // The filter is about weekdays, not about which month a day belongs to.
+    const shown = visibleGridDays(grid, true);
+    expect(shown.some((d) => !d.isCurrentMonth)).toBe(true);
+  });
+
+  it("IS NOT A FILTER ON MONEY — the month's days are unchanged", () => {
+    // The property that protects every total: hiding columns must not change
+    // which days a month is made of. sumDays() is given these, never the grid.
+    const monthDays = grid.filter((d) => d.isCurrentMonth).map((d) => d.dayKey);
+    expect(monthDays).toHaveLength(30);
+    const hidden = visibleGridDays(grid, true).filter((d) => d.isCurrentMonth);
+    expect(hidden.length).toBeLessThan(monthDays.length);
+  });
+
+  it("labels five or seven columns to match", () => {
+    expect(weekdayLabels(false)).toEqual(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]);
+    expect(weekdayLabels(true)).toEqual(["Mon", "Tue", "Wed", "Thu", "Fri"]);
+  });
+
+  it("identifies weekends from local date parts", () => {
+    expect(isWeekend(new Date(2026, 8, 5))).toBe(true); // Saturday
+    expect(isWeekend(new Date(2026, 8, 6))).toBe(true); // Sunday
+    expect(isWeekend(new Date(2026, 8, 7))).toBe(false); // Monday
   });
 });

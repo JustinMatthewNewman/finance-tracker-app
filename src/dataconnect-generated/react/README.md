@@ -30,6 +30,7 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*ListMyTransactionsByDateRange*](#listmytransactionsbydaterange)
   - [*ListMyStatementImports*](#listmystatementimports)
   - [*ListMyImportedInRange*](#listmyimportedinrange)
+  - [*ListMyClassifiableTransactions*](#listmyclassifiabletransactions)
   - [*ListMyImportedKeys*](#listmyimportedkeys)
   - [*GetFamilyByInviteCode*](#getfamilybyinvitecode)
   - [*GetMyFamilyDetail*](#getmyfamilydetail)
@@ -47,6 +48,9 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*SelectMySquareCorners*](#selectmysquarecorners)
   - [*SelectMyBordersEnabled*](#selectmybordersenabled)
   - [*SelectMyCategoryColorsEnabled*](#selectmycategorycolorsenabled)
+  - [*SelectMyHideWeekends*](#selectmyhideweekends)
+  - [*SelectMyShowInternalTransfers*](#selectmyshowinternaltransfers)
+  - [*SelectMyPrivacyMode*](#selectmyprivacymode)
   - [*SelectMyCurrency*](#selectmycurrency)
   - [*CreateFamilyMember*](#createfamilymember)
   - [*UpdateFamilyMember*](#updatefamilymember)
@@ -61,6 +65,7 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*FinalizeStatementImport*](#finalizestatementimport)
   - [*DeleteStatementImportRows*](#deletestatementimportrows)
   - [*DeleteStatementImport*](#deletestatementimport)
+  - [*SetTransactionInternalFlags*](#settransactioninternalflags)
   - [*MarkTransactionPosted*](#marktransactionposted)
   - [*MarkTransactionProjected*](#marktransactionprojected)
   - [*DeleteTransaction*](#deletetransaction)
@@ -278,6 +283,9 @@ export interface GetMyUserData {
       categoryColorsEnabled?: boolean | null;
       squareCorners?: boolean | null;
       currencyCode?: string | null;
+      hideWeekends?: boolean | null;
+      showInternalTransfers?: boolean | null;
+      privacyMode?: boolean | null;
       colorScheme?: {
         id: UUIDString;
         name: string;
@@ -934,6 +942,8 @@ export interface ListTransactionsByFamilyMemberData {
     recurrenceEndsOn?: DateString | null;
     source: string;
     status: string;
+    isInternalToUser?: boolean | null;
+    isInternalToFamily?: boolean | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -1046,6 +1056,8 @@ export interface ListMyTransactionsData {
     recurrenceEndsOn?: DateString | null;
     source: string;
     status: string;
+    isInternalToUser?: boolean | null;
+    isInternalToFamily?: boolean | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -1165,6 +1177,8 @@ export interface ListMyTransactionsByDateRangeData {
     recurrenceEndsOn?: DateString | null;
     source: string;
     status: string;
+    isInternalToUser?: boolean | null;
+    isInternalToFamily?: boolean | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -1425,6 +1439,102 @@ export default function ListMyImportedInRangeComponent() {
   const dataConnect = getDataConnect(connectorConfig);
   const options = { staleTime: 5 * 1000 };
   const query = useListMyImportedInRange(dataConnect, listMyImportedInRangeVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.transactions);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## ListMyClassifiableTransactions
+You can execute the `ListMyClassifiableTransactions` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useListMyClassifiableTransactions(dc: DataConnect, vars?: ListMyClassifiableTransactionsVariables, options?: useDataConnectQueryOptions<ListMyClassifiableTransactionsData>): UseDataConnectQueryResult<ListMyClassifiableTransactionsData, ListMyClassifiableTransactionsVariables>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useListMyClassifiableTransactions(vars?: ListMyClassifiableTransactionsVariables, options?: useDataConnectQueryOptions<ListMyClassifiableTransactionsData>): UseDataConnectQueryResult<ListMyClassifiableTransactionsData, ListMyClassifiableTransactionsVariables>;
+```
+
+### Variables
+The `ListMyClassifiableTransactions` Query has an optional argument of type `ListMyClassifiableTransactionsVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface ListMyClassifiableTransactionsVariables {
+  limit?: number | null;
+  offset?: number | null;
+}
+```
+### Return Type
+Recall that calling the `ListMyClassifiableTransactions` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `ListMyClassifiableTransactions` Query is of type `ListMyClassifiableTransactionsData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface ListMyClassifiableTransactionsData {
+  transactions: ({
+    id: UUIDString;
+    merchant?: string | null;
+    method?: string | null;
+    isInternalToUser?: boolean | null;
+    isInternalToFamily?: boolean | null;
+  } & Transaction_Key)[];
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `ListMyClassifiableTransactions`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, ListMyClassifiableTransactionsVariables } from '@financeconnect/generated';
+import { useListMyClassifiableTransactions } from '@financeconnect/generated/react'
+
+export default function ListMyClassifiableTransactionsComponent() {
+  // The `useListMyClassifiableTransactions` Query hook has an optional argument of type `ListMyClassifiableTransactionsVariables`:
+  const listMyClassifiableTransactionsVars: ListMyClassifiableTransactionsVariables = {
+    limit: ..., // optional
+    offset: ..., // optional
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useListMyClassifiableTransactions(listMyClassifiableTransactionsVars);
+  // Variables can be defined inline as well.
+  const query = useListMyClassifiableTransactions({ limit: ..., offset: ..., });
+  // Since all variables are optional for this Query, you can omit the `ListMyClassifiableTransactionsVariables` argument.
+  // (as long as you don't want to provide any `options`!)
+  const query = useListMyClassifiableTransactions();
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useListMyClassifiableTransactions(dataConnect, listMyClassifiableTransactionsVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useListMyClassifiableTransactions(listMyClassifiableTransactionsVars, options);
+  // If you'd like to provide options without providing any variables, you must
+  // pass `undefined` where you would normally pass the variables.
+  const query = useListMyClassifiableTransactions(undefined, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useListMyClassifiableTransactions(dataConnect, listMyClassifiableTransactionsVars /** or undefined */, options);
 
   // Then, you can render your component dynamically based on the status of the Query.
   if (query.isPending) {
@@ -1835,6 +1945,8 @@ export interface ListMyRecurringProjectionsData {
     recurrenceEndsOn?: DateString | null;
     source: string;
     status: string;
+    isInternalToUser?: boolean | null;
+    isInternalToFamily?: boolean | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -2980,6 +3092,288 @@ export default function SelectMyCategoryColorsEnabledComponent() {
 }
 ```
 
+## SelectMyHideWeekends
+You can execute the `SelectMyHideWeekends` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useSelectMyHideWeekends(options?: useDataConnectMutationOptions<SelectMyHideWeekendsData, FirebaseError, SelectMyHideWeekendsVariables>): UseDataConnectMutationResult<SelectMyHideWeekendsData, SelectMyHideWeekendsVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useSelectMyHideWeekends(dc: DataConnect, options?: useDataConnectMutationOptions<SelectMyHideWeekendsData, FirebaseError, SelectMyHideWeekendsVariables>): UseDataConnectMutationResult<SelectMyHideWeekendsData, SelectMyHideWeekendsVariables>;
+```
+
+### Variables
+The `SelectMyHideWeekends` Mutation requires an argument of type `SelectMyHideWeekendsVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface SelectMyHideWeekendsVariables {
+  hideWeekends: boolean;
+}
+```
+### Return Type
+Recall that calling the `SelectMyHideWeekends` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `SelectMyHideWeekends` Mutation is of type `SelectMyHideWeekendsData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface SelectMyHideWeekendsData {
+  userSetting_update?: UserSetting_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `SelectMyHideWeekends`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, SelectMyHideWeekendsVariables } from '@financeconnect/generated';
+import { useSelectMyHideWeekends } from '@financeconnect/generated/react'
+
+export default function SelectMyHideWeekendsComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useSelectMyHideWeekends();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useSelectMyHideWeekends(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useSelectMyHideWeekends(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useSelectMyHideWeekends(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useSelectMyHideWeekends` Mutation requires an argument of type `SelectMyHideWeekendsVariables`:
+  const selectMyHideWeekendsVars: SelectMyHideWeekendsVariables = {
+    hideWeekends: ..., 
+  };
+  mutation.mutate(selectMyHideWeekendsVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ hideWeekends: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(selectMyHideWeekendsVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.userSetting_update);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## SelectMyShowInternalTransfers
+You can execute the `SelectMyShowInternalTransfers` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useSelectMyShowInternalTransfers(options?: useDataConnectMutationOptions<SelectMyShowInternalTransfersData, FirebaseError, SelectMyShowInternalTransfersVariables>): UseDataConnectMutationResult<SelectMyShowInternalTransfersData, SelectMyShowInternalTransfersVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useSelectMyShowInternalTransfers(dc: DataConnect, options?: useDataConnectMutationOptions<SelectMyShowInternalTransfersData, FirebaseError, SelectMyShowInternalTransfersVariables>): UseDataConnectMutationResult<SelectMyShowInternalTransfersData, SelectMyShowInternalTransfersVariables>;
+```
+
+### Variables
+The `SelectMyShowInternalTransfers` Mutation requires an argument of type `SelectMyShowInternalTransfersVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface SelectMyShowInternalTransfersVariables {
+  showInternalTransfers: boolean;
+}
+```
+### Return Type
+Recall that calling the `SelectMyShowInternalTransfers` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `SelectMyShowInternalTransfers` Mutation is of type `SelectMyShowInternalTransfersData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface SelectMyShowInternalTransfersData {
+  userSetting_update?: UserSetting_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `SelectMyShowInternalTransfers`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, SelectMyShowInternalTransfersVariables } from '@financeconnect/generated';
+import { useSelectMyShowInternalTransfers } from '@financeconnect/generated/react'
+
+export default function SelectMyShowInternalTransfersComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useSelectMyShowInternalTransfers();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useSelectMyShowInternalTransfers(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useSelectMyShowInternalTransfers(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useSelectMyShowInternalTransfers(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useSelectMyShowInternalTransfers` Mutation requires an argument of type `SelectMyShowInternalTransfersVariables`:
+  const selectMyShowInternalTransfersVars: SelectMyShowInternalTransfersVariables = {
+    showInternalTransfers: ..., 
+  };
+  mutation.mutate(selectMyShowInternalTransfersVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ showInternalTransfers: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(selectMyShowInternalTransfersVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.userSetting_update);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## SelectMyPrivacyMode
+You can execute the `SelectMyPrivacyMode` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useSelectMyPrivacyMode(options?: useDataConnectMutationOptions<SelectMyPrivacyModeData, FirebaseError, SelectMyPrivacyModeVariables>): UseDataConnectMutationResult<SelectMyPrivacyModeData, SelectMyPrivacyModeVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useSelectMyPrivacyMode(dc: DataConnect, options?: useDataConnectMutationOptions<SelectMyPrivacyModeData, FirebaseError, SelectMyPrivacyModeVariables>): UseDataConnectMutationResult<SelectMyPrivacyModeData, SelectMyPrivacyModeVariables>;
+```
+
+### Variables
+The `SelectMyPrivacyMode` Mutation requires an argument of type `SelectMyPrivacyModeVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface SelectMyPrivacyModeVariables {
+  privacyMode: boolean;
+}
+```
+### Return Type
+Recall that calling the `SelectMyPrivacyMode` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `SelectMyPrivacyMode` Mutation is of type `SelectMyPrivacyModeData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface SelectMyPrivacyModeData {
+  userSetting_update?: UserSetting_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `SelectMyPrivacyMode`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, SelectMyPrivacyModeVariables } from '@financeconnect/generated';
+import { useSelectMyPrivacyMode } from '@financeconnect/generated/react'
+
+export default function SelectMyPrivacyModeComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useSelectMyPrivacyMode();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useSelectMyPrivacyMode(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useSelectMyPrivacyMode(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useSelectMyPrivacyMode(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useSelectMyPrivacyMode` Mutation requires an argument of type `SelectMyPrivacyModeVariables`:
+  const selectMyPrivacyModeVars: SelectMyPrivacyModeVariables = {
+    privacyMode: ..., 
+  };
+  mutation.mutate(selectMyPrivacyModeVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ privacyMode: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(selectMyPrivacyModeVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.userSetting_update);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
 ## SelectMyCurrency
 You can execute the `SelectMyCurrency` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
 ```javascript
@@ -3702,6 +4096,8 @@ export interface CreateTransactionVariables {
   source?: string | null;
   status?: string | null;
   importKey?: string | null;
+  isInternalToUser?: boolean | null;
+  isInternalToFamily?: boolean | null;
   importRef?: string | null;
   statementImportId?: UUIDString | null;
 }
@@ -3768,12 +4164,14 @@ export default function CreateTransactionComponent() {
     source: ..., // optional
     status: ..., // optional
     importKey: ..., // optional
+    isInternalToUser: ..., // optional
+    isInternalToFamily: ..., // optional
     importRef: ..., // optional
     statementImportId: ..., // optional
   };
   mutation.mutate(createTransactionVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ userId: ..., familyMemberId: ..., amountMinor: ..., direction: ..., occurredOn: ..., createdAt: ..., description: ..., merchant: ..., method: ..., recurrence: ..., recurrenceEndsOn: ..., categoryName: ..., source: ..., status: ..., importKey: ..., importRef: ..., statementImportId: ..., });
+  mutation.mutate({ userId: ..., familyMemberId: ..., amountMinor: ..., direction: ..., occurredOn: ..., createdAt: ..., description: ..., merchant: ..., method: ..., recurrence: ..., recurrenceEndsOn: ..., categoryName: ..., source: ..., status: ..., importKey: ..., isInternalToUser: ..., isInternalToFamily: ..., importRef: ..., statementImportId: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
@@ -4421,6 +4819,104 @@ export default function DeleteStatementImportComponent() {
   // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
   if (mutation.isSuccess) {
     console.log(mutation.data.statementImport_delete);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## SetTransactionInternalFlags
+You can execute the `SetTransactionInternalFlags` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useSetTransactionInternalFlags(options?: useDataConnectMutationOptions<SetTransactionInternalFlagsData, FirebaseError, SetTransactionInternalFlagsVariables>): UseDataConnectMutationResult<SetTransactionInternalFlagsData, SetTransactionInternalFlagsVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useSetTransactionInternalFlags(dc: DataConnect, options?: useDataConnectMutationOptions<SetTransactionInternalFlagsData, FirebaseError, SetTransactionInternalFlagsVariables>): UseDataConnectMutationResult<SetTransactionInternalFlagsData, SetTransactionInternalFlagsVariables>;
+```
+
+### Variables
+The `SetTransactionInternalFlags` Mutation requires an argument of type `SetTransactionInternalFlagsVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface SetTransactionInternalFlagsVariables {
+  transactionId: UUIDString;
+  isInternalToUser: boolean;
+  isInternalToFamily: boolean;
+}
+```
+### Return Type
+Recall that calling the `SetTransactionInternalFlags` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `SetTransactionInternalFlags` Mutation is of type `SetTransactionInternalFlagsData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface SetTransactionInternalFlagsData {
+  transaction_update?: Transaction_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `SetTransactionInternalFlags`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, SetTransactionInternalFlagsVariables } from '@financeconnect/generated';
+import { useSetTransactionInternalFlags } from '@financeconnect/generated/react'
+
+export default function SetTransactionInternalFlagsComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useSetTransactionInternalFlags();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useSetTransactionInternalFlags(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useSetTransactionInternalFlags(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useSetTransactionInternalFlags(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useSetTransactionInternalFlags` Mutation requires an argument of type `SetTransactionInternalFlagsVariables`:
+  const setTransactionInternalFlagsVars: SetTransactionInternalFlagsVariables = {
+    transactionId: ..., 
+    isInternalToUser: ..., 
+    isInternalToFamily: ..., 
+  };
+  mutation.mutate(setTransactionInternalFlagsVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ transactionId: ..., isInternalToUser: ..., isInternalToFamily: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(setTransactionInternalFlagsVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.transaction_update);
   }
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }

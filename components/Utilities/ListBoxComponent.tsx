@@ -13,13 +13,13 @@ import { effectiveColor } from "@/lib/entityColor";
 import {
   type CurrencyCode,
   DEFAULT_CURRENCY,
-  formatMoneyCompact,
   sumTotals,
 } from "@/lib/money";
 import type { DateRange } from "@/lib/monthRange";
 import { NewFamilyMemberDialog } from "./NewFamilyMemberDialog";
 import { RenameFamilyMemberDialog } from "./RenameFamilyMemberDialog";
 import { DeleteFamilyMemberDialog } from "./DeleteFamilyMemberDialog";
+import { usePrivacyMode } from "@/context/PrivacyModeContext";
 
 // Accepts useFamilyMembers()'s result as props rather than calling the hook
 // itself — the page also needs the selected member for its header, and
@@ -50,6 +50,12 @@ export function FamilyMemberListBox({
   range,
   currency = DEFAULT_CURRENCY,
 }: FamilyMemberListBoxProps) {
+  // Amounts go through formatAmount rather than formatMoney, so privacy
+  // mode covers them. A figure that bypassed it would stay legible with the
+  // toggle on, and a screen that hides most of its numbers is worse than one
+  // that hides none — the person believes they are covered.
+  const { formatAmountCompact } = usePrivacyMode();
+
   const { selectedFamilyMemberId, setSelectedFamilyMemberId } = useSelectedFamilyMember();
   const { bordersEnabled } = useBorders();
   const { categoryColorsEnabled } = useCategoryColorsSetting();
@@ -174,7 +180,11 @@ export function FamilyMemberListBox({
                             )}
                           </Label>
                           <span className="truncate text-sm text-gray-500">
-                            {member.relationship ?? "—"}
+                            {/* The DERIVED label, not the stored column: every
+                                account's own row is written with "Self", so two
+                                accounts in one household both claimed it. See
+                                lib/householdRole.ts. */}
+                            {member.relationshipLabel ?? "—"}
                           </span>
                         </div>
                         {/* Sign is carried by an explicit +/− and by color,
@@ -190,7 +200,7 @@ export function FamilyMemberListBox({
                           }`}
                         >
                           {netMinor > 0 ? "+" : netMinor < 0 ? "−" : ""}
-                          {formatMoneyCompact(Math.abs(netMinor), currency)}
+                          {formatAmountCompact(Math.abs(netMinor), currency)}
                         </span>
                       </div>
                     </Tabs.Tab>

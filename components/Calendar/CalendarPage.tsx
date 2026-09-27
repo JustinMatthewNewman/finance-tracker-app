@@ -2,85 +2,61 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Card, Chip } from "@heroui/react";
+import Link from "next/link";
+import { Button, Card } from "@heroui/react";
 import { ChevronLeft, ChevronRight, Plus } from "@gravity-ui/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useBorders } from "@/context/BordersContext";
 import { useCategoryColorsSetting } from "@/context/CategoryColorsContext";
 import { useUserSettings } from "@/context/UserSettingsContext";
+import { useCalendarView } from "@/context/CalendarViewContext";
+import { useInternalTransfers } from "@/context/InternalTransfersContext";
+import { usePrivacyMode } from "@/context/PrivacyModeContext";
 import { useHouseholdMonth } from "@/hooks/useHouseholdMonth";
 import AmbientBackground from "@/components/AmbientBackground";
 import { TransactionForm } from "@/components/Finance/TransactionForm";
-import { ruleRowOf, type Transaction, type TransactionInput } from "@/hooks/useTransactions";
-import { RECURRENCE_LABELS, toRecurrence } from "@/lib/recurrence";
+import type { TransactionInput } from "@/hooks/useTransactions";
 import { effectiveColor } from "@/lib/entityColor";
-import {
-  DEFAULT_CURRENCY,
-  formatMoney,
-  formatMoneyCompact,
-  isCurrencyCode,
-  type Minor,
-} from "@/lib/money";
+import { sumDays } from "@/lib/ledgerTotals";
+import { DEFAULT_CURRENCY, isCurrencyCode, type Minor } from "@/lib/money";
 import {
   addMonths,
   buildMonthGrid,
   currentMonthKey,
-  formatDayHeading,
   monthLabel,
   relativeMonthLabel,
+  visibleGridDays,
+  weekdayLabels,
   type MonthKey,
 } from "@/lib/monthRange";
 
 // Calendar tab — a month grid of money in and out per day.
 //
-// Structurally this is Time Tracker Pro's calendar report (the one dropped
-// when this app was cloned), rebuilt around transactions instead of hours:
-// same Monday-first padded grid, same "cell scrolls its full list on hover"
-// behaviour, same adjacent-month dimming.
+// WHAT THIS PAGE IS FOR. It is the one place the household looks forward rather
+// than back, so a projected item — an expected paycheque, a bill due on the 28th
+// — has to be visible here as clearly as something that already happened, and
+// just as clearly NOT be mistaken for it. Every total on this page is therefore
+// split: what has moved, and what is still expected. A single blended figure
+// would quietly tell somebody they have money they do not yet have.
 //
-// WHAT THIS PAGE IS FOR. It is the one place the household looks forward
-// rather than back, so a projected item — an expected paycheque, a bill due
-// on the 28th — has to be visible here as clearly as something that already
-// happened, and just as clearly NOT be mistaken for it. Every total on this
-// page is therefore split: what has moved, and what is still expected. A
-// single blended figure would quietly tell somebody they have money they do
-// not yet have.
-
-const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+// EVERY FIGURE COMES FROM lib/ledgerTotals.ts, via useHouseholdMonth. It used to
+// be summed inline here, while the Income and Expenses pages summed the same rows
+// their own way — three copies of the same four decisions, each free to drift,
+// and a wrong total does not throw. `in` and `out` here and there now come out of
+// one function.
+//
+// A DAY IS A ROUTE, NOT A PANEL. Tapping a cell goes to /calendar/{day} (see
+// CalendarDayPage), because a day is something people link to, send to a
+// housemate and reach with the back button. It used to expand inline, which made
+// all three impossible and put a day's detail inside the month's scroll box.
 
 interface DayItem {
-  id: string;
-  /** Unique per occurrence — a repeating rule renders many times per month. */
   key: string;
   label: string;
   amountMinor: Minor;
   direction: "INCOME" | "EXPENSE";
   color: string | null;
   projected: boolean;
-  /**
-   * Came out of a bank statement rather than being typed.
-   *
-   * Separate from `projected`, and orthogonal to it: `projected` is about
-   * whether the money has moved and drives every total on this page, while this
-   * is only provenance and drives a label. An imported row is an actual. See
-   * lib/transactionKind.ts.
-   */
-  imported: boolean;
-  isMine: boolean;
-  memberName: string;
-  txn: Transaction;
-}
-
-interface DaySummary {
-  items: DayItem[];
-  /** Money that actually moved. */
-  incomeMinor: Minor;
-  expenseMinor: Minor;
-  /** Money still only expected. */
-  projectedIncomeMinor: Minor;
-  projectedExpenseMinor: Minor;
-  /** Net of what has actually happened. */
-  netMinor: Minor;
 }
 
 function CalendarPage() {
@@ -89,127 +65,71 @@ function CalendarPage() {
   const { bordersEnabled } = useBorders();
   const { categoryColorsEnabled } = useCategoryColorsSetting();
   const { currencyCode } = useUserSettings();
+  const { hideWeekends, setHideWeekends } = useCalendarView();
+  const { showInternalTransfers } = useInternalTransfers();
+  const { formatAmount, formatAmountCompact } = usePrivacyMode();
 
   const [monthKey, setMonthKey] = useState<MonthKey>(currentMonthKey);
-  const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [formDay, setFormDay] = useState<string | null>(null);
-  const [editing, setEditing] = useState<Transaction | null>(null);
-  const [busyId, setBusyId] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
 
-  const {
-    transactions,
-    myMembers,
-    loading,
-    error,
-    create,
-    update,
-    remove,
-    markPosted,
-    markProjected,
-  } = useHouseholdMonth(monthKey);
+  const { visible, byDay, myMembers, loading, error, create } = useHouseholdMonth(monthKey);
 
   useEffect(() => {
     if (!authLoading && !user) router.replace("/");
   }, [user, authLoading, router]);
 
   const currency = isCurrencyCode(currencyCode) ? currencyCode : DEFAULT_CURRENCY;
-  const grid = useMemo(() => buildMonthGrid(monthKey), [monthKey]);
 
-  // One pass, bucketed by day — rather than filtering the full list once per
-  // cell, which is O(days × records) on every render.
-  const byDay = useMemo(() => {
-    const map = new Map<string, DaySummary>();
+  const fullGrid = useMemo(() => buildMonthGrid(monthKey), [monthKey]);
+  /** What is drawn. A VIEW filter — see visibleGridDays; it touches no total. */
+  const grid = useMemo(() => visibleGridDays(fullGrid, hideWeekends), [fullGrid, hideWeekends]);
 
-    const ensure = (dayKey: string): DaySummary => {
-      let entry = map.get(dayKey);
-      if (!entry) {
-        entry = {
-          items: [],
-          incomeMinor: 0,
-          expenseMinor: 0,
-          projectedIncomeMinor: 0,
-          projectedExpenseMinor: 0,
-          netMinor: 0,
-        };
-        map.set(dayKey, entry);
-      }
-      return entry;
-    };
+  /**
+   * The month's figures.
+   *
+   * Summed over the MONTH's days, taken from the UNFILTERED grid — never over
+   * `grid`, which may have the weekend removed. Hiding two columns must not
+   * change what the month totals, or somebody reconciling against their bank
+   * would find the app short by a weekend's spending with nothing on screen to
+   * explain it.
+   */
+  const monthTotals = useMemo(
+    () => sumDays(byDay, fullGrid.filter((d) => d.isCurrentMonth).map((d) => d.dayKey)),
+    [byDay, fullGrid]
+  );
 
-    for (const txn of transactions) {
-      const day = ensure(txn.occurredOn);
-      const projected = txn.status === "FORECASTED";
-      day.items.push({
-        id: txn.id,
+  /**
+   * The labelled entries each cell lists.
+   *
+   * Separate from the per-day totals, which come from the shared module: those
+   * are arithmetic and this is presentation. Built in one pass rather than
+   * filtering the whole list once per cell, which is O(days × records) on every
+   * render.
+   */
+  const itemsByDay = useMemo(() => {
+    const map = new Map<string, DayItem[]>();
+    for (const txn of visible) {
+      const bucket = map.get(txn.occurredOn) ?? [];
+      bucket.push({
         key: txn.occurrenceKey,
         label: txn.description || txn.merchant || txn.category?.name || "Transaction",
         amountMinor: txn.amountMinor,
         direction: txn.direction,
         color: effectiveColor(txn.category?.color ?? null, txn.category?.name ?? txn.familyMemberName),
-        projected,
-        imported: txn.source === "IMPORT",
-        isMine: txn.isMine,
-        memberName: txn.familyMemberName,
-        txn,
+        projected: txn.status === "FORECASTED",
       });
-      if (txn.direction === "INCOME") {
-        if (projected) day.projectedIncomeMinor += txn.amountMinor;
-        else day.incomeMinor += txn.amountMinor;
-      } else if (projected) day.projectedExpenseMinor += txn.amountMinor;
-      else day.expenseMinor += txn.amountMinor;
+      map.set(txn.occurredOn, bucket);
     }
-
-    for (const day of map.values()) {
-      // Net of what has ACTUALLY happened. Projections are shown beside this
-      // figure, never folded into it.
-      day.netMinor = day.incomeMinor - day.expenseMinor;
-      day.items.sort(
-        (a, b) => Number(a.projected) - Number(b.projected) || b.amountMinor - a.amountMinor
-      );
+    for (const items of map.values()) {
+      items.sort((a, b) => Number(a.projected) - Number(b.projected) || b.amountMinor - a.amountMinor);
     }
     return map;
-  }, [transactions]);
+  }, [visible]);
 
-  const monthTotals = useMemo(() => {
-    let incomeMinor = 0;
-    let expenseMinor = 0;
-    let projectedIncomeMinor = 0;
-    let projectedExpenseMinor = 0;
-    for (const day of grid) {
-      if (!day.isCurrentMonth) continue;
-      const s = byDay.get(day.dayKey);
-      if (!s) continue;
-      incomeMinor += s.incomeMinor;
-      expenseMinor += s.expenseMinor;
-      projectedIncomeMinor += s.projectedIncomeMinor;
-      projectedExpenseMinor += s.projectedExpenseMinor;
-    }
-    return {
-      incomeMinor,
-      expenseMinor,
-      netMinor: incomeMinor - expenseMinor,
-      // What the month ends at if every projection lands as entered.
-      projectedNetMinor:
-        incomeMinor + projectedIncomeMinor - (expenseMinor + projectedExpenseMinor),
-      hasProjections: projectedIncomeMinor > 0 || projectedExpenseMinor > 0,
-    };
-  }, [grid, byDay]);
-
-  const selected = selectedDay ? byDay.get(selectedDay) : undefined;
   const canAdd = myMembers.length > 0;
-
-  const runRowAction = async (id: string, action: () => Promise<unknown>) => {
-    setBusyId(id);
-    setActionError(null);
-    try {
-      await action();
-    } catch (err) {
-      setActionError(err instanceof Error ? err.message : "That didn't work. Please try again.");
-    } finally {
-      setBusyId(null);
-    }
-  };
+  const columns = hideWeekends ? 5 : 7;
+  const signed = (minor: Minor) =>
+    `${minor > 0 ? "+" : minor < 0 ? "−" : ""}${formatAmount(Math.abs(minor), currency)}`;
 
   if (authLoading) {
     return (
@@ -255,14 +175,17 @@ function CalendarPage() {
               </Button>
             </div>
 
+            {/* IN AND OUT ARE WHAT MOVED — POSTED rows, imported or typed alike.
+                Projections are the separate figure to the right, never folded
+                into these two. See lib/ledgerTotals.ts. */}
             <div className="flex items-center gap-4 text-sm tabular-nums">
               <div className="flex flex-col items-end">
                 <span className="text-xs text-foreground/50">In</span>
-                <span className="text-success">{formatMoney(monthTotals.incomeMinor, currency)}</span>
+                <span className="text-success">{formatAmount(monthTotals.in.actualMinor, currency)}</span>
               </div>
               <div className="flex flex-col items-end">
                 <span className="text-xs text-foreground/50">Out</span>
-                <span className="text-foreground">{formatMoney(monthTotals.expenseMinor, currency)}</span>
+                <span className="text-foreground">{formatAmount(monthTotals.out.actualMinor, currency)}</span>
               </div>
               <div className="flex flex-col items-end">
                 <span className="text-xs text-foreground/50">Net so far</span>
@@ -275,57 +198,80 @@ function CalendarPage() {
                         : "text-foreground"
                   }
                 >
-                  {monthTotals.netMinor > 0 ? "+" : monthTotals.netMinor < 0 ? "−" : ""}
-                  {formatMoney(Math.abs(monthTotals.netMinor), currency)}
+                  {signed(monthTotals.netMinor)}
                 </span>
               </div>
-              {/* Only shown when there is something to project, so the header
-                  doesn't carry a figure identical to the one beside it. */}
+              {/* Only when there is something to project, so the header does not
+                  carry a figure identical to the one beside it. */}
               {monthTotals.hasProjections && (
                 <div className="flex flex-col items-end">
                   <span className="text-xs text-foreground/50">If all lands</span>
-                  <span className="text-warning">
-                    {monthTotals.projectedNetMinor > 0 ? "+" : monthTotals.projectedNetMinor < 0 ? "−" : ""}
-                    {formatMoney(Math.abs(monthTotals.projectedNetMinor), currency)}
-                  </span>
+                  <span className="text-warning">{signed(monthTotals.expectedNetMinor)}</span>
                 </div>
               )}
             </div>
           </div>
 
-          {(error || actionError) && (
-            <p className="shrink-0 px-4 pt-3 text-sm text-danger">{error ?? actionError}</p>
-          )}
+          <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {/* A VIEW toggle: it changes which columns are drawn and no figure
+                  above it. Weekend transactions still count — see
+                  visibleGridDays in lib/monthRange.ts. */}
+              <Button
+                size="sm"
+                variant={hideWeekends ? "secondary" : "outline"}
+                onPress={() => setHideWeekends(!hideWeekends)}
+              >
+                {hideWeekends ? "Show weekends" : "Hide weekends"}
+              </Button>
+
+              {/* The internal-transfers toggle used to live here and is now in
+                  the navbar: it changes the figures on every page at once, and a
+                  control on this one implied it applied only here. */}
+            </div>
+
+            {!showInternalTransfers && monthTotals.excludedTransferCount > 0 && (
+              <span className="text-xs text-foreground/50">
+                {monthTotals.excludedTransferCount} transfer
+                {monthTotals.excludedTransferCount === 1 ? "" : "s"} between your own accounts left out.
+              </span>
+            )}
+          </div>
+
+          {error && <p className="shrink-0 px-4 pt-3 text-sm text-danger">{error}</p>}
 
           <div className="min-h-0 flex-1 overflow-auto p-4">
-            <div className="mb-2 grid grid-cols-7 gap-1.5 text-center text-xs font-medium text-foreground/50">
-              {WEEKDAY_LABELS.map((label) => (
+            <div
+              className="mb-2 grid gap-1.5 text-center text-xs font-medium text-foreground/50"
+              style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+            >
+              {weekdayLabels(hideWeekends).map((label) => (
                 <span key={label}>{label}</span>
               ))}
             </div>
 
-            <div className="grid grid-cols-7 gap-1.5">
+            <div
+              className="grid gap-1.5"
+              style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+            >
               {grid.map((day) => {
                 const summary = byDay.get(day.dayKey);
-                const hasItems = !!summary && summary.items.length > 0;
-                const isSelected = selectedDay === day.dayKey;
+                const items = itemsByDay.get(day.dayKey) ?? [];
 
                 return (
-                  <button
+                  // A real link, so a day can be middle-clicked, opened in a new
+                  // tab and returned from with the back button. Every day is
+                  // reachable including an empty one — an empty day is exactly
+                  // where somebody wants to add an expected bill.
+                  <Link
                     key={day.dayKey}
-                    type="button"
-                    // Every day is selectable now, not just days with records
-                    // — an empty day is exactly where somebody wants to add
-                    // an expected bill, and a disabled cell cannot be asked.
-                    onClick={() => setSelectedDay(isSelected ? null : day.dayKey)}
+                    href={`/calendar/${day.dayKey}`}
                     className={`group flex h-32 w-full cursor-pointer flex-col items-stretch gap-1 rounded-lg p-1.5 text-left transition-colors hover:bg-accent-soft ${
                       // Muted rather than near-invisible: adjacent-month cells
                       // carry real data, so they have to stay readable while
                       // still reading as outside the month.
                       day.isCurrentMonth ? "" : "bg-default-50/50 opacity-60"
-                    } ${bordersEnabled ? "border border-default-200" : ""} ${
-                      isSelected ? "ring-2 ring-accent" : ""
-                    }`}
+                    } ${bordersEnabled ? "border border-default-200" : ""}`}
                   >
                     <div className="flex items-baseline justify-between gap-1">
                       <span
@@ -342,7 +288,7 @@ function CalendarPage() {
                           }`}
                         >
                           {summary.netMinor > 0 ? "+" : "−"}
-                          {formatMoneyCompact(Math.abs(summary.netMinor), currency)}
+                          {formatAmountCompact(Math.abs(summary.netMinor), currency)}
                         </span>
                       )}
                     </div>
@@ -351,10 +297,10 @@ function CalendarPage() {
                         every item for the day, so the overflow is real content
                         to reach rather than a fixed truncation. */}
                     <div className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-hidden group-hover:overflow-y-auto">
-                      {!hasItems ? (
+                      {items.length === 0 ? (
                         <span className="text-[10px] text-foreground/30">—</span>
                       ) : (
-                        summary!.items.map((item) => (
+                        items.map((item) => (
                           <div
                             key={item.key}
                             className="flex min-w-0 items-center gap-1 text-[10px] leading-tight"
@@ -399,186 +345,25 @@ function CalendarPage() {
                               }`}
                             >
                               {item.direction === "INCOME" ? "+" : "−"}
-                              {formatMoneyCompact(item.amountMinor, currency)}
+                              {formatAmountCompact(item.amountMinor, currency)}
                             </span>
                           </div>
                         ))
                       )}
                     </div>
-                  </button>
+                  </Link>
                 );
               })}
             </div>
 
-            {selectedDay && (
-              <Card className="mt-4 p-4">
-                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                  <h2 className="text-sm font-semibold text-foreground">
-                    {formatDayHeading(selectedDay)}
-                  </h2>
-                  <div className="flex items-center gap-3">
-                    <span className="flex items-center gap-3 text-xs tabular-nums">
-                      {selected && selected.incomeMinor > 0 && (
-                        <span className="text-success">
-                          +{formatMoney(selected.incomeMinor, currency)}
-                        </span>
-                      )}
-                      {selected && selected.expenseMinor > 0 && (
-                        <span className="text-foreground/70">
-                          −{formatMoney(selected.expenseMinor, currency)}
-                        </span>
-                      )}
-                    </span>
-                    {canAdd && (
-                      <Button
-                        size="sm"
-                        onPress={() => {
-                          setEditing(null);
-                          setFormDay(selectedDay);
-                        }}
-                      >
-                        <Plus className="size-4" aria-hidden /> Add expected
-                      </Button>
-                    )}
-                  </div>
-                </div>
+            {loading && <p className="mt-3 text-center text-xs text-foreground/50">Loading…</p>}
 
-                {!selected || selected.items.length === 0 ? (
-                  <p className="text-sm text-foreground/50">
-                    {loading ? "Loading…" : "Nothing on this day yet."}
-                  </p>
-                ) : (
-                  <div className="flex flex-col gap-1">
-                    {selected.items.map((item) => (
-                      <div
-                        key={item.key}
-                        className="flex flex-wrap items-center gap-3 rounded-md px-2 py-1.5 text-sm"
-                      >
-                        <span
-                          className="size-2.5 shrink-0 rounded-full"
-                          style={
-                            item.projected
-                              ? {
-                                  backgroundColor: "transparent",
-                                  boxShadow: `inset 0 0 0 2px ${
-                                    categoryColorsEnabled && item.color ? item.color : "var(--muted)"
-                                  }`,
-                                }
-                              : {
-                                  backgroundColor:
-                                    categoryColorsEnabled && item.color ? item.color : "var(--muted)",
-                                }
-                          }
-                          aria-hidden
-                        />
-                        <span
-                          className={`min-w-0 flex-1 truncate ${
-                            item.projected ? "italic text-foreground/70" : "text-foreground"
-                          }`}
-                        >
-                          {item.label}
-                          <span className="ml-2 text-xs text-foreground/40">{item.memberName}</span>
-                          {/* In the detail panel only. The grid cells are far
-                              too dense for another badge, and the dot there
-                              already carries the one distinction that changes
-                              what a figure means — happened vs. expected. */}
-                          {item.imported && (
-                            <Chip size="sm" variant="secondary" className="ml-2">
-                              Imported
-                            </Chip>
-                          )}
-                        </span>
-                        {item.projected && (
-                          <Chip size="sm" color="warning">Projected</Chip>
-                        )}
-                        {/* Says WHY this is on a day nobody typed it into,
-                            and for how long it will keep turning up — which
-                            is the question a repeating item raises the moment
-                            it appears on a date you did not choose. */}
-                        {toRecurrence(item.txn.recurrence) && item.projected && (
-                          <Chip size="sm">
-                            {RECURRENCE_LABELS[toRecurrence(item.txn.recurrence)!]}
-                            {item.txn.recurrenceEndsOn
-                              ? ` · until ${item.txn.recurrenceEndsOn}`
-                              : " · no end"}
-                          </Chip>
-                        )}
-                        <Chip size="sm">{item.direction === "INCOME" ? "In" : "Out"}</Chip>
-                        <span
-                          className={`shrink-0 tabular-nums ${
-                            item.projected
-                              ? "text-warning"
-                              : item.direction === "INCOME"
-                                ? "text-success"
-                                : "text-foreground"
-                          }`}
-                        >
-                          {item.direction === "INCOME" ? "+" : "−"}
-                          {formatMoney(item.amountMinor, currency)}
-                        </span>
-                        {/* Gated on ownership for the same reason as
-                            everywhere else: these rows include a housemate's,
-                            and each mutation would be refused at its @check. */}
-                        {item.isMine ? (
-                          (() => {
-                            // A repeating projection is a rule rather than an
-                            // entry — see the note in LedgerPage. Marking one
-                            // occurrence received would have to mark the rule
-                            // that generates all of them.
-                            const isRule = item.projected && !!toRecurrence(item.txn.recurrence);
-                            const busy = busyId === item.key;
-                            return (
-                              <div className="flex gap-1">
-                                {!isRule && (
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    isDisabled={busy}
-                                    onPress={() =>
-                                      void runRowAction(item.key, () =>
-                                        item.projected ? markPosted(item.id) : markProjected(item.id)
-                                      )
-                                    }
-                                  >
-                                    {item.projected
-                                      ? item.direction === "INCOME"
-                                        ? "Mark received"
-                                        : "Mark paid"
-                                      : "Undo"}
-                                  </Button>
-                                )}
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  isDisabled={busy}
-                                  onPress={() => {
-                                    // The rule as stored, not this occurrence
-                                    // — otherwise saving moves the series.
-                                    setEditing(ruleRowOf(item.txn));
-                                    setFormDay(selectedDay);
-                                  }}
-                                >
-                                  {isRule ? "Edit series" : "Edit"}
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  isDisabled={busy}
-                                  onPress={() => void runRowAction(item.key, () => remove(item.id))}
-                                >
-                                  {isRule ? "Delete series" : "Delete"}
-                                </Button>
-                              </div>
-                            );
-                          })()
-                        ) : (
-                          <span className="text-xs text-foreground/40">{item.txn.ownerUsername}&apos;s</span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </Card>
+            {canAdd && (
+              <div className="mt-4 flex justify-center">
+                <Button size="sm" variant="outline" onPress={() => setFormDay(defaultAddDay(monthKey))}>
+                  <Plus className="size-4" aria-hidden /> Add something expected
+                </Button>
+              </div>
             )}
           </div>
         </Card>
@@ -587,28 +372,42 @@ function CalendarPage() {
       {formDay && (
         <TransactionForm
           isOpen
-          key={editing?.id ?? `new-${formDay}`}
+          key={`new-${formDay}`}
           memberOptions={myMembers.map((m) => ({ id: m.id, name: m.name }))}
-          defaultMemberId={editing?.familyMemberId ?? myMembers[0]?.id ?? null}
+          defaultMemberId={myMembers[0]?.id ?? null}
           defaultOccurredOn={formDay}
-          // Opening from the calendar almost always means "something I expect
-          // on this day" — a bill due, a cheque coming. Adding something that
+          // Opening from the calendar almost always means "something I expect on
+          // this day" — a bill due, a cheque coming. Adding something that
           // already happened is still one toggle away.
-          defaultProjected={!editing}
+          defaultProjected
           currency={currency}
-          existing={editing}
-          onClose={() => {
-            setFormDay(null);
-            setEditing(null);
-          }}
+          existing={null}
+          onClose={() => setFormDay(null)}
           onSubmit={async (data: TransactionInput, familyMemberId?: string) => {
-            if (editing) await update(editing.id, data);
-            else if (familyMemberId) await create(familyMemberId, data);
+            if (familyMemberId) await create(familyMemberId, data);
           }}
         />
       )}
     </div>
   );
+}
+
+/**
+ * The day "add something expected" opens on.
+ *
+ * Today when the month on screen IS this month, otherwise that month's first day
+ * — so a form opened while looking at December does not silently default into
+ * September. Built from local parts and formatted by hand, never parsed from a
+ * string or run through toISOString(); see the note at the top of
+ * lib/monthRange.ts.
+ */
+function defaultAddDay(monthKey: MonthKey): string {
+  const today = new Date();
+  const sameMonth = today.getFullYear() === monthKey.year && today.getMonth() === monthKey.month;
+  const day = sameMonth ? today.getDate() : 1;
+  const mm = String(monthKey.month + 1).padStart(2, "0");
+  const dd = String(day).padStart(2, "0");
+  return `${monthKey.year}-${mm}-${dd}`;
 }
 
 export default CalendarPage;

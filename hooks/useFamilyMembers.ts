@@ -21,6 +21,7 @@ import type {
 } from "@/src/dataconnect-generated";
 import { fetchAllPages } from "@/lib/dataconnectPagination";
 import { normalizeHexColor } from "@/lib/entityColor";
+import { relationshipLabel } from "@/lib/householdRole";
 
 export interface FamilyMemberData {
   id: string;
@@ -53,6 +54,25 @@ export interface FamilyMemberData {
    * so this compares against the caller's, not merely against null.
    */
   isSelf: boolean;
+  /**
+   * Whether this row represents ANY account — the viewer's or a housemate's.
+   *
+   * True whenever FamilyMember.selfUser is set, regardless of whose it is.
+   * `isSelf` is the narrower question; this one is what distinguishes "somebody
+   * who signs in" from "somebody the household merely tracks".
+   */
+  isAccountHolder: boolean;
+  /**
+   * What to show under the name.
+   *
+   * DERIVED PER VIEWER, never the stored `relationship` verbatim.
+   * CreateUserFromGoogle stamps "Self" onto every account's own row, so in a
+   * household with two accounts BOTH rows carried it and the sidebar rendered
+   * "Self" twice — once correctly and once about somebody else. "Self" is a fact
+   * about who is looking, which no stored string can express. See
+   * lib/householdRole.ts.
+   */
+  relationshipLabel: string | null;
 }
 
 function toFamilyMemberData(
@@ -77,6 +97,13 @@ function toFamilyMemberData(
     // Compared against the caller's id rather than merely checked for
     // presence: a housemate's own self entry also has selfUser set, to theirs.
     isSelf: !!myUserId && row.selfUser?.id === myUserId,
+    isAccountHolder: !!row.selfUser,
+    relationshipLabel: relationshipLabel({
+      relationship: row.relationship ?? null,
+      isSelf: !!myUserId && row.selfUser?.id === myUserId,
+      isAccountHolder: !!row.selfUser,
+      ownerUsername: row.user.username,
+    }),
   }));
 }
 

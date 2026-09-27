@@ -7,8 +7,9 @@ import { useSearchIndex } from "@/hooks/useSearchIndex";
 import { useSelectedFamilyMember } from "@/context/SelectedFamilyMemberContext";
 import { useUserSettings } from "@/context/UserSettingsContext";
 import { fuzzyMatch, splitByMatch } from "@/lib/fuzzyMatch";
-import { formatMoney, isCurrencyCode, DEFAULT_CURRENCY } from "@/lib/money";
+import { isCurrencyCode, DEFAULT_CURRENCY } from "@/lib/money";
 import { fromDateString } from "@/lib/monthRange";
+import { usePrivacyMode } from "@/context/PrivacyModeContext";
 
 // No real store to subscribe to — the platform never changes mid-session —
 // so this only exists to give useSyncExternalStore a distinct snapshot for
@@ -63,6 +64,12 @@ function Highlighted({ text, indices }: { text: string; indices: number[] }) {
 // auto-expand and scroll to (see
 // SelectedFamilyMemberContext.focusTransactionId).
 export function GlobalSearch() {
+  // Amounts go through formatAmount rather than formatMoney, so privacy
+  // mode covers them. A figure that bypassed it would stay legible with the
+  // toggle on, and a screen that hides most of its numbers is worse than one
+  // that hides none — the person believes they are covered.
+  const { formatAmount } = usePrivacyMode();
+
   const router = useRouter();
   const { familyMembers, transactions, refresh } = useSearchIndex();
   const { setSelectedFamilyMemberId, setFocusTransactionId } = useSelectedFamilyMember();
@@ -262,7 +269,7 @@ export function GlobalSearch() {
                         }`}
                       >
                         {result.direction === "INCOME" ? "+" : "−"}
-                        {formatMoney(result.amountMinor, currency)}
+                        {formatAmount(result.amountMinor, currency)}
                       </span>
                     </span>
                     <span className="line-clamp-1 text-foreground">

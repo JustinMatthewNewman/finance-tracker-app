@@ -7,7 +7,6 @@ import {
   guessCategory,
   importKeyFor,
   inferMethod,
-  isInternalTransfer,
   parseCsv,
   parseSignedAmount,
   parseWellsFargoCsv,
@@ -156,18 +155,6 @@ describe("inferMethod", () => {
   });
 });
 
-describe("isInternalTransfer", () => {
-  it("matches Wells Fargo's own between-my-accounts prefix", () => {
-    expect(isInternalTransfer("ONLINE TRANSFER FROM STERLING A PLATINUM SAVINGS")).toBe(true);
-  });
-
-  it("does not match money that genuinely leaves or enters the household", () => {
-    expect(isInternalTransfer("ZELLE TO VANCE HOUSEKEEPING ON 09/17")).toBe(false);
-    expect(isInternalTransfer("MONEY TRANSFER AUTHORIZED ON 09/13 EXAMPLE MARKETS")).toBe(false);
-    expect(isInternalTransfer("000000 MERIDIAN CAPITAL PAYROLL")).toBe(false);
-  });
-});
-
 describe("guessCategory", () => {
   it("branches on direction, not only on the merchant", () => {
     const merchant = "ONLINE TRANSFER TO STERLING A PLATINUM SAVINGS";
@@ -229,7 +216,7 @@ describe("parseWellsFargoCsv", () => {
       amountMinor: 2841667,
       method: "Deposit",
       categoryName: "Salary",
-      isInternalTransfer: false,
+      isInternalToUser: false,
     });
   });
 
@@ -239,7 +226,7 @@ describe("parseWellsFargoCsv", () => {
   });
 
   it("flags the internal transfers without dropping them", () => {
-    const internal = parsed.rows.filter((r) => r.isInternalTransfer);
+    const internal = parsed.rows.filter((r) => r.isInternalToUser);
     expect(internal).toHaveLength(3);
     // Still present, in both directions — the dialog decides, not the parser.
     expect(new Set(internal.map((r) => r.direction))).toEqual(new Set(["INCOME", "EXPENSE"]));
@@ -335,7 +322,7 @@ describe("the savings fixture", () => {
     const interest = parsed.rows.filter((r) => r.categoryName === "Interest");
     expect(interest).toHaveLength(2);
     expect(interest.every((r) => r.direction === "INCOME")).toBe(true);
-    expect(parsed.rows.filter((r) => r.isInternalTransfer)).toHaveLength(3);
+    expect(parsed.rows.filter((r) => r.isInternalToUser)).toHaveLength(3);
   });
 });
 

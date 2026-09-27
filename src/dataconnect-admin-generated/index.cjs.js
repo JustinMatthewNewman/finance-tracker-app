@@ -84,6 +84,27 @@ function selectMyCategoryColorsEnabled(dcOrVarsOrOptions, varsOrOptions, options
 }
 exports.selectMyCategoryColorsEnabled = selectMyCategoryColorsEnabled;
 
+function selectMyHideWeekends(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('SelectMyHideWeekends', inputVars, inputOpts);
+}
+exports.selectMyHideWeekends = selectMyHideWeekends;
+
+function selectMyShowInternalTransfers(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('SelectMyShowInternalTransfers', inputVars, inputOpts);
+}
+exports.selectMyShowInternalTransfers = selectMyShowInternalTransfers;
+
+function selectMyPrivacyMode(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('SelectMyPrivacyMode', inputVars, inputOpts);
+}
+exports.selectMyPrivacyMode = selectMyPrivacyMode;
+
 function selectMyCurrency(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
   dcInstance.useGen(true);
@@ -181,6 +202,13 @@ function deleteStatementImport(dcOrVarsOrOptions, varsOrOptions, options) {
   return dcInstance.executeMutation('DeleteStatementImport', inputVars, inputOpts);
 }
 exports.deleteStatementImport = deleteStatementImport;
+
+function setTransactionInternalFlags(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
+  dcInstance.useGen(true);
+  return dcInstance.executeMutation('SetTransactionInternalFlags', inputVars, inputOpts);
+}
+exports.setTransactionInternalFlags = setTransactionInternalFlags;
 
 function markTransactionPosted(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);
@@ -356,6 +384,13 @@ function listMyImportedInRange(dcOrVarsOrOptions, varsOrOptions, options) {
   return dcInstance.executeQuery('ListMyImportedInRange', inputVars, inputOpts);
 }
 exports.listMyImportedInRange = listMyImportedInRange;
+
+function listMyClassifiableTransactions(dcOrVarsOrOptions, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, false);
+  dcInstance.useGen(true);
+  return dcInstance.executeQuery('ListMyClassifiableTransactions', inputVars, inputOpts);
+}
+exports.listMyClassifiableTransactions = listMyClassifiableTransactions;
 
 function listMyImportedKeys(dcOrVarsOrOptions, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts} = validateAdminArgs(connectorConfig, dcOrVarsOrOptions, varsOrOptions, options, true, true);

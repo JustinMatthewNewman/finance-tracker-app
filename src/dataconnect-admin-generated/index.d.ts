@@ -111,6 +111,8 @@ export interface CreateTransactionVariables {
   source?: string | null;
   status?: string | null;
   importKey?: string | null;
+  isInternalToUser?: boolean | null;
+  isInternalToFamily?: boolean | null;
   importRef?: string | null;
   statementImportId?: UUIDString | null;
 }
@@ -288,6 +290,9 @@ export interface GetMyUserData {
       categoryColorsEnabled?: boolean | null;
       squareCorners?: boolean | null;
       currencyCode?: string | null;
+      hideWeekends?: boolean | null;
+      showInternalTransfers?: boolean | null;
+      privacyMode?: boolean | null;
       colorScheme?: {
         id: UUIDString;
         name: string;
@@ -418,6 +423,21 @@ export interface ListFamilyMembersVariables {
   offset?: number | null;
 }
 
+export interface ListMyClassifiableTransactionsData {
+  transactions: ({
+    id: UUIDString;
+    merchant?: string | null;
+    method?: string | null;
+    isInternalToUser?: boolean | null;
+    isInternalToFamily?: boolean | null;
+  } & Transaction_Key)[];
+}
+
+export interface ListMyClassifiableTransactionsVariables {
+  limit?: number | null;
+  offset?: number | null;
+}
+
 export interface ListMyImportedInRangeData {
   transactions: ({
     id: UUIDString;
@@ -463,6 +483,8 @@ export interface ListMyRecurringProjectionsData {
     recurrenceEndsOn?: DateString | null;
     source: string;
     status: string;
+    isInternalToUser?: boolean | null;
+    isInternalToFamily?: boolean | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -529,6 +551,8 @@ export interface ListMyTransactionsByDateRangeData {
     recurrenceEndsOn?: DateString | null;
     source: string;
     status: string;
+    isInternalToUser?: boolean | null;
+    isInternalToFamily?: boolean | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -567,6 +591,8 @@ export interface ListMyTransactionsData {
     recurrenceEndsOn?: DateString | null;
     source: string;
     status: string;
+    isInternalToUser?: boolean | null;
+    isInternalToFamily?: boolean | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -603,6 +629,8 @@ export interface ListTransactionsByFamilyMemberData {
     recurrenceEndsOn?: DateString | null;
     source: string;
     status: string;
+    isInternalToUser?: boolean | null;
+    isInternalToFamily?: boolean | null;
     createdAt: TimestampString;
     familyMember: {
       id: UUIDString;
@@ -746,6 +774,14 @@ export interface SelectMyExternalAccountLinkTemplateVariables {
   externalAccountLinkTemplate?: string | null;
 }
 
+export interface SelectMyHideWeekendsData {
+  userSetting_update?: UserSetting_Key | null;
+}
+
+export interface SelectMyHideWeekendsVariables {
+  hideWeekends: boolean;
+}
+
 export interface SelectMyPerformanceModeData {
   userSetting_update?: UserSetting_Key | null;
 }
@@ -754,12 +790,38 @@ export interface SelectMyPerformanceModeVariables {
   performanceMode: boolean;
 }
 
+export interface SelectMyPrivacyModeData {
+  userSetting_update?: UserSetting_Key | null;
+}
+
+export interface SelectMyPrivacyModeVariables {
+  privacyMode: boolean;
+}
+
+export interface SelectMyShowInternalTransfersData {
+  userSetting_update?: UserSetting_Key | null;
+}
+
+export interface SelectMyShowInternalTransfersVariables {
+  showInternalTransfers: boolean;
+}
+
 export interface SelectMySquareCornersData {
   userSetting_update?: UserSetting_Key | null;
 }
 
 export interface SelectMySquareCornersVariables {
   squareCorners: boolean;
+}
+
+export interface SetTransactionInternalFlagsData {
+  transaction_update?: Transaction_Key | null;
+}
+
+export interface SetTransactionInternalFlagsVariables {
+  transactionId: UUIDString;
+  isInternalToUser: boolean;
+  isInternalToFamily: boolean;
 }
 
 export interface SetUserTypeData {
@@ -934,6 +996,21 @@ export function selectMyCategoryColorsEnabled(dc: DataConnect, vars: SelectMyCat
 /** Generated Node Admin SDK operation action function for the 'SelectMyCategoryColorsEnabled' Mutation. Allow users to pass in custom DataConnect instances. */
 export function selectMyCategoryColorsEnabled(vars: SelectMyCategoryColorsEnabledVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<SelectMyCategoryColorsEnabledData>>;
 
+/** Generated Node Admin SDK operation action function for the 'SelectMyHideWeekends' Mutation. Allow users to execute without passing in DataConnect. */
+export function selectMyHideWeekends(dc: DataConnect, vars: SelectMyHideWeekendsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<SelectMyHideWeekendsData>>;
+/** Generated Node Admin SDK operation action function for the 'SelectMyHideWeekends' Mutation. Allow users to pass in custom DataConnect instances. */
+export function selectMyHideWeekends(vars: SelectMyHideWeekendsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<SelectMyHideWeekendsData>>;
+
+/** Generated Node Admin SDK operation action function for the 'SelectMyShowInternalTransfers' Mutation. Allow users to execute without passing in DataConnect. */
+export function selectMyShowInternalTransfers(dc: DataConnect, vars: SelectMyShowInternalTransfersVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<SelectMyShowInternalTransfersData>>;
+/** Generated Node Admin SDK operation action function for the 'SelectMyShowInternalTransfers' Mutation. Allow users to pass in custom DataConnect instances. */
+export function selectMyShowInternalTransfers(vars: SelectMyShowInternalTransfersVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<SelectMyShowInternalTransfersData>>;
+
+/** Generated Node Admin SDK operation action function for the 'SelectMyPrivacyMode' Mutation. Allow users to execute without passing in DataConnect. */
+export function selectMyPrivacyMode(dc: DataConnect, vars: SelectMyPrivacyModeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<SelectMyPrivacyModeData>>;
+/** Generated Node Admin SDK operation action function for the 'SelectMyPrivacyMode' Mutation. Allow users to pass in custom DataConnect instances. */
+export function selectMyPrivacyMode(vars: SelectMyPrivacyModeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<SelectMyPrivacyModeData>>;
+
 /** Generated Node Admin SDK operation action function for the 'SelectMyCurrency' Mutation. Allow users to execute without passing in DataConnect. */
 export function selectMyCurrency(dc: DataConnect, vars: SelectMyCurrencyVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<SelectMyCurrencyData>>;
 /** Generated Node Admin SDK operation action function for the 'SelectMyCurrency' Mutation. Allow users to pass in custom DataConnect instances. */
@@ -1003,6 +1080,11 @@ export function deleteStatementImportRows(vars: DeleteStatementImportRowsVariabl
 export function deleteStatementImport(dc: DataConnect, vars: DeleteStatementImportVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteStatementImportData>>;
 /** Generated Node Admin SDK operation action function for the 'DeleteStatementImport' Mutation. Allow users to pass in custom DataConnect instances. */
 export function deleteStatementImport(vars: DeleteStatementImportVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<DeleteStatementImportData>>;
+
+/** Generated Node Admin SDK operation action function for the 'SetTransactionInternalFlags' Mutation. Allow users to execute without passing in DataConnect. */
+export function setTransactionInternalFlags(dc: DataConnect, vars: SetTransactionInternalFlagsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<SetTransactionInternalFlagsData>>;
+/** Generated Node Admin SDK operation action function for the 'SetTransactionInternalFlags' Mutation. Allow users to pass in custom DataConnect instances. */
+export function setTransactionInternalFlags(vars: SetTransactionInternalFlagsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<SetTransactionInternalFlagsData>>;
 
 /** Generated Node Admin SDK operation action function for the 'MarkTransactionPosted' Mutation. Allow users to execute without passing in DataConnect. */
 export function markTransactionPosted(dc: DataConnect, vars: MarkTransactionPostedVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<MarkTransactionPostedData>>;
@@ -1128,6 +1210,11 @@ export function listMyStatementImports(vars?: ListMyStatementImportsVariables, o
 export function listMyImportedInRange(dc: DataConnect, vars: ListMyImportedInRangeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListMyImportedInRangeData>>;
 /** Generated Node Admin SDK operation action function for the 'ListMyImportedInRange' Query. Allow users to pass in custom DataConnect instances. */
 export function listMyImportedInRange(vars: ListMyImportedInRangeVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListMyImportedInRangeData>>;
+
+/** Generated Node Admin SDK operation action function for the 'ListMyClassifiableTransactions' Query. Allow users to execute without passing in DataConnect. */
+export function listMyClassifiableTransactions(dc: DataConnect, vars?: ListMyClassifiableTransactionsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListMyClassifiableTransactionsData>>;
+/** Generated Node Admin SDK operation action function for the 'ListMyClassifiableTransactions' Query. Allow users to pass in custom DataConnect instances. */
+export function listMyClassifiableTransactions(vars?: ListMyClassifiableTransactionsVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListMyClassifiableTransactionsData>>;
 
 /** Generated Node Admin SDK operation action function for the 'ListMyImportedKeys' Query. Allow users to execute without passing in DataConnect. */
 export function listMyImportedKeys(dc: DataConnect, vars: ListMyImportedKeysVariables, options?: OperationOptions): Promise<ExecuteOperationResponse<ListMyImportedKeysData>>;

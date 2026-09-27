@@ -1325,6 +1325,24 @@ extend type Transaction {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "Transaction.importRef", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `Transaction` table where the `isInternalToFamily` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  isInternalToFamily_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Transaction.isInternalToFamily", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Transaction` table where the `isInternalToUser` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  isInternalToUser_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Transaction.isInternalToUser", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `Transaction` table where the `merchant` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   merchant_count(
@@ -1839,6 +1857,15 @@ extend type UserSetting {
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "UserSetting.externalAccountLinkTemplate", purpose: QUERY_COUNT)
   """
+  ✨ Count the number of rows in the `UserSetting` table where the `hideWeekends` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  hideWeekends_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "UserSetting.hideWeekends", purpose: QUERY_COUNT)
+  """
   ✨ Count the number of rows in the `UserSetting` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """
   id_count(
@@ -1856,6 +1883,24 @@ extend type UserSetting {
     """
     distinct: Boolean = false
   ): Int! @fdc_generated(from: "UserSetting.performanceMode", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `UserSetting` table where the `privacyMode` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  privacyMode_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "UserSetting.privacyMode", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `UserSetting` table where the `showInternalTransfers` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  showInternalTransfers_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "UserSetting.showInternalTransfers", purpose: QUERY_COUNT)
   """
   ✨ Count the number of rows in the `UserSetting` table where the `squareCorners` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
   """

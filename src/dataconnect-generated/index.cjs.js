@@ -167,6 +167,48 @@ exports.selectMyCategoryColorsEnabled = function selectMyCategoryColorsEnabled(d
 }
 ;
 
+const selectMyHideWeekendsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'SelectMyHideWeekends', inputVars);
+}
+selectMyHideWeekendsRef.operationName = 'SelectMyHideWeekends';
+exports.selectMyHideWeekendsRef = selectMyHideWeekendsRef;
+
+exports.selectMyHideWeekends = function selectMyHideWeekends(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(selectMyHideWeekendsRef(dcInstance, inputVars));
+}
+;
+
+const selectMyShowInternalTransfersRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'SelectMyShowInternalTransfers', inputVars);
+}
+selectMyShowInternalTransfersRef.operationName = 'SelectMyShowInternalTransfers';
+exports.selectMyShowInternalTransfersRef = selectMyShowInternalTransfersRef;
+
+exports.selectMyShowInternalTransfers = function selectMyShowInternalTransfers(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(selectMyShowInternalTransfersRef(dcInstance, inputVars));
+}
+;
+
+const selectMyPrivacyModeRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'SelectMyPrivacyMode', inputVars);
+}
+selectMyPrivacyModeRef.operationName = 'SelectMyPrivacyMode';
+exports.selectMyPrivacyModeRef = selectMyPrivacyModeRef;
+
+exports.selectMyPrivacyMode = function selectMyPrivacyMode(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(selectMyPrivacyModeRef(dcInstance, inputVars));
+}
+;
+
 const selectMyCurrencyRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
@@ -360,6 +402,20 @@ exports.deleteStatementImportRef = deleteStatementImportRef;
 exports.deleteStatementImport = function deleteStatementImport(dcOrVars, vars) {
   const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
   return executeMutation(deleteStatementImportRef(dcInstance, inputVars));
+}
+;
+
+const setTransactionInternalFlagsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'SetTransactionInternalFlags', inputVars);
+}
+setTransactionInternalFlagsRef.operationName = 'SetTransactionInternalFlags';
+exports.setTransactionInternalFlagsRef = setTransactionInternalFlagsRef;
+
+exports.setTransactionInternalFlags = function setTransactionInternalFlags(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(setTransactionInternalFlagsRef(dcInstance, inputVars));
 }
 ;
 
@@ -723,6 +779,21 @@ exports.listMyImportedInRange = function listMyImportedInRange(dcOrVars, varsOrO
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(listMyImportedInRangeRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+;
+
+const listMyClassifiableTransactionsRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'ListMyClassifiableTransactions', inputVars);
+}
+listMyClassifiableTransactionsRef.operationName = 'ListMyClassifiableTransactions';
+exports.listMyClassifiableTransactionsRef = listMyClassifiableTransactionsRef;
+
+exports.listMyClassifiableTransactions = function listMyClassifiableTransactions(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, false);
+  return executeQuery(listMyClassifiableTransactionsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 ;
 

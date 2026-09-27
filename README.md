@@ -432,6 +432,122 @@ are a deliberately overlapping pair, a statement downloaded with rows still
 pending and the same account downloaded three weeks later, which is what
 `lib/importReconcile.test.ts` runs against.
 
+### In, out, and what is merely expected
+
+Every in/out figure in the app comes from `lib/ledgerTotals.ts`. It used to be
+summed inline in three components, which is exactly the duplication that drifts
+without anything throwing — a wrong total just shows a number nobody can account
+for. Four decisions live there, and the tests pin each one:
+
+- **In and out are kept apart**, never netted. A refund is money in against a
+  spending merchant; net it as you go and "spent this month" quietly shrinks by
+  the refund.
+- **Actual and projected are kept apart**, split on `status` and never on
+  `source`. A projection marked as received keeps `source: "FORECAST"` so its
+  provenance survives — splitting on source would then exclude money the
+  household has actually been paid.
+- **An imported row is an actual.** `source: "IMPORT"` counts in in/out exactly
+  like a typed one. The imported subtotals are a *breakdown* of that figure, for
+  reconciling against a statement, not a replacement for it.
+- **Excluded rows leave every figure**, not just the list.
+
+`sumDays` deliberately takes the days to count rather than summing its whole map:
+the calendar grid pads with adjacent months and can have its weekend hidden, so a
+month total must be handed the month's days. Both mistakes — leaking an adjacent
+month, dropping a weekend — are one line away and neither errors.
+
+### Calendar
+
+A month grid of money per day. Tapping a day goes to `/calendar/2026-09-15`,
+which shows everything on that day plus the stats a grid cell has no room for:
+what it went on, who spent it, the day's share of the month's spending, and
+what on it is still only expected. It is a route rather than an expanding panel
+because a day is something people link to, send to a housemate, and reach with
+the back button.
+
+**Hide weekends** drops Saturday and Sunday, leaving five wider columns. It is a
+view filter and touches no total — weekend transactions still exist and still
+count, which `visibleGridDays` and its tests exist to guarantee.
+
+### Internal transfers
+
+Money that never enters or leaves the household. Its two legs are a real credit
+and a real debit, so counting them adds the same amount to **both** sides of the
+month. A household that sweeps money into savings every payday looks like it earns
+and spends far more than it does.
+
+What it does to the **net** depends on whether both accounts were imported:
+
+- **both legs imported** — they cancel, the net is unchanged, and only in/out are
+  inflated. This is what makes the distortion so easy to miss.
+- **one leg imported** — nothing cancels, so counting it makes the net wrong too:
+  money swept into an un-imported savings account is reported as spending when it
+  never left the household. Excluding it corrects the net.
+
+Measured on a real household of 3,000 rows: excluding transfers moved in from
+$467,056 to $330,217, out from $330,935 to $198,077, and the net by $3,980 —
+that last figure entirely from one-legged transfers.
+
+There are **two flags**, because they are not the same question:
+
+| | what it is | household total | that person's own total |
+|---|---|---|---|
+| `isInternalToUser` | one account holder's own accounts — checking to savings | excluded | not money either way |
+| `isInternalToFamily` | two people *inside* the household — one member paying another | excluded (the legs cancel) | real for each of them |
+
+The toggle is in the **navbar**, not on a page, because it changes the figures on
+Income, Expenses, the Calendar, a day's detail and the household panel at once.
+Every screen that applies it also says how many rows it is holding back.
+
+Both flags are decided from the statement memo — Wells Fargo's `ONLINE TRANSFER`
+prefix for the first, a household member's name in a Zelle memo for the second —
+and stored, because the memo is not kept. `lib/internalTransfers.ts` classifies
+from the **stored** `merchant` and `method` as well as from a raw memo, and that
+is load-bearing: `extractMerchant` deliberately leaves the transfer prefix intact,
+which is the only reason rows imported before these columns existed can be
+repaired.
+
+**Nothing needs setting up.** Every list resolves these flags on read —
+stored value first, then the memo, then by pairing the two legs — so the toggle
+works on statements imported long before these columns existed. The columns are the
+durable record; the resolution is the live answer. That ordering matters: an
+earlier version only read the stored columns, and a household with 1,062 unflagged
+transfers found the toggle did nothing at all.
+
+**Pairing** is what catches the transfers no memo can identify. "CASH APP" and
+"VENMO" name nobody — but when both accounts are imported the transfer is in the
+data twice, once leaving one member and once arriving at another. Matching those
+two rows identifies it with no names, and says which kind it is for free: same
+member means own accounts, different members means between two people. It requires
+opposite directions, identical amounts, a date within four days, and **both** sides
+looking like a transfer — that last condition is what stops a $200 card purchase
+pairing with a $200 paycheque that lands the same day.
+
+**Settings → Re-check internal transfers** persists what the resolver works out,
+so a pairing found while looking at one month survives into a view of another, and
+anything server-side can read it. It is needed because a
+classification can be right today and wrong tomorrow: a payment to Sarah only
+becomes internal once Sarah is in the roster, and stops being if she leaves. It
+reports only rows that would actually change, in both directions, so running it
+twice writes nothing. On a real household of 2,947 imported rows it found 1,062
+own-account transfers and 96 payments between members.
+
+### Hiding amounts
+
+The eye in the navbar replaces every figure with dots, for a shared screen or a
+screenshot. It is persisted like every other preference, so it survives a reload
+and follows the account to another device.
+
+It is **not a security boundary**, and `lib/privacy.ts` says so: the amounts are
+still in the page and still in the network responses. It defeats a glance, which
+is what it is for. The mask is a fixed four bullets regardless of the amount,
+because a mask whose length tracked the digits would leak the magnitude.
+
+Every amount renders through `usePrivacyMode().formatAmount` rather than
+`formatMoney` directly. A component that formats money itself is one the toggle
+silently misses, and a screen that hides most of its figures is worse than one
+that hides none.
+
 ### Households
 
 A `Family` groups **accounts**, not people — the tracked people are still
@@ -529,6 +645,8 @@ because the tier system is kept, but nothing calls them yet.
 | `npm run build` | Production build |
 | `npm run emulators` | Auth (9199) + Data Connect (9499) emulators |
 | `npm run seed` | Load reference data into the emulator (idempotent) |
+| `npm run seed:prod:dry` | Run every production-seed guard and print the plan, writing nothing |
+| `npm run seed:prod` | Load the same reference data into a REAL project. Needs `SEED_CONFIRM_PROJECT` to equal the project id, service-account credentials, and the emulator host variables unset. **This is what makes colour schemes exist in production** — without it `ListColorSchemes` is empty there and the theme picker has nothing in it |
 | `npm run make-env` | Build `.env.local` from the Firebase config + service account key |
 | `npm run dataconnect:generate` | Regenerate the Data Connect SDKs |
 | `npm run verify:guards` | Drive the connector as several identities and try to break the household boundary. `APP_URL=http://localhost:3000` also exercises the sync-user repair path |

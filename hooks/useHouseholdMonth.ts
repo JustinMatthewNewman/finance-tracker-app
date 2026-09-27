@@ -21,16 +21,9 @@ import type {
 import { occurrencesInRange } from "@/lib/recurrence";
 import { fetchAllPages } from "@/lib/dataconnectPagination";
 import { monthRange, type MonthKey } from "@/lib/monthRange";
-import type { Minor } from "@/lib/money";
-
-export interface MonthTotals {
-  /** Money that actually moved. */
-  postedMinor: Minor;
-  /** Money still only expected. */
-  projectedMinor: Minor;
-  /** Both together — what the month is on course to total. */
-  expectedMinor: Minor;
-}
+import { ledgerTotals, totalsByDay } from "@/lib/ledgerTotals";
+import { nameTokens, resolveInternalTransfers } from "@/lib/internalTransfers";
+import { useInternalTransfers } from "@/context/InternalTransfersContext";
 
 /**
  * One month of the household's money, for the Income, Expenses and Calendar
@@ -50,6 +43,11 @@ export interface MonthTotals {
 export function useHouseholdMonth(monthKey: MonthKey) {
   const { user } = useAuth();
   const { userId: myUserId } = useUserSettings();
+  // The one display preference that changes a figure. Read here rather than in
+  // each page so every total on every screen applies it identically — a month
+  // total that counted transfers while the table beside it hid them would be
+  // unreconcilable by hand.
+  const { showInternalTransfers } = useInternalTransfers();
   const { familyMembers, loading: membersLoading, refetch: refetchMembers } = useFamilyMembers();
 
   // Reads are bounded by the month; writes are not member-scoped, so the
@@ -151,26 +149,95 @@ export function useHouseholdMonth(monthKey: MonthKey) {
     [transactions]
   );
 
-  /**
-   * Splits a set of rows into what has happened and what is merely expected.
-   *
-   * Keyed on `status`, never on `source`. A projection that has been marked
-   * as received keeps source "FORECAST" for provenance, and counting it as
-   * projected afterwards would mean the month's real total silently excluded
-   * money the household has actually been paid.
-   */
-  const totalsOf = useCallback((rows: Transaction[]): MonthTotals => {
-    let postedMinor = 0;
-    let projectedMinor = 0;
-    for (const row of rows) {
-      if (row.status === "FORECASTED") projectedMinor += row.amountMinor;
-      else postedMinor += row.amountMinor;
-    }
-    return { postedMinor, projectedMinor, expectedMinor: postedMinor + projectedMinor };
-  }, []);
+  // Pairing needs a stable row identity plus who the row belongs to. An expanded
+  // recurring occurrence shares its rule's `id`, which is correct here: a rule is
+  // one row and pairs (or does not) as one.
+  const toPairable = (txn: Transaction) => ({
+    id: txn.id,
+    familyMemberId: txn.familyMemberId,
+    direction: txn.direction,
+    amountMinor: txn.amountMinor,
+    occurredOn: txn.occurredOn,
+    merchant: txn.merchant,
+    method: txn.method,
+    isInternalToUser: txn.isInternalToUser,
+    isInternalToFamily: txn.isInternalToFamily,
+  });
 
-  const incomeTotals = useMemo(() => totalsOf(income), [income, totalsOf]);
-  const expenseTotals = useMemo(() => totalsOf(expenses), [expenses, totalsOf]);
+  /**
+   * Which rows are internal transfers, decided NOW rather than read off the
+   * stored columns.
+   *
+   * Display must not wait on those columns. A household that imported before they
+   * existed has none of them set, and the toggle then does nothing at all — which
+   * is exactly what happened: 1,062 transfers sat unflagged and the feature looked
+   * broken. See resolveInternalTransfers for the three passes and why the stored
+   * values still win when present.
+   *
+   * This hook is the one place all three passes can run, because it is the only
+   * one holding both the roster and a whole period of the HOUSEHOLD's rows — and
+   * pairing needs the other leg, which usually belongs to somebody else.
+   */
+  const householdTokens = useMemo(
+    () => nameTokens(familyMembers.map((m: FamilyMemberData) => m.name)),
+    [familyMembers]
+  );
+  const internalById = useMemo(
+    () => resolveInternalTransfers(transactions.map(toPairable), householdTokens),
+    [transactions, householdTokens]
+  );
+  const isRowInternal = useCallback(
+    (txn: Transaction) => {
+      const flags = internalById.get(txn.id);
+      return !!flags && (flags.isInternalToUser || flags.isInternalToFamily);
+    },
+    [internalById]
+  );
+
+  /**
+   * The rows every total sees, with the resolved flags written onto them.
+   *
+   * Applied to the ROWS rather than passed as an option, so ledgerTotals keeps
+   * reading flags off a row and needs to know nothing about how they were
+   * decided.
+   */
+  const resolved = useMemo(
+    () => transactions.map((txn) => ({ ...txn, ...(internalById.get(txn.id) ?? {}) })),
+    [transactions, internalById]
+  );
+
+  const totalsOptions = useMemo(
+    () => ({ includeInternalTransfers: showInternalTransfers }),
+    [showInternalTransfers]
+  );
+
+  /**
+   * The month's in and out, and every rule about how they are computed.
+   *
+   * All of it lives in lib/ledgerTotals.ts rather than here: these sums were
+   * written inline in three components and had to agree, which is exactly the
+   * kind of duplication that drifts silently — a total does not throw when it is
+   * wrong, it just shows a number nobody can account for. That module is pure and
+   * heavily tested; this hook only chooses the rows and the options.
+   */
+  const totals = useMemo(() => ledgerTotals(resolved, totalsOptions), [resolved, totalsOptions]);
+
+  /** Per-day figures, for the calendar grid and the day detail page. */
+  const byDay = useMemo(() => totalsByDay(resolved, totalsOptions), [resolved, totalsOptions]);
+
+  /**
+   * The rows a screen should actually render, with hidden transfers removed.
+   *
+   * Paired with `totals` above on purpose: both apply the same filter, so what a
+   * table lists and what the figure above it says always describe the same set of
+   * rows.
+   */
+  const visible = useMemo(
+    () => (showInternalTransfers ? resolved : resolved.filter((t) => !isRowInternal(t))),
+    [resolved, showInternalTransfers, isRowInternal]
+  );
+  const visibleIncome = useMemo(() => visible.filter((t) => t.direction === "INCOME"), [visible]);
+  const visibleExpenses = useMemo(() => visible.filter((t) => t.direction === "EXPENSE"), [visible]);
 
   /** Household members whose records this account may actually write to. */
   const myMembers = useMemo(
@@ -223,11 +290,18 @@ export function useHouseholdMonth(monthKey: MonthKey) {
 
   return {
     range,
+    /** Every row in the month, including transfers the household has hidden. */
     transactions,
     income,
     expenses,
-    incomeTotals,
-    expenseTotals,
+    /** The same rows with hidden transfers removed — what a table should list. */
+    visible,
+    visibleIncome,
+    visibleExpenses,
+    /** The month's in/out. See lib/ledgerTotals.ts. */
+    totals,
+    byDay,
+    showInternalTransfers,
     familyMembers,
     myMembers,
     loading: loading || membersLoading,

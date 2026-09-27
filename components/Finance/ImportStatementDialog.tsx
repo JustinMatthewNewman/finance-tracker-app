@@ -5,8 +5,8 @@ import { Button, Card, Chip } from "@heroui/react";
 import { useTransactionImport, type ImportOutcome, type ImportPlan } from "@/hooks/useTransactionImport";
 import { accountLabelFromFilename } from "@/lib/wellsFargoCsv";
 import { MATCH_BASIS_LABELS } from "@/lib/importReconcile";
-import { formatMoney } from "@/lib/money";
 import { formatDayHeading } from "@/lib/monthRange";
+import { usePrivacyMode } from "@/context/PrivacyModeContext";
 
 // Upload a Wells Fargo statement CSV.
 //
@@ -24,6 +24,15 @@ interface ImportStatementDialogProps {
   isOpen: boolean;
   /** Members this account may write to — imports are gated on ownership. */
   memberOptions: { id: string; name: string }[];
+  /**
+   * Every name in the household, not only the writable ones.
+   *
+   * Wider than memberOptions on purpose: a transfer to a housemate is internal
+   * whether or not this account may edit that housemate's records. Narrowing it
+   * to what is writable would leave real family transfers counted as household
+   * income.
+   */
+  householdNames: readonly string[];
   defaultMemberId: string | null;
   onClose: () => void;
   /** Called after rows land, so the page behind can refetch the month. */
@@ -35,10 +44,17 @@ type Stage = "choose" | "review" | "done";
 export function ImportStatementDialog({
   isOpen,
   memberOptions,
+  householdNames,
   defaultMemberId,
   onClose,
   onImported,
 }: ImportStatementDialogProps) {
+  // Amounts go through formatAmount rather than formatMoney, so privacy
+  // mode covers them. A figure that bypassed it would stay legible with the
+  // toggle on, and a screen that hides most of its numbers is worse than one
+  // that hides none — the person believes they are covered.
+  const { formatAmount } = usePrivacyMode();
+
   const { imports, progress, planImport, runImport, removeImport, currency } = useTransactionImport();
 
   const fileRef = useRef<HTMLInputElement>(null);
@@ -100,6 +116,7 @@ export function ImportStatementDialog({
       const next = await planImport(text, {
         accountLabel: accountLabel.trim() || accountLabelFromFilename(filename),
         filename,
+        householdNames,
         categorize: overrides?.categorize ?? categorize,
         excludeInternalTransfers: overrides?.excludeTransfers ?? excludeTransfers,
       });
@@ -344,13 +361,13 @@ export function ImportStatementDialog({
                 <div>
                   <div className="text-xs text-foreground/50">Income</div>
                   <div className="font-semibold tabular-nums text-success">
-                    {formatMoney(totalOf(rowsToWrite, "INCOME"), currency)}
+                    {formatAmount(totalOf(rowsToWrite, "INCOME"), currency)}
                   </div>
                 </div>
                 <div>
                   <div className="text-xs text-foreground/50">Expenses</div>
                   <div className="font-semibold tabular-nums text-danger">
-                    {formatMoney(totalOf(rowsToWrite, "EXPENSE"), currency)}
+                    {formatAmount(totalOf(rowsToWrite, "EXPENSE"), currency)}
                   </div>
                 </div>
               </div>
@@ -451,14 +468,14 @@ export function ImportStatementDialog({
                               <div className="font-medium text-foreground">{m.row.merchant}</div>
                               <div className="tabular-nums text-foreground/60">
                                 {m.row.occurredOn} ·{" "}
-                                {formatMoney(m.row.amountMinor, currency)}
+                                {formatAmount(m.row.amountMinor, currency)}
                               </div>
                             </td>
                             <td className="p-2">
                               <div className="text-foreground/70">{m.existing.merchant ?? "—"}</div>
                               <div className="tabular-nums text-foreground/60">
                                 {m.existing.occurredOn} ·{" "}
-                                {formatMoney(m.existing.amountMinor, currency)}
+                                {formatAmount(m.existing.amountMinor, currency)}
                               </div>
                             </td>
                             <td className="p-2 text-foreground/60">
@@ -472,7 +489,7 @@ export function ImportStatementDialog({
                               {m.row.amountMinor !== m.existing.amountMinor && (
                                 <span className="block text-warning">
                                   Amount differs by{" "}
-                                  {formatMoney(
+                                  {formatAmount(
                                     Math.abs(m.row.amountMinor - m.existing.amountMinor),
                                     currency
                                   )}
@@ -521,7 +538,7 @@ export function ImportStatementDialog({
                           }`}
                         >
                           {row.direction === "INCOME" ? "+" : "−"}
-                          {formatMoney(row.amountMinor, currency)}
+                          {formatAmount(row.amountMinor, currency)}
                         </td>
                         <td className="max-w-64 truncate p-2 text-foreground/40" title={row.raw.description}>
                           {row.raw.description}

@@ -3037,6 +3037,22 @@ input Transaction_Data {
   """
   importRef_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `Transaction`.`isInternalToFamily` of type `Boolean`
+  """
+  isInternalToFamily: Boolean
+  """
+  ✨ `_expr` server value variant of `isInternalToFamily` (✨ Generated from Field `Transaction`.`isInternalToFamily` of type `Boolean`)
+  """
+  isInternalToFamily_expr: Boolean_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `Transaction`.`isInternalToUser` of type `Boolean`
+  """
+  isInternalToUser: Boolean
+  """
+  ✨ `_expr` server value variant of `isInternalToUser` (✨ Generated from Field `Transaction`.`isInternalToUser` of type `Boolean`)
+  """
+  isInternalToUser_expr: Boolean_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `Transaction`.`merchant` of type `String`
   """
   merchant: String
@@ -3186,6 +3202,14 @@ input Transaction_Filter {
   """
   importRef: String_Filter
   """
+  ✨ Generated from Field `Transaction`.`isInternalToFamily` of type `Boolean`
+  """
+  isInternalToFamily: Boolean_Filter
+  """
+  ✨ Generated from Field `Transaction`.`isInternalToUser` of type `Boolean`
+  """
+  isInternalToUser: Boolean_Filter
+  """
   ✨ Generated from Field `Transaction`.`merchant` of type `String`
   """
   merchant: String_Filter
@@ -3287,6 +3311,14 @@ input Transaction_Having {
   ✨ Generated from Field `Transaction`.`importRef_count` of type `Int!`
   """
   importRef_count: Int_Filter
+  """
+  ✨ Generated from Field `Transaction`.`isInternalToFamily_count` of type `Int!`
+  """
+  isInternalToFamily_count: Int_Filter
+  """
+  ✨ Generated from Field `Transaction`.`isInternalToUser_count` of type `Int!`
+  """
+  isInternalToUser_count: Int_Filter
   """
   ✨ Generated from Field `Transaction`.`merchant_count` of type `Int!`
   """
@@ -3455,6 +3487,14 @@ input Transaction_Order {
   """
   importRef: OrderDirection
   """
+  ✨ Generated from Field `Transaction`.`isInternalToFamily` of type `Boolean`
+  """
+  isInternalToFamily: OrderDirection
+  """
+  ✨ Generated from Field `Transaction`.`isInternalToUser` of type `Boolean`
+  """
+  isInternalToUser: OrderDirection
+  """
   ✨ Generated from Field `Transaction`.`merchant` of type `String`
   """
   merchant: OrderDirection
@@ -3522,6 +3562,14 @@ input Transaction_Order {
   ✨ Generated from Field `Transaction`.`importRef_count` of type `Int!`
   """
   importRef_count: OrderDirection
+  """
+  ✨ Generated from Field `Transaction`.`isInternalToFamily_count` of type `Int!`
+  """
+  isInternalToFamily_count: OrderDirection
+  """
+  ✨ Generated from Field `Transaction`.`isInternalToUser_count` of type `Int!`
+  """
+  isInternalToUser_count: OrderDirection
   """
   ✨ Generated from Field `Transaction`.`merchant_count` of type `Int!`
   """
@@ -4075,6 +4123,14 @@ input UserSetting_Data {
   """
   externalAccountLinkTemplate_expr: String_Expr @fdc_forbiddenInVariables
   """
+  ✨ Generated from Field `UserSetting`.`hideWeekends` of type `Boolean`
+  """
+  hideWeekends: Boolean
+  """
+  ✨ `_expr` server value variant of `hideWeekends` (✨ Generated from Field `UserSetting`.`hideWeekends` of type `Boolean`)
+  """
+  hideWeekends_expr: Boolean_Expr @fdc_forbiddenInVariables
+  """
   ✨ Generated from Field `UserSetting`.`performanceMode` of type `Boolean`
   """
   performanceMode: Boolean
@@ -4082,6 +4138,22 @@ input UserSetting_Data {
   ✨ `_expr` server value variant of `performanceMode` (✨ Generated from Field `UserSetting`.`performanceMode` of type `Boolean`)
   """
   performanceMode_expr: Boolean_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `UserSetting`.`privacyMode` of type `Boolean`
+  """
+  privacyMode: Boolean
+  """
+  ✨ `_expr` server value variant of `privacyMode` (✨ Generated from Field `UserSetting`.`privacyMode` of type `Boolean`)
+  """
+  privacyMode_expr: Boolean_Expr @fdc_forbiddenInVariables
+  """
+  ✨ Generated from Field `UserSetting`.`showInternalTransfers` of type `Boolean`
+  """
+  showInternalTransfers: Boolean
+  """
+  ✨ `_expr` server value variant of `showInternalTransfers` (✨ Generated from Field `UserSetting`.`showInternalTransfers` of type `Boolean`)
+  """
+  showInternalTransfers_expr: Boolean_Expr @fdc_forbiddenInVariables
   """
   ✨ Generated from Field `UserSetting`.`squareCorners` of type `Boolean`
   """
@@ -4172,9 +4244,21 @@ input UserSetting_Filter {
   """
   externalAccountLinkTemplate: String_Filter
   """
+  ✨ Generated from Field `UserSetting`.`hideWeekends` of type `Boolean`
+  """
+  hideWeekends: Boolean_Filter
+  """
   ✨ Generated from Field `UserSetting`.`performanceMode` of type `Boolean`
   """
   performanceMode: Boolean_Filter
+  """
+  ✨ Generated from Field `UserSetting`.`privacyMode` of type `Boolean`
+  """
+  privacyMode: Boolean_Filter
+  """
+  ✨ Generated from Field `UserSetting`.`showInternalTransfers` of type `Boolean`
+  """
+  showInternalTransfers: Boolean_Filter
   """
   ✨ Generated from Field `UserSetting`.`squareCorners` of type `Boolean`
   """
@@ -4254,6 +4338,10 @@ input UserSetting_Having {
   """
   externalAccountLinkTemplate_count: Int_Filter
   """
+  ✨ Generated from Field `UserSetting`.`hideWeekends_count` of type `Int!`
+  """
+  hideWeekends_count: Int_Filter
+  """
   ✨ Generated from Field `UserSetting`.`id_count` of type `Int!`
   """
   id_count: Int_Filter
@@ -4261,6 +4349,14 @@ input UserSetting_Having {
   ✨ Generated from Field `UserSetting`.`performanceMode_count` of type `Int!`
   """
   performanceMode_count: Int_Filter
+  """
+  ✨ Generated from Field `UserSetting`.`privacyMode_count` of type `Int!`
+  """
+  privacyMode_count: Int_Filter
+  """
+  ✨ Generated from Field `UserSetting`.`showInternalTransfers_count` of type `Int!`
+  """
+  showInternalTransfers_count: Int_Filter
   """
   ✨ Generated from Field `UserSetting`.`squareCorners_count` of type `Int!`
   """
@@ -4409,9 +4505,21 @@ input UserSetting_Order {
   """
   externalAccountLinkTemplate: OrderDirection
   """
+  ✨ Generated from Field `UserSetting`.`hideWeekends` of type `Boolean`
+  """
+  hideWeekends: OrderDirection
+  """
   ✨ Generated from Field `UserSetting`.`performanceMode` of type `Boolean`
   """
   performanceMode: OrderDirection
+  """
+  ✨ Generated from Field `UserSetting`.`privacyMode` of type `Boolean`
+  """
+  privacyMode: OrderDirection
+  """
+  ✨ Generated from Field `UserSetting`.`showInternalTransfers` of type `Boolean`
+  """
+  showInternalTransfers: OrderDirection
   """
   ✨ Generated from Field `UserSetting`.`squareCorners` of type `Boolean`
   """
@@ -4457,6 +4565,10 @@ input UserSetting_Order {
   """
   externalAccountLinkTemplate_count: OrderDirection
   """
+  ✨ Generated from Field `UserSetting`.`hideWeekends_count` of type `Int!`
+  """
+  hideWeekends_count: OrderDirection
+  """
   ✨ Generated from Field `UserSetting`.`id_count` of type `Int!`
   """
   id_count: OrderDirection
@@ -4464,6 +4576,14 @@ input UserSetting_Order {
   ✨ Generated from Field `UserSetting`.`performanceMode_count` of type `Int!`
   """
   performanceMode_count: OrderDirection
+  """
+  ✨ Generated from Field `UserSetting`.`privacyMode_count` of type `Int!`
+  """
+  privacyMode_count: OrderDirection
+  """
+  ✨ Generated from Field `UserSetting`.`showInternalTransfers_count` of type `Int!`
+  """
+  showInternalTransfers_count: OrderDirection
   """
   ✨ Generated from Field `UserSetting`.`squareCorners_count` of type `Int!`
   """
