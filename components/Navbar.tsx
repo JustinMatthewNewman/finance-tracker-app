@@ -62,6 +62,10 @@ interface NavLink {
 }
 
 const NAV_LINKS: NavLink[] = [
+  // First, because it is the overview the other tabs are the detail of: one
+  // window of time for the whole household, with its own range control rather
+  // than the single-month carousel the pages below use.
+  { label: "Dashboard", href: "/dashboard", icon: ChartPie, authRequired: true },
   { label: "Household", href: "/household", icon: Persons, authRequired: true },
   // Income / Expenses / Calendar all read the same Transaction rows the
   // Household page does, scoped to the selected month, so their figures

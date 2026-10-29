@@ -281,8 +281,29 @@ throw, it permits, and that is indistinguishable from success everywhere else.
 - `context/` — one provider per persisted preference, all fed by the single
   `GetMyUser` fetch in `UserSettingsContext`. Keep new ones below it.
   `PrivacyModeContext` also owns `formatAmount`, which every amount goes through.
-- `hooks/useHouseholdMonth.ts` — one month of the whole household, for
-  Income/Expenses/Calendar. Call once per page; it owns a `useFamilyMembers()`.
+- `hooks/useHouseholdRange.ts` — one arbitrary window of the whole household:
+  two reads, rule expansion, transfer resolution, totals. Call once per page; it
+  owns a `useFamilyMembers()`. `useHouseholdMonth.ts` is a thin wrapper over it
+  for Income/Expenses/Calendar, which show exactly one month.
+- `app/(app)/dashboard/` + `components/Dashboard/` — the overview tab. One range
+  control scopes every widget; the previous period comes from the SAME widened
+  read, so there is no second `useHouseholdRange`. Widget visibility is
+  localStorage, per device, on purpose.
+- `lib/dateRange.ts` — range presets, the previous comparable period, and the
+  day/week/month bucketing a chart's x-axis is made of. Pure.
+- `lib/analytics.ts` — every dashboard figure: bucket series, stacked series,
+  breakdowns, deltas, rates. Pure, and it adds up nothing itself — every in/out
+  figure goes through `lib/ledgerTotals.ts`.
+- **The categorical chart palette cannot separate its own series, and this is
+  measured.** `lib/chartColor.ts` hue-rotates `--accent` so charts follow the
+  active ColorScheme; against the dataviz gates that fails in all four schemes ×
+  both modes at EVERY slot count from two to eight (adjacent CVD ΔE 0.3–5.6
+  against a target of 8; normal-vision as low as 4.8 against a floor of 15; dark
+  mode also above the lightness band). So the stacked chart uses the one-hue
+  `ordinalRamp` instead — gated on lightness monotonicity, parameters searched
+  against all eight scheme × mode pairs, four steps maximum (`RAMP_MAX_STEPS`) —
+  and the ranked lists are monochrome with text labels. Don't add a new
+  hue-separated multi-series chart without re-running the validator.
 - `hooks/useFamily.ts` — the household, for Settings. Call once per page.
 - `hooks/useOnboarding.ts` — join requests and household creation.
 - `hooks/useTransactionImport.ts` — the write half of the CSV importer:

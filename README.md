@@ -582,6 +582,92 @@ create a household (instant — it is theirs) or ask to join one (pending until
 the household's primary user approves them in Settings). The approval guard is
 the most security-sensitive mutation in the app; see the note above.
 
+### The Dashboard
+
+`/dashboard` is the household's whole picture for one window of time, and the
+only page with a range control rather than the single-month carousel the others
+use. One filter row at the top scopes everything below it — every stat, chart and
+table re-renders against the same slice, which is what keeps their figures
+reconcilable against each other and against the Income/Expenses/Calendar pages.
+
+**One read, widened.** The chosen window and the window *before* it are fetched
+as a single range and split client-side, so every "vs previous" delta costs no
+second query — and, more to the point, no second `useHouseholdRange`, which owns
+a `useFamilyMembers()` and has to stay once per page.
+
+`useHouseholdMonth` is now a thin wrapper over `useHouseholdRange`. The month
+version came first and the dashboard needed the same two reads, the same
+recurring-rule expansion and the same three-pass transfer resolution over an
+arbitrary window, so the window became a parameter instead of the hook growing a
+near-identical twin.
+
+**Every figure comes from `lib/ledgerTotals.ts`**, via the pure aggregations in
+`lib/analytics.ts`. Nothing in a dashboard component adds up an amount itself.
+`lib/dateRange.ts` holds the presets and the bucketing (day → week → month, chosen
+so any preset lands between about 7 and 60 columns). Both are tested; the
+dashboard added 62 tests.
+
+**Widgets** can be toggled from the control in the top right. That choice is kept
+in `localStorage`, deliberately **per device** rather than on the `UserSetting`
+row where every account preference lives: which widgets fit is a property of the
+screen, and somebody who hides two charts on a laptop has said nothing about
+their phone. Promoting it is one nullable column plus a provider, if that turns
+out to be wanted.
+
+#### The 3D chart, and why it is allowed to be 3D
+
+The stacked composition chart is real WebGL (three.js) under an **orthographic**
+camera, not a perspective one. That is the whole argument for it: under
+perspective a bar's drawn height depends on its distance from the camera, so two
+equal values render at different sizes and the reader cannot compare them — the
+chart lies, decoratively. Orthographic projection has no foreshortening, so a
+unit of money is the same number of pixels tall everywhere and the depth is
+presentation rather than distortion. Occlusion is handled by there being only one
+row of bars, plus the table view every widget carries.
+
+It never mounts in performance mode, falls back to a real 2D stacked chart
+without WebGL, animates once and then holds still, and skips even that for
+`prefers-reduced-motion`.
+
+#### A finding: the chart palette could not separate its own series
+
+`lib/chartColor.ts` derives categorical chart colours by hue-rotating `--accent`,
+so charts follow whichever ColorScheme is active. Running the categorical gates
+over the result — all four seeded schemes, both modes — it fails everywhere:
+
+| | worst adjacent CVD ΔE | worst adjacent normal-vision ΔE |
+|---|---|---|
+| target | ≥ 8 | ≥ 15 (hard floor) |
+| measured | **0.3 – 5.6** | **4.8 – 15.1** |
+
+Dark mode additionally fails the lightness band outright (the dark accents sit at
+L ≈ 0.70–0.80, above the 0.77 ceiling). **No slot count from two to eight passes**
+— at two adjacent slots Ocean light still measures 13.7 against the 15 floor. The
+accents were chosen to look right as a UI accent, not to be told apart from each
+other, and a 45° hue-rotate step is too small a perceptual step regardless.
+
+This is pre-existing and affects the donut and category breakdown too. The
+dashboard does not paper over it:
+
+- The **stacked chart** uses a one-hue **ordinal ramp** (`ordinalRamp`), gated on
+  lightness monotonicity instead of pairwise hue separation — a test it passes by
+  construction, and semantically right because the bands are ranked. It is
+  two-ended (reaching toward `--foreground` as well as `--surface`) because an
+  accent→surface span alone put adjacent steps ~ΔL 0.03 apart and its faint end
+  at 1.6:1. The parameters were **searched**, not chosen: 80 combinations of step
+  count and span, validated against all eight scheme × mode pairs. Four steps is
+  the maximum that passes, so the chart shows three categories and folds the rest.
+- The **ranked lists** are monochrome. Every row already carries its label in
+  text, so identity never depended on hue there.
+- Both the 2D and 3D charts compute their colours through the *same* function, so
+  a band is the shade its legend swatch shows. `cssHueRotate` implements CSS's
+  own hue-rotate matrix (not an HSL rotation, which lands elsewhere) for the same
+  reason.
+
+Fixing the palette properly means re-basing it — fixed validated chart hues, or
+re-chosen accents — which changes every existing chart and is a product decision
+about the theming system. The measurements above are the input to it.
+
 ### Seeding a full household for local work
 
 ```bash
