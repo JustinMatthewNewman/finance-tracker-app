@@ -63,6 +63,22 @@ Open the app, click **Sign in with Google**, and pick or invent an account in
 the emulator's sign-in popup — the Auth emulator does not contact Google. The
 first sign-in creates your `User` row on the `Regular` tier.
 
+That account arrives with an empty household and no transactions, which is the
+correct first-run experience and a poor place to work from. One more command
+gives you a household with a year of money in it:
+
+```bash
+npm run seed:stress
+```
+
+It creates six signed-in-able accounts across two households, ~1,500
+transactions over fourteen months, recurring projections, internal transfers, an
+imported bank statement and a pending join request — then prints which account
+to sign in as and what to open first. See
+[Seeding a full household](#seeding-a-full-household-for-local-work) for the
+whole list and the knobs. It is idempotent, emulator-only, and supersedes
+`npm run seed` (it runs that reference data itself).
+
 Emulator state lives in `dataconnect/.dataconnect/pgliteData` and is
 gitignored. Delete that directory to start from an empty database; re-seed
 afterwards.
@@ -566,6 +582,156 @@ create a household (instant — it is theirs) or ask to join one (pending until
 the household's primary user approves them in Settings). The approval guard is
 the most security-sensitive mutation in the app; see the note above.
 
+### Seeding a full household for local work
+
+```bash
+npm run emulators            # terminal 1
+npm run seed:stress          # terminal 2 — idempotent, safe to re-run
+npm run seed:stress:dry      # generate everything, print the plan, write nothing
+npm run seed:stress:reset    # delete only these accounts' rows, then reseed
+npm run dev
+```
+
+`npm run seed` loads reference data and leaves you with an empty app. This fills
+it. The reason it exists is not bulk — it is that the states worth looking at are
+the ones nobody types in by hand: a recurring projection whose rule started
+eleven months ago, a transfer with only one leg imported, a statement re-upload
+that overlaps the last one by a week. Every invariant in `CLAUDE.md` that can be
+*seen* has a row here that shows it.
+
+It runs `seed_data.gql`'s four mutations itself, so a clean emulator needs this
+command and nothing else.
+
+**Who you can sign in as.** Click **Sign in with Google** and pick one from the
+emulator's popup — no passwords, and nothing contacts Google.
+
+| Account | Tier | Household |
+|---|---|---|
+| `alex@local.dev` | Admin | The Rivera-Chen Household (owner) |
+| `sam@local.dev` | Regular | The Rivera-Chen Household — weekends hidden |
+| `jordan@local.dev` | Premium | The Rivera-Chen Household — privacy mode on, transfers excluded |
+| `nia@local.dev` | Regular | The Okonkwo Household — a second household, to see the boundary from outside |
+| `riley@local.dev` | Regular | None — lands in onboarding |
+| `casey@local.dev` | Regular | None, with a **pending** request at Rivera-Chen |
+
+Invite codes are `STRESSHHA1` and `STRESSHHB2`. Alex is `Admin` only so that
+tier-gated surfaces are reachable without a manual promotion after every reset.
+The two household-less accounts exist because onboarding is otherwise
+unreachable once every account has a household, and Riley is kept clean so the
+create-or-join choice still works from a fresh state.
+
+The household also holds two people who do **not** sign in — which is the normal
+case for most of a family, and what makes `FamilyMember.user` (the owner) and
+`FamilyMember.selfUser` (who it is) visibly different. One of them is
+soft-deleted *with* transactions, so you can see that removing somebody does not
+cascade into their financial history.
+
+**What it writes.** Roughly 1,500 transactions over fourteen months per run,
+ending today. The current month is deliberately a month *in progress* — actuals
+up to today, projections after it — so both halves of every screen are populated
+on the day you run it.
+
+Among them, named individually in the script's own output:
+
+- Seven **recurring projection rules** (monthly, biweekly, weekly, yearly), some
+  indefinite, one bounded in the future, one bounded in the past, and one whose
+  `recurrenceEndsOn` precedes its `occurredOn`. That last one is not a mistake:
+  a rule that expands to nothing once vanished from the ledger while still
+  sitting in the database, and the invariant is that a rule always yields at
+  least its first occurrence.
+- A projection that was **received** — `source: "FORECAST"` with
+  `status: "POSTED"`. Anything totalling money must branch on `status`; read it
+  from `source` and this row silently drops out of the month's income.
+- Five **internal-transfer** situations, because they behave differently: a
+  two-legged own-account sweep, the same thing with the flags deliberately
+  **unset** (the state a household that imported before those columns existed is
+  in), a named person-to-person Zelle, an anonymous `CASH APP` pair that only
+  pairing can resolve, and a **one-legged** transfer — the only case where
+  excluding transfers moves the *net* and not just the two sides. Toggling
+  "ignore internal transfers" in the navbar is what makes the difference visible,
+  and every screen that applies it reports its `excludedTransferCount`.
+- **Refunds**: `INCOME` rows against `EXPENSE` categories, which is why
+  `Transaction.direction` is authoritative per row rather than derived from
+  `Category.kind`.
+- Two same-price shops at one shop in one week with **different** bank
+  references — the pair that must never be reported as a duplicate.
+- Uncategorized rows, a member with no colour and no income target, and
+  categories with no colour, so every derived-fallback path is exercised.
+
+**Two things to actually try.** These are the point of the fixture:
+
+1. **Settings → re-check internal transfers.** Two *imported* rows are seeded
+   with their flags unset although their memos classify. The re-check repairs
+   those, and it is idempotent — run it twice and the second run reports nothing.
+   It must **not** touch the seeded `CASH APP` pair, whose memo names nobody:
+   that pair is resolvable only by finding its other leg, which happens at read
+   time, so it reads as internal in the ledger while its stored columns stay
+   false.
+
+   Those rows are `source: "IMPORT"` rather than `MANUAL` for a load-bearing
+   reason — `ListMyClassifiableTransactions` filters `importKey: { isNull: false
+   }`, so only statement rows are re-checkable. Seed the scenario as
+   hand-entered and the button has nothing to do, which is how the first version
+   of this fixture quietly tested nothing.
+2. **Upload `transaction_data/stress-test/Checking (1).csv`** in the import
+   dialog. It overlaps the already-imported statement and hits all three
+   reconcile tiers at once: two rows caught as the same *line*, one caught by its
+   bank *reference* alone, two that are only **probable** and wait for you to
+   decide, and six genuinely new. The probable pair is a pending charge that has
+   since settled — the commonest real duplicate, and the one a fingerprint cannot
+   catch. Nothing skips it for you, deliberately.
+
+   Three CSVs are written to `transaction_data/stress-test/` (gitignored, so they
+   never mix with your own exports and can never be committed). `Checking.csv` is
+   the one already seeded — uploading it again is refused by
+   `StatementImport.contentKey`, which is the "same file" check. The `(1)` in the
+   second filename is load-bearing: `accountLabelFromFilename()` strips it, so
+   both files carry the account label `Checking` and their per-line `importKey`s
+   line up. That is what a re-download actually lands as.
+
+**It checks its own claims.** Every assertion above is *computed*, on each run,
+using the app's own `resolveInternalTransfers()` and `reconcileStatement()` —
+not written down. A fixture's interesting rows are interesting because of what
+the app concludes from them, and none of that is visible in the rows themselves;
+if a memo stops matching or a window narrows, the fixture quietly becomes an
+ordinary pile of transactions that tests nothing, with a screen that still looks
+fine. So the script prints `✓ all 13 claims hold`, or names the ones that do
+not. A failure there means the **fixture** has stopped exercising what it was
+built for — not that the app is broken.
+
+**Knobs**, all optional:
+
+| | |
+|---|---|
+| `SEED_MONTHS=14` | How many months of history |
+| `SEED_RNG_SEED=20261029` | PRNG seed. Same seed, same fixture — so `--reset` gives back the dataset you were just looking at, and a screenshot stays reproducible |
+| `SEED_DENSITY=1` | Multiplier on discretionary rows per member per month |
+| `SEED_SKIP_CSV=1` | Don't write the statement CSVs |
+
+**Emulator only, and there is no `--production` flag.** `npm run seed:prod`
+exists because reference data genuinely has to reach production. This writes
+people, households and money, so the localhost guard is the whole story and
+there is deliberately no path through it. Re-runs are idempotent — every id is
+derived from a readable key, so a second run upserts the same rows. The one
+thing a re-run cannot absorb is a change to how a statement line fingerprints,
+because `Transaction.importKey` is `@unique` and an old row still holds it;
+that is what `--reset` is for. `--reset` deletes only these accounts' rows,
+scoped to their own ids throughout, in the order the foreign keys require
+(transactions before their statement header, since
+`Transaction.statementImport` is `ON DELETE SET NULL` and removing the header
+first would strand the rows rather than delete them).
+
+**Why it loads TypeScript.** The script imports `lib/wellsFargoCsv.ts`,
+`lib/internalTransfers.ts` and `lib/importReconcile.ts` directly, through the
+tiny resolver in `scripts/ts-resolve.mjs`, and the npm scripts run it with
+`node --import ./scripts/ts-resolve.mjs`. Node can already strip types; what it
+cannot do is resolve the extensionless relative imports those files use, which
+is the one gap that resolver closes. The alternative was a second copy of the
+statement-parsing rules inside the script, and a copy that drifted would produce
+a fixture that silently disagreed with the code it exists to exercise. Nothing
+the app ships goes through that resolver — `next dev`, `next build` and `vitest`
+all have their own.
+
 ### Regenerating the Data Connect SDK
 
 `src/dataconnect-generated` and `src/dataconnect-admin-generated` are checked
@@ -647,6 +813,9 @@ because the tier system is kept, but nothing calls them yet.
 | `npm run seed` | Load reference data into the emulator (idempotent) |
 | `npm run seed:prod:dry` | Run every production-seed guard and print the plan, writing nothing |
 | `npm run seed:prod` | Load the same reference data into a REAL project. Needs `SEED_CONFIRM_PROJECT` to equal the project id, service-account credentials, and the emulator host variables unset. **This is what makes colour schemes exist in production** — without it `ListColorSchemes` is empty there and the theme picker has nothing in it |
+| `npm run seed:stress` | Fill the emulator with two households, ~1,500 transactions, projections, transfers and an imported statement. Idempotent; prints who to sign in as and checks its own claims. [Details](#seeding-a-full-household-for-local-work) |
+| `npm run seed:stress:dry` | Generate the whole fixture, print the plan and the self-check, write nothing |
+| `npm run seed:stress:reset` | Delete only the stress-test accounts' rows, then reseed. The fix for a changed statement fingerprint colliding with a `@unique` `importKey` |
 | `npm run make-env` | Build `.env.local` from the Firebase config + service account key |
 | `npm run dataconnect:generate` | Regenerate the Data Connect SDKs |
 | `npm run verify:guards` | Drive the connector as several identities and try to break the household boundary. `APP_URL=http://localhost:3000` also exercises the sync-user repair path |

@@ -309,4 +309,16 @@ throw, it permits, and that is indistinguishable from success everywhere else.
   one only ever reports are documented at the top of the file.
 - `transaction_data/` — gitignored, for your own real statement exports.
   `transaction_data.example/` holds the committed fake ones the tests read;
-  never commit a real statement.
+  never commit a real statement. `transaction_data/stress-test/` is where
+  `npm run seed:stress` writes its generated ones.
+- `scripts/seed-stress-test.mjs` — the local fixture: two households, ~1,500
+  transactions, every projection and transfer case that behaves differently, and
+  one already-imported statement plus an overlapping file to re-upload. Run it
+  instead of `npm run seed` (it runs that first). Emulator-only, no
+  `--production` path, idempotent; `--reset` is for when a changed statement
+  fingerprint collides with the `@unique` `importKey`. It imports the app's own
+  `wellsFargoCsv`/`internalTransfers`/`importReconcile` through
+  `scripts/ts-resolve.mjs` rather than copying their rules, and **computes** its
+  coverage claims on every run — `✓ all N claims hold`. A failure there means the
+  fixture stopped exercising what it was built for, which is otherwise invisible:
+  the screen still looks fine.

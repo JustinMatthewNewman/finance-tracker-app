@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Tabs, Button, Card, Label, Dropdown } from "@heroui/react";
+import { ListBox, ListBoxItem, Button, Card, Dropdown } from "@heroui/react";
 import { Ellipsis, Pencil, Person } from "@gravity-ui/icons";
-import type { Key } from "react-aria-components";
+import type { Selection } from "react-aria-components";
 import type { useFamilyMembers } from "@/hooks/useFamilyMembers";
 import type { Transaction } from "@/hooks/useTransactions";
 import { useSelectedFamilyMember } from "@/context/SelectedFamilyMemberContext";
@@ -13,8 +13,8 @@ import { effectiveColor } from "@/lib/entityColor";
 import {
   type CurrencyCode,
   DEFAULT_CURRENCY,
-  sumTotals,
 } from "@/lib/money";
+import { ledgerTotals } from "@/lib/ledgerTotals";
 import type { DateRange } from "@/lib/monthRange";
 import { NewFamilyMemberDialog } from "./NewFamilyMemberDialog";
 import { RenameFamilyMemberDialog } from "./RenameFamilyMemberDialog";
@@ -84,7 +84,17 @@ export function FamilyMemberListBox({
     }
     const stats = new Map<string, { netMinor: number; count: number }>();
     for (const [memberId, rows] of grouped) {
-      stats.set(memberId, { netMinor: sumTotals(rows).netMinor, count: rows.length });
+      // ledgerTotals, not sumTotals. The two answer different questions and the
+      // difference is projections: sumTotals reads only amount and direction, so
+      // it folds an expected paycheque into the same figure as a received one,
+      // while every panel figure in the app is actuals-only. That put a number
+      // in this sidebar that disagreed with the one in the panel beside it for
+      // any member with a projection — invisible until the household view put a
+      // combined total directly next to the combined row.
+      //
+      // `rows` arrive already filtered for hidden transfers, so the default
+      // options are right here: there is nothing left for it to exclude.
+      stats.set(memberId, { netMinor: ledgerTotals(rows).netMinor, count: rows.length });
     }
     return stats;
   }, [transactions, range.startDate, range.endDate]);
@@ -102,8 +112,39 @@ export function FamilyMemberListBox({
 
   const selectedItem = familyMembers.find((m) => m.id === selectedFamilyMemberId) ?? null;
 
-  const handleSelectionChange = (key: Key) => {
-    setSelectedFamilyMemberId(key != null ? String(key) : null);
+  /**
+   * What the listbox is told is selected — a set, empty for the combined view.
+   *
+   * An empty selection is a legitimate state for a listbox, which is exactly why
+   * this is one and not a tab list. ARIA requires a tablist to always have a
+   * selected tab, and react-aria enforces it in two places that quietly defeated
+   * the toggle: useTabListState re-selects the first tab whenever the selection
+   * comes up empty, and it wraps onSelectionChange so a null key is never
+   * reported at all. So deselecting could not be observed, and whatever did get
+   * through raced the component putting the tab back — which is what made
+   * clicking feel unreliable rather than simply not work.
+   */
+  const selectedKeys = useMemo(
+    () => (selectedFamilyMemberId ? new Set([selectedFamilyMemberId]) : new Set<string>()),
+    [selectedFamilyMemberId]
+  );
+
+  /**
+   * Clicking the selected person clears the selection, and the panel combines
+   * everybody.
+   *
+   * No interception of any kind: react-aria does the toggle itself for a
+   * single-selection list that permits an empty selection, so this just reports
+   * whichever of the two states came out. That also means it works from the
+   * keyboard — Enter or Space on the focused row selects it, and again clears
+   * it — which a click handler bolted onto a tab never could.
+   */
+  const handleSelectionChange = (keys: Selection) => {
+    // "all" cannot occur in single-selection mode, but the type admits it and
+    // String(...) on a Set would silently produce nonsense.
+    if (keys === "all") return;
+    const [first] = keys;
+    setSelectedFamilyMemberId(first != null ? String(first) : null);
   };
 
   if (loading) {
@@ -129,94 +170,85 @@ export function FamilyMemberListBox({
             Setting up your household…
           </p>
         ) : (
-          <Tabs
-            orientation="vertical"
-            className="h-full w-full min-h-0"
-            selectedKey={selectedFamilyMemberId ?? undefined}
+          <ListBox
+            aria-label="Household members"
+            // SINGLE SELECTION, AND EMPTY SELECTION ALLOWED — which together are
+            // the whole feature. react-aria deselects an already-selected item in
+            // a single-selection list for free (SelectionManager.select: if it is
+            // already selected and empty selection is permitted, it toggles), so
+            // clicking the selected person clears it and the panel shows the
+            // combined view. `disallowEmptySelection` is deliberately NOT set.
+            selectionMode="single"
+            selectedKeys={selectedKeys}
             onSelectionChange={handleSelectionChange}
+            className={`h-full w-full min-h-0 overflow-y-auto rounded-2xl p-1.5 bg-surface outline-none ${
+              bordersEnabled ? "border border-default-200" : ""
+            }`}
+            data-glass="surface"
           >
-            <Tabs.ListContainer className="h-full w-full min-w-0">
-              <Tabs.List
-                aria-label="Family members"
-                className={`h-full w-full min-w-0 overflow-hidden rounded-2xl p-1.5 bg-surface ${
-                  bordersEnabled ? "border border-default-200" : ""
-                }`}
-                data-glass="surface"
-              >
-                {familyMembers.map((member) => {
-                  const stats = statsByMember.get(member.id);
-                  const netMinor = stats?.netMinor ?? 0;
-                  const dotColor = effectiveColor(member.color, member.name);
-                  return (
-                    <Tabs.Tab
-                      key={member.id}
-                      id={member.id}
-                      // No Tabs.Indicator: react-aria's FLIP-animated overlay
-                      // measures itself independently of the tab and renders
-                      // as a mis-sized blob at the left edge. The selected
-                      // fill is painted on the tab itself instead, so it is
-                      // always exactly the tab's own box.
-                      className="h-auto w-full min-w-0 justify-start rounded-xl px-3 py-2.5 text-left text-foreground/60 transition-all hover:bg-default-100/50 data-[selected=true]:bg-accent-soft data-[selected=true]:text-foreground data-[selected=true]:font-semibold"
-                    >
-                      <div className="flex min-w-0 flex-1 items-center gap-2">
-                        {categoryColorsEnabled && dotColor && (
-                          <span
-                            className="size-2.5 shrink-0 rounded-full"
-                            style={{ backgroundColor: dotColor }}
-                            aria-hidden
-                          />
-                        )}
-                        <div className="flex min-w-0 flex-1 flex-col">
-                          <Label className="truncate font-medium">
-                            {member.name}
-                            {/* The account's own entry. Worth marking: in a
-                                household where several people sign in, every
-                                one of them appears here, and "which of these
-                                is me" is otherwise a guess from the name. */}
-                            {member.isSelf && (
-                              <span className="ml-1.5 text-xs font-normal text-foreground/50">
-                                you
-                              </span>
-                            )}
-                          </Label>
-                          <span className="truncate text-sm text-gray-500">
-                            {/* The DERIVED label, not the stored column: every
-                                account's own row is written with "Self", so two
-                                accounts in one household both claimed it. See
-                                lib/householdRole.ts. */}
-                            {member.relationshipLabel ?? "—"}
+            {familyMembers.map((member) => {
+              const stats = statsByMember.get(member.id);
+              const netMinor = stats?.netMinor ?? 0;
+              const dotColor = effectiveColor(member.color, member.name);
+              return (
+                <ListBoxItem
+                  key={member.id}
+                  id={member.id}
+                  // Typeahead reads this rather than trying to flatten the markup
+                  // below into a string; without it react-aria warns on every
+                  // item whose children are not plain text.
+                  textValue={member.name}
+                  className="h-auto w-full min-w-0 cursor-pointer justify-start rounded-xl px-3 py-2.5 text-left text-foreground/60 outline-none transition-all hover:bg-default-100/50 data-[focus-visible=true]:ring-2 data-[focus-visible=true]:ring-accent data-[selected=true]:bg-accent-soft data-[selected=true]:font-semibold data-[selected=true]:text-foreground"
+                >
+                  <div className="flex min-w-0 flex-1 items-center gap-2">
+                    {categoryColorsEnabled && dotColor && (
+                      <span
+                        className="size-2.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: dotColor }}
+                        aria-hidden
+                      />
+                    )}
+                    <div className="flex min-w-0 flex-1 flex-col">
+                      <span className="truncate font-medium">
+                        {member.name}
+                        {/* The account's own entry. Worth marking: in a
+                            household where several people sign in, every
+                            one of them appears here, and "which of these
+                            is me" is otherwise a guess from the name. */}
+                        {member.isSelf && (
+                          <span className="ml-1.5 text-xs font-normal text-foreground/50">
+                            you
                           </span>
-                        </div>
-                        {/* Sign is carried by an explicit +/− and by color,
-                            not by color alone — a red number reads as
-                            "negative" only if you can see red. */}
-                        <span
-                          className={`shrink-0 text-xs tabular-nums ${
-                            netMinor > 0
-                              ? "text-success"
-                              : netMinor < 0
-                                ? "text-danger"
-                                : "text-foreground/40"
-                          }`}
-                        >
-                          {netMinor > 0 ? "+" : netMinor < 0 ? "−" : ""}
-                          {formatAmountCompact(Math.abs(netMinor), currency)}
-                        </span>
-                      </div>
-                    </Tabs.Tab>
-                  );
-                })}
-              </Tabs.List>
-            </Tabs.ListContainer>
-
-            {/* Panels stay empty and the active section renders in the page —
-                Tabs is used purely as a selector here. */}
-            {familyMembers.map((member) => (
-              <Tabs.Panel key={member.id} id={member.id} className="hidden">
-                {null}
-              </Tabs.Panel>
-            ))}
-          </Tabs>
+                        )}
+                      </span>
+                      <span className="truncate text-sm text-gray-500">
+                        {/* The DERIVED label, not the stored column: every
+                            account's own row is written with "Self", so two
+                            accounts in one household both claimed it. See
+                            lib/householdRole.ts. */}
+                        {member.relationshipLabel ?? "—"}
+                      </span>
+                    </div>
+                    {/* Sign is carried by an explicit +/− and by color,
+                        not by color alone — a red number reads as
+                        "negative" only if you can see red. */}
+                    <span
+                      className={`shrink-0 text-xs tabular-nums ${
+                        netMinor > 0
+                          ? "text-success"
+                          : netMinor < 0
+                            ? "text-danger"
+                            : "text-foreground/40"
+                      }`}
+                    >
+                      {netMinor > 0 ? "+" : netMinor < 0 ? "−" : ""}
+                      {formatAmountCompact(Math.abs(netMinor), currency)}
+                    </span>
+                  </div>
+                </ListBoxItem>
+              );
+            })}
+          </ListBox>
         )}
       </div>
 

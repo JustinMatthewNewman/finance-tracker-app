@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ledgerTotals, sumDays, totalsByDay, type Countable } from "./ledgerTotals";
+import { ledgerTotals, memberTotals, sumDays, totalsByDay, type Countable } from "./ledgerTotals";
 import { buildMonthGrid } from "./monthRange";
 
 // Terse builders, so each test reads as the scenario it is about rather than as
@@ -368,5 +368,109 @@ describe("sumDays", () => {
 
   it("is all zeroes for a month with nothing in it", () => {
     expect(sumDays(new Map(), inMonth).netMinor).toBe(0);
+  });
+});
+
+describe("memberTotals", () => {
+  const forMember = (familyMemberId: string, row: Countable) => ({ ...row, familyMemberId });
+
+  it("splits a period into one entry per person, in the order asked for", () => {
+    const rows = [
+      forMember("alex", income(412500)),
+      forMember("alex", expense(9241)),
+      forMember("sam", income(284000)),
+      forMember("sam", expense(14280)),
+    ];
+    const byMember = memberTotals(rows, ["sam", "alex"]);
+    expect(byMember.map((m) => m.familyMemberId)).toEqual(["sam", "alex"]);
+    expect(byMember[0].in.actualMinor).toBe(284000);
+    expect(byMember[1].in.actualMinor).toBe(412500);
+  });
+
+  it("adds back up to the household total over the same rows", () => {
+    // The whole reason this lives beside ledgerTotals: the panel prints the
+    // combined figure and the per-person figures it is made of, one above the
+    // other, and they have to agree.
+    const rows = [
+      forMember("alex", income(412500)),
+      forMember("alex", expense(248000)),
+      forMember("sam", income(284000)),
+      forMember("sam", expense(14280)),
+      forMember("maya", expense(4280)),
+    ];
+    const whole = ledgerTotals(rows);
+    const parts = memberTotals(rows, ["alex", "sam", "maya"]);
+    const sum = (pick: (m: (typeof parts)[number]) => number) =>
+      parts.reduce((n, m) => n + pick(m), 0);
+
+    expect(sum((m) => m.in.actualMinor)).toBe(whole.in.actualMinor);
+    expect(sum((m) => m.out.actualMinor)).toBe(whole.out.actualMinor);
+    expect(sum((m) => m.netMinor)).toBe(whole.netMinor);
+  });
+
+  it("keeps a person who had a quiet month, rather than dropping them", () => {
+    // Deriving the list from the rows would omit them, and they would vanish
+    // from the breakdown while still sitting in the sidebar beside it.
+    const byMember = memberTotals([forMember("alex", income(1000))], ["alex", "theo"]);
+    expect(byMember).toHaveLength(2);
+    const theo = byMember.find((m) => m.familyMemberId === "theo")!;
+    expect(theo.hasActivity).toBe(false);
+    expect(theo.in.actualMinor).toBe(0);
+    expect(theo.netMinor).toBe(0);
+  });
+
+  it("reports somebody whose only row was a hidden transfer as having had a month", () => {
+    // Their figures are zero because the transfer is excluded, but they did have
+    // activity — and "nothing this month" would be a different, wrong statement.
+    const byMember = memberTotals(
+      [forMember("jordan", transfer(expense(7500)))],
+      ["jordan"],
+      { includeInternalTransfers: false }
+    );
+    expect(byMember[0].hasActivity).toBe(true);
+    expect(byMember[0].out.actualMinor).toBe(0);
+    expect(byMember[0].excludedTransferCount).toBe(1);
+  });
+
+  it("applies the transfer preference per person, and says what it left out", () => {
+    const rows = [
+      forMember("alex", transfer(expense(50000))),
+      forMember("alex", expense(9241)),
+      forMember("sam", familyTransfer(income(24000))),
+    ];
+    const counted = memberTotals(rows, ["alex", "sam"]);
+    expect(counted[0].out.actualMinor).toBe(59241);
+    expect(counted[0].excludedTransferCount).toBe(0);
+
+    const excluded = memberTotals(rows, ["alex", "sam"], { includeInternalTransfers: false });
+    expect(excluded[0].out.actualMinor).toBe(9241);
+    expect(excluded[0].excludedTransferCount).toBe(1);
+    expect(excluded[1].in.actualMinor).toBe(0);
+    expect(excluded[1].excludedTransferCount).toBe(1);
+  });
+
+  it("keeps projections out of the actual figures, exactly as ledgerTotals does", () => {
+    const byMember = memberTotals(
+      [forMember("alex", income(412500)), forMember("alex", projected(income(145000)))],
+      ["alex"]
+    );
+    expect(byMember[0].in.actualMinor).toBe(412500);
+    expect(byMember[0].in.projectedMinor).toBe(145000);
+    expect(byMember[0].netMinor).toBe(412500);
+    expect(byMember[0].hasProjections).toBe(true);
+  });
+
+  it("counts a person listed twice only once", () => {
+    // A caller assembling ids from a roster and a filter has no single place
+    // guaranteeing uniqueness, and the failure would be one person's money
+    // counted twice in a breakdown meant to add up to the total above it.
+    const rows = [forMember("alex", expense(1000))];
+    const byMember = memberTotals(rows, ["alex", "alex"]);
+    expect(byMember).toHaveLength(1);
+    expect(byMember[0].out.actualMinor).toBe(1000);
+  });
+
+  it("returns nothing for an empty roster", () => {
+    expect(memberTotals([forMember("alex", income(1))], [])).toEqual([]);
   });
 });

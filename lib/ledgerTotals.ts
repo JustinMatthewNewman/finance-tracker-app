@@ -258,3 +258,67 @@ export function sumDays(
 
   return totals;
 }
+
+/** One person's figures inside a household total. */
+export interface MemberTotals extends LedgerTotals {
+  familyMemberId: string;
+  /** Whether this person has any row at all in the period. */
+  hasActivity: boolean;
+}
+
+/**
+ * Each person's figures for the same rows a household total was computed from.
+ *
+ * WHY THIS IS HERE RATHER THAN IN THE PANEL THAT SHOWS IT. It is an in/out
+ * figure, and those all live in this module for one reason: the household panel
+ * now prints a combined total and the per-person figures it is made of, directly
+ * above each other. Those have to agree, and "computed the same way" is the only
+ * thing that makes them agree — the sidebar got this wrong by reaching for
+ * sumTotals(), which ignores `status` and so folded expected money into a figure
+ * everything else in the app reports as actual.
+ *
+ * TAKES THE MEMBER IDS rather than deriving them from the rows, and for the same
+ * reason sumDays takes its days: the roster is the list of people, and the rows
+ * are only the ones who happened to spend something. Deriving from the rows
+ * silently omits anybody with a quiet month, so they vanish from the breakdown
+ * while still sitting in the sidebar beside it — which reads as a bug in the app
+ * rather than as an empty month. Each returned entry carries `hasActivity` so a
+ * caller can say "nothing this month" instead of printing three zeroes.
+ *
+ * Returned in the order the ids were given, so a caller can keep one order
+ * across the roster and the breakdown.
+ *
+ * Sums to the household total: every row belongs to exactly one member, so
+ * adding these up gives back ledgerTotals() over the same rows and options. A
+ * row whose member is not in `familyMemberIds` is in neither, which is the
+ * caller's bug to avoid by passing the whole roster.
+ */
+export function memberTotals(
+  rows: readonly (Countable & { familyMemberId: string })[],
+  familyMemberIds: readonly string[],
+  options: TotalsOptions = {}
+): MemberTotals[] {
+  const grouped = new Map<string, (Countable & { familyMemberId: string })[]>();
+  for (const row of rows) {
+    const bucket = grouped.get(row.familyMemberId);
+    if (bucket) bucket.push(row);
+    else grouped.set(row.familyMemberId, [row]);
+  }
+
+  // Deduplicated for the same reason sumDays does it: a caller assembling ids
+  // from a roster and a filter has no single place guaranteeing uniqueness, and
+  // the failure would be one person's money counted twice in a breakdown that
+  // is supposed to add up to the total above it.
+  return Array.from(new Set(familyMemberIds), (familyMemberId) => {
+    const memberRows = grouped.get(familyMemberId) ?? [];
+    return {
+      familyMemberId,
+      // Counted BEFORE the options are applied: somebody whose only row this
+      // month was an internal transfer has had a month, and reporting them as
+      // having no activity at all would be wrong in a way the zeroes beside it
+      // cannot explain.
+      hasActivity: memberRows.length > 0,
+      ...ledgerTotals(memberRows, options),
+    };
+  });
+}

@@ -23,7 +23,9 @@ import {
   monthRange,
   relativeMonthLabel,
 } from "@/lib/monthRange";
-import { ledgerTotals } from "@/lib/ledgerTotals";
+import { ledgerTotals, memberTotals } from "@/lib/ledgerTotals";
+import { isInternal } from "@/lib/internalTransfers";
+import { effectiveColor } from "@/lib/entityColor";
 import { TransactionTable } from "./TransactionTable";
 import { CategoryBreakdown } from "./CategoryBreakdown";
 import { TransactionForm } from "./TransactionForm";
@@ -43,8 +45,14 @@ function MemberDetailLayout({ showBreakdown = false, onToggleBreakdown }: Member
 
   const { isOpen, toggle: toggleSidebar } = useSidebar();
   const { bordersEnabled } = useBorders();
-  const { selectedFamilyMemberId, setSelectedFamilyMemberId, focusTransactionId, setFocusTransactionId } =
-    useSelectedFamilyMember();
+  const {
+    selectedFamilyMemberId,
+    setSelectedFamilyMemberId,
+    initializeSelection,
+    selectionInitialized,
+    focusTransactionId,
+    setFocusTransactionId,
+  } = useSelectedFamilyMember();
   const { currencyCode } = useUserSettings();
   const currency = isCurrencyCode(currencyCode) ? currencyCode : DEFAULT_CURRENCY;
 
@@ -59,37 +67,74 @@ function MemberDetailLayout({ showBreakdown = false, onToggleBreakdown }: Member
     selfMemberId,
   } = useFamilyMembers();
 
-  const { visible: allTransactions, refetch: refetchAll } = useMyTransactions();
+  // Memoized because it is a dependency of the transfer-resolution pass, which
+  // pairs every transfer leg against every other — see useMyTransactions.
+  const memberNames = useMemo(
+    () => familyMembers.map((m) => m.name),
+    [familyMembers]
+  );
+
+  /**
+   * ONE fetch, ONE resolution, both views.
+   *
+   * This used to be two reads: the household-wide one for the sidebar's
+   * subtotals, and a member-scoped useTransactions(selectedId) for the panel.
+   * Deriving the panel from the household list instead is not just one query
+   * fewer — it is what makes the two views AGREE.
+   *
+   * A member-scoped read holds one person's rows, so `pairTransfers` has nothing
+   * to pair against: the other leg of a transfer almost always belongs to
+   * somebody else. Jordan's anonymous "CASH APP" row was therefore counted as
+   * real spending while Jordan was selected and correctly excluded under
+   * "Everyone" — the same row, two answers, on two views of one page. One
+   * resolved list, filtered per view, cannot do that.
+   */
   const {
-    visible: transactions,
+    resolved: allResolved,
+    visible: allVisible,
+    showInternalTransfers,
     loading,
     error,
-    createTransaction,
-    updateTransaction,
-    deleteTransaction,
-  } = useTransactions(selectedFamilyMemberId);
+    refetch: refetchAll,
+  } = useMyTransactions(memberNames);
+
+  // Write-only, hence null: createTransaction takes the member id per call, and
+  // update/delete address a row by id. Same split as useHouseholdMonth.
+  const { createTransaction, updateTransaction, deleteTransaction } = useTransactions(null);
 
   const selectedMember = familyMembers.find((m) => m.id === selectedFamilyMemberId) ?? null;
+  /**
+   * No one selected — show everybody's figures combined.
+   *
+   * `null` is a real view here, not an empty state: clicking the selected person
+   * in the sidebar clears the selection and lands on this. See the note on
+   * selectedFamilyMemberId in SelectedFamilyMemberContext for why that needed a
+   * separate "has anything been chosen yet" flag to be possible at all.
+   */
+  const isHouseholdView = selectedFamilyMemberId === null;
 
   // Open on the signed-in person rather than on nothing.
   //
-  // The page used to land on "No one selected" with a populated sidebar
-  // beside it, which asks somebody to make a choice before the app will show
-  // them anything — and the answer is nearly always "me".
+  // The page used to land on "No one selected" with a populated sidebar beside
+  // it, which asks somebody to make a choice before the app will show them
+  // anything — and the answer is nearly always "me".
   //
-  // Only ever fills an EMPTY selection. Without that guard this fights every
-  // click: selecting a housemate would be reverted to yourself on the next
-  // render. It also means the choice survives navigating away and back,
-  // because the selection lives in a context above this component.
+  // GUARDED ON selectionInitialized, NOT ON THE ID BEING NULL, and that is the
+  // change that makes deselecting possible. The household view IS a null id, so
+  // a null check could not tell "nobody has chosen yet" from "somebody chose
+  // everyone" — it read the second as the first and put the person straight
+  // back on the next render. This was also two effects racing to fill the same
+  // hole (one preferring `selfMemberId`, one the first row); they are one now,
+  // with the fallback expressed as a fallback.
   //
-  // `selfMemberId` is null while the roster loads, so this resolves once the
-  // real answer arrives rather than selecting the first row that happens to
-  // appear.
+  // Both ids are null while the roster loads, so this resolves once the real
+  // answer arrives rather than selecting whichever row appears first.
   useEffect(() => {
-    if (selectedFamilyMemberId) return;
-    if (!selfMemberId) return;
-    setSelectedFamilyMemberId(selfMemberId);
-  }, [selectedFamilyMemberId, selfMemberId, setSelectedFamilyMemberId]);
+    if (selectionInitialized) return;
+    const landOn = selfMemberId ?? familyMembers[0]?.id;
+    if (!landOn) return;
+    initializeSelection(landOn);
+  }, [selectionInitialized, selfMemberId, familyMembers, initializeSelection]);
 
   // The month the panel is showing. Lives here rather than in the sidebar
   // because in this app the *panel* owns time and the sidebar owns people —
@@ -103,24 +148,39 @@ function MemberDetailLayout({ showBreakdown = false, onToggleBreakdown }: Member
   const [editing, setEditing] = useState<Transaction | null>(null);
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
 
-  // Select the first member automatically once the roster loads, so the panel
-  // isn't empty on a fresh page load with nothing chosen. Only when nothing is
-  // selected — never overriding a choice the user (or the search bar) made.
-  useEffect(() => {
-    if (selectedFamilyMemberId || familyMembers.length === 0) return;
-    setSelectedFamilyMemberId(familyMembers[0].id);
-  }, [familyMembers, selectedFamilyMemberId, setSelectedFamilyMemberId]);
+  /**
+   * The month's rows, resolved but NOT yet filtered.
+   *
+   * Kept separate from `visible` below because the totals need the rows the
+   * household has hidden: ledgerTotals only reports `excludedTransferCount` for
+   * rows it was given and chose to skip. Hand it a pre-filtered list and the
+   * count is always zero, which is how a panel comes to quietly omit rows with
+   * nothing on screen to say so.
+   */
+  const monthRows = useMemo(
+    () => allResolved.filter((t) => t.occurredOn >= range.startDate && t.occurredOn <= range.endDate),
+    [allResolved, range.startDate, range.endDate]
+  );
 
-  const visible = useMemo(
-    () => transactions.filter((t) => t.occurredOn >= range.startDate && t.occurredOn <= range.endDate),
-    [transactions, range.startDate, range.endDate]
+  /** The month's rows for whichever view is up — one person's, or everybody's. */
+  const scopedRows = useMemo(
+    () =>
+      isHouseholdView
+        ? monthRows
+        : monthRows.filter((t) => t.familyMemberId === selectedFamilyMemberId),
+    [monthRows, isHouseholdView, selectedFamilyMemberId]
+  );
+
+  const totalsOptions = useMemo(
+    () => ({ includeInternalTransfers: showInternalTransfers }),
+    [showInternalTransfers]
   );
 
   // From the shared module, so this panel's figures are the same arithmetic as
   // the Calendar's and the ledgers'. sumTotals() nets projections into the same
   // bucket as actuals, which is exactly the blending lib/ledgerTotals.ts exists
   // to prevent.
-  const ledger = useMemo(() => ledgerTotals(visible), [visible]);
+  const ledger = useMemo(() => ledgerTotals(scopedRows, totalsOptions), [scopedRows, totalsOptions]);
   const totals = useMemo(
     () => ({
       incomeMinor: ledger.in.actualMinor,
@@ -128,6 +188,50 @@ function MemberDetailLayout({ showBreakdown = false, onToggleBreakdown }: Member
       netMinor: ledger.netMinor,
     }),
     [ledger]
+  );
+
+  /**
+   * What the table lists — the same rows the figures above it counted.
+   *
+   * Derived from `scopedRows` rather than fetched separately so the two cannot
+   * drift. The flags are already on the row (see useMyTransactions' `resolved`),
+   * so this is the same test ledgerTotals just applied.
+   */
+  const visible = useMemo(
+    () => (showInternalTransfers ? scopedRows : scopedRows.filter((t) => !isInternal(t))),
+    [scopedRows, showInternalTransfers]
+  );
+
+  /**
+   * Per-person figures for the household view, in roster order.
+   *
+   * memberTotals() rather than a filter-and-total here, because this is an in/out
+   * figure and those all live in lib/ledgerTotals.ts — and these in particular
+   * print directly above the combined figure they add up to, so "computed the
+   * same way" is what keeps them agreeing. It is pure and tested, including that
+   * the parts sum back to the whole.
+   *
+   * Roster order, and roster MEMBERSHIP: the ids come from the roster rather than
+   * from the rows, so somebody with a quiet month still appears instead of
+   * vanishing from a list the sidebar beside it still shows them in.
+   */
+  const memberSummaries = useMemo(() => {
+    if (!isHouseholdView) return [];
+    const byId = new Map(familyMembers.map((m) => [m.id, m]));
+    return memberTotals(
+      monthRows,
+      familyMembers.map((m) => m.id),
+      totalsOptions
+    ).flatMap((totals) => {
+      const member = byId.get(totals.familyMemberId);
+      return member ? [{ member, totals }] : [];
+    });
+  }, [isHouseholdView, familyMembers, monthRows, totalsOptions]);
+
+  /** Roster colours, so the table's "who" chip matches the sidebar's dot. */
+  const memberColorById = useMemo(
+    () => new Map(familyMembers.map((m) => [m.id, m.color])),
+    [familyMembers]
   );
 
   // A search result may point at a transaction outside the month currently
@@ -140,8 +244,11 @@ function MemberDetailLayout({ showBreakdown = false, onToggleBreakdown }: Member
   // arrives from an async fetch, and this also schedules a timer.
   useEffect(() => {
     if (!focusTransactionId) return;
-    const target = transactions.find((t) => t.id === focusTransactionId);
-    if (!target) return; // not this member's, or still loading
+    // Searched across the whole household, not just the selected member: the
+    // search bar sets the member and the focus id together, but those arrive in
+    // one render and this effect should not depend on which one it sees first.
+    const target = allResolved.find((t) => t.id === focusTransactionId);
+    if (!target) return; // still loading
 
     const [year, month] = target.occurredOn.split("-").map(Number);
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -158,7 +265,7 @@ function MemberDetailLayout({ showBreakdown = false, onToggleBreakdown }: Member
     // keep snapping back open.
     const timeout = setTimeout(() => setFocusTransactionId(null), 2000);
     return () => clearTimeout(timeout);
-  }, [focusTransactionId, transactions, setFocusTransactionId]);
+  }, [focusTransactionId, allResolved, setFocusTransactionId]);
 
   const handleSubmit = useCallback(
     async (data: TransactionInput) => {
@@ -224,7 +331,7 @@ function MemberDetailLayout({ showBreakdown = false, onToggleBreakdown }: Member
             createFamilyMember={createFamilyMember}
             renameFamilyMember={renameFamilyMember}
             deleteFamilyMember={deleteFamilyMember}
-            transactions={allTransactions}
+            transactions={allVisible}
             range={range}
             currency={currency}
           />
@@ -246,15 +353,21 @@ function MemberDetailLayout({ showBreakdown = false, onToggleBreakdown }: Member
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
                   <h2 className="truncate text-lg font-semibold text-foreground">
-                    {selectedMember?.name ?? "No one selected"}
+                    {isHouseholdView ? "Everyone" : selectedMember?.name ?? "Everyone"}
                   </h2>
                   {/* The derived label — see lib/householdRole.ts. The stored
                       column says "Self" on every account's own row, which is
                       true of at most one of them for any given viewer. */}
-                  {selectedMember?.relationshipLabel && (
+                  {isHouseholdView ? (
                     <span className="shrink-0 rounded-full bg-default px-2 py-0.5 text-xs text-foreground/60">
-                      {selectedMember.relationshipLabel}
+                      {familyMembers.length} {familyMembers.length === 1 ? "person" : "people"} combined
                     </span>
+                  ) : (
+                    selectedMember?.relationshipLabel && (
+                      <span className="shrink-0 rounded-full bg-default px-2 py-0.5 text-xs text-foreground/60">
+                        {selectedMember.relationshipLabel}
+                      </span>
+                    )
                   )}
                 </div>
 
@@ -286,6 +399,14 @@ function MemberDetailLayout({ showBreakdown = false, onToggleBreakdown }: Member
                   <Button
                     size="sm"
                     isDisabled={!selectedFamilyMemberId || !myUserId || !selectedMember?.isMine}
+                    // Every transaction belongs to exactly one person, so there
+                    // is nobody to attribute one to while the combined view is
+                    // up. Says so rather than leaving a dead button.
+                    aria-label={
+                      isHouseholdView
+                        ? "Pick someone from the household to add a transaction"
+                        : "Add transaction"
+                    }
                     onPress={() => {
                       setEditing(null);
                       setIsFormOpen(true);
@@ -354,29 +475,115 @@ function MemberDetailLayout({ showBreakdown = false, onToggleBreakdown }: Member
               </div>
             </div>
 
+            {/* A total that silently omits rows the table below it lists is
+                unreconcilable by hand — which is the one thing somebody does
+                when they distrust a ledger. So when transfers are hidden, the
+                figures say so. Same wording as the Income and Expenses pages,
+                and it applies to both views here: this panel applies the
+                preference, so this panel has to report it. */}
+            {!showInternalTransfers && ledger.excludedTransferCount > 0 && (
+              <p className="shrink-0 px-4 pb-2 text-xs text-foreground/50">
+                Not counting {ledger.excludedTransferCount} transfer
+                {ledger.excludedTransferCount === 1 ? "" : "s"} inside the household.
+              </p>
+            )}
+
             <div className="flex min-h-0 flex-1 overflow-hidden">
               <div className="min-h-0 flex-1 overflow-y-auto p-2">
-                {!selectedFamilyMemberId ? (
-                  <p className="p-6 text-sm text-foreground/60">
-                    Pick someone from the household to see their income and expenses.
-                  </p>
-                ) : loading ? (
+                {loading ? (
                   <p className="p-6 text-sm text-foreground/60">Loading transactions...</p>
                 ) : error ? (
                   <p className="p-6 text-sm text-red-500">Error: {error}</p>
                 ) : (
-                  <TransactionTable
-                    transactions={visible}
-                    currency={currency}
-                    expandedKeys={expandedKeys}
-                    onExpandedChange={setExpandedKeys}
-                    focusTransactionId={focusTransactionId}
-                    onEdit={(txn) => {
-                      setEditing(txn);
-                      setIsFormOpen(true);
-                    }}
-                    onDelete={handleDelete}
-                  />
+                  <>
+                    {/* Who the combined figure is made of. The header above
+                        answers "what did the household do this month"; this
+                        answers "who did it", which is the question anybody
+                        looking at a combined total asks next. Each row selects
+                        that person, so the combined view is also the way in. */}
+                    {isHouseholdView && memberSummaries.length > 0 && (
+                      <div className="mb-2 flex flex-col gap-1 px-1">
+                        {memberSummaries.map(({ member, totals: figures }) => {
+                          const dotColor = effectiveColor(member.color, member.name);
+                          const { hasActivity } = figures;
+                          return (
+                            <button
+                              key={member.id}
+                              type="button"
+                              onClick={() => setSelectedFamilyMemberId(member.id)}
+                              className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left transition hover:bg-default-100/60"
+                            >
+                              {dotColor && (
+                                <span
+                                  className="size-2.5 shrink-0 rounded-full"
+                                  style={{ backgroundColor: dotColor }}
+                                  aria-hidden
+                                />
+                              )}
+                              <span className="min-w-0 flex-1 truncate text-sm text-foreground">
+                                {member.name}
+                                {member.isSelf && (
+                                  <span className="ml-1.5 text-xs text-foreground/50">you</span>
+                                )}
+                              </span>
+                              {hasActivity ? (
+                                <span className="flex shrink-0 items-center gap-3 text-xs tabular-nums">
+                                  <span className="text-success">
+                                    {formatAmount(figures.in.actualMinor, currency)}
+                                  </span>
+                                  <span className="text-foreground/70">
+                                    {formatAmount(figures.out.actualMinor, currency)}
+                                  </span>
+                                  <span
+                                    className={`w-20 text-right ${
+                                      figures.netMinor > 0
+                                        ? "text-success"
+                                        : figures.netMinor < 0
+                                          ? "text-danger"
+                                          : "text-foreground/40"
+                                    }`}
+                                  >
+                                    {figures.netMinor > 0
+                                      ? "+"
+                                      : figures.netMinor < 0
+                                        ? "−"
+                                        : ""}
+                                    {formatAmount(Math.abs(figures.netMinor), currency)}
+                                  </span>
+                                </span>
+                              ) : (
+                                // Shown rather than omitted: a member who is
+                                // missing from this strip but present in the
+                                // sidebar reads as a bug, and "nothing this
+                                // month" is itself worth knowing.
+                                <span className="shrink-0 text-xs text-foreground/40">
+                                  Nothing this month
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    <TransactionTable
+                      transactions={visible}
+                      currency={currency}
+                      expandedKeys={expandedKeys}
+                      onExpandedChange={setExpandedKeys}
+                      focusTransactionId={focusTransactionId}
+                      // Only worth the column when rows from several people are
+                      // interleaved; in one person's panel it is their name
+                      // repeated down the page.
+                      showMember={isHouseholdView}
+                      memberColorById={memberColorById}
+                      onEdit={(txn) => {
+                        setEditing(txn);
+                        setIsFormOpen(true);
+                      }}
+                      onDelete={handleDelete}
+                    />
+                  </>
                 )}
               </div>
 
