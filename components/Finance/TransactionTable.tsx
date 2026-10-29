@@ -22,6 +22,17 @@ interface TransactionTableProps {
   focusTransactionId: string | null;
   onEdit: (transaction: Transaction) => void;
   onDelete: (transaction: Transaction) => void;
+  /**
+   * Show who each row belongs to.
+   *
+   * Off for a single person's panel, where every row is theirs and the label
+   * would be the same word repeated down the page. On for the household view,
+   * where rows from several people are interleaved and "whose £48 was that" is
+   * otherwise unanswerable. The colour comes from the roster so the chip matches
+   * the dot beside that person's name in the sidebar.
+   */
+  showMember?: boolean;
+  memberColorById?: Map<string, string | null>;
 }
 
 export function TransactionTable({
@@ -32,6 +43,8 @@ export function TransactionTable({
   focusTransactionId,
   onEdit,
   onDelete,
+  showMember = false,
+  memberColorById,
 }: TransactionTableProps) {
   // Amounts go through formatAmount rather than formatMoney, so privacy
   // mode covers them. A figure that bypassed it would stay legible with the
@@ -101,6 +114,9 @@ export function TransactionTable({
                   : null;
                 const tinted = categoryColorsEnabled && color;
                 const isFocused = txn.id === focusTransactionId;
+                const memberColor = showMember
+                  ? effectiveColor(memberColorById?.get(txn.familyMemberId) ?? null, txn.familyMemberName)
+                  : null;
 
                 return (
                   <div
@@ -132,10 +148,25 @@ export function TransactionTable({
                           </span>
                         )}
                       </div>
-                      <span className="truncate text-xs text-foreground/50">
-                        {[txn.category?.name, txn.method, txn.recurrence ? "Recurring" : null]
-                          .filter(Boolean)
-                          .join(" · ") || "Uncategorized"}
+                      <span className="flex min-w-0 items-center gap-1.5 text-xs text-foreground/50">
+                        {showMember && (
+                          <span className="flex min-w-0 shrink-0 items-center gap-1 font-medium text-foreground/70">
+                            {categoryColorsEnabled && memberColor && (
+                              <span
+                                className="size-2 shrink-0 rounded-full"
+                                style={{ backgroundColor: memberColor }}
+                                aria-hidden
+                              />
+                            )}
+                            <span className="truncate">{txn.familyMemberName}</span>
+                            <span aria-hidden>·</span>
+                          </span>
+                        )}
+                        <span className="truncate">
+                          {[txn.category?.name, txn.method, txn.recurrence ? "Recurring" : null]
+                            .filter(Boolean)
+                            .join(" · ") || "Uncategorized"}
+                        </span>
                       </span>
                     </div>
 
@@ -148,22 +179,40 @@ export function TransactionTable({
                       {formatAmount(txn.amountMinor, currency)}
                     </span>
 
-                    <Dropdown>
-                      <Dropdown.Trigger aria-label={`Actions for ${txn.merchant ?? "transaction"}`}>
-                        <Ellipsis width={16} height={16} />
-                      </Dropdown.Trigger>
-                      <Dropdown.Popover>
-                        <Dropdown.Menu
-                          onAction={(key) => {
-                            if (key === "edit") onEdit(txn);
-                            if (key === "delete") onDelete(txn);
-                          }}
-                        >
-                          <Dropdown.Item id="edit">Edit</Dropdown.Item>
-                          <Dropdown.Item id="delete">Delete</Dropdown.Item>
-                        </Dropdown.Menu>
-                      </Dropdown.Popover>
-                    </Dropdown>
+                    {/* Gated on `isMine`, not merely rendered. Reads are
+                        household-wide and writes are not, so this list contains
+                        rows belonging to housemates — and UpdateTransaction /
+                        DeleteTransaction check ownership in a `@check` the person
+                        never sees. An always-enabled menu turns a deliberate
+                        boundary into what looks like a bug, and it shows up here
+                        the moment several people's rows are interleaved.
+
+                        A spacer keeps the amounts in one column whether or not
+                        the menu is there; without it every housemate's row sits
+                        8px wider than the ones around it. */}
+                    {txn.isMine ? (
+                      <Dropdown>
+                        <Dropdown.Trigger aria-label={`Actions for ${txn.merchant ?? "transaction"}`}>
+                          <Ellipsis width={16} height={16} />
+                        </Dropdown.Trigger>
+                        <Dropdown.Popover>
+                          <Dropdown.Menu
+                            onAction={(key) => {
+                              if (key === "edit") onEdit(txn);
+                              if (key === "delete") onDelete(txn);
+                            }}
+                          >
+                            <Dropdown.Item id="edit">Edit</Dropdown.Item>
+                            <Dropdown.Item id="delete">Delete</Dropdown.Item>
+                          </Dropdown.Menu>
+                        </Dropdown.Popover>
+                      </Dropdown>
+                    ) : (
+                      <span
+                        className="size-4 shrink-0"
+                        title={`${txn.ownerUsername} added this. You can see it, but only they can change it.`}
+                      />
+                    )}
                   </div>
                 );
               })}
